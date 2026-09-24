@@ -26,3 +26,21 @@ jobs:
       - name: Lint commit messages
         if: github.event_name == 'pull_request'
         run: cargo run -q -- lint --range origin/${{ github.base_ref }}..HEAD
+
+  capsule:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Test the capsule checker
+        run: python -m unittest discover -s addf/scripts/tests -v
+      - name: Check the addf capsule
+        run: python addf/scripts/check-capsule --root addf
