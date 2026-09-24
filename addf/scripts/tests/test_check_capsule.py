@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import sys
@@ -156,6 +157,13 @@ class CheckCapsuleTest(unittest.TestCase):
                 result = self.run_checker()
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
                 self.assertIn("PLACEHOLDER:", result.stdout)
+
+    def test_output_is_utf8_regardless_of_locale_encoding(self):
+        self.write("knowledge/claim.md", '<a id="cläim-name"></a>\n')
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+        result = subprocess.run([sys.executable, str(self.checker)], cwd=self.repo, capture_output=True, env=env, timeout=15)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("cläim-name", result.stdout.decode("utf-8"))
 
     def test_conversion_debris_and_strict_instance_placeholders(self):
         self.write("CORE.md", "{=html}\n\\<oops\\>\n")
