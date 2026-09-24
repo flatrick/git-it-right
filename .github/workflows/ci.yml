@@ -21,6 +21,8 @@ jobs:
           components: clippy
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
+      - name: Hook latency
+        run: cargo test --test perf -- --nocapture
       - name: Lint commit messages
         if: github.event_name == 'pull_request'
         run: cargo run -q -- lint --range origin/${{ github.base_ref }}..HEAD
