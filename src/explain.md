@@ -89,22 +89,10 @@ Rebase onto the base branch instead: `git rebase <base>`.
 `gir.allowRevert = false`: git's default `Revert "..."` subject is rejected.
 Reword it: `revert: <original description>`, and keep the `This reverts commit <sha>.` line in the body.
 
-## fixup
-Fixing an earlier commit on your branch, without an interactive rebase:
-
-    git add <the fix>
-    gir fixup            # finds the target commit from the staged lines
-    gir fixup <commit>   # or name it explicitly
-    git rebase --autosquash <base>
-
-`gir fixup` creates a `fixup! <subject>` commit.
-`git rebase --autosquash` (or `rebase.autoSquash = true`, which `gir doctor --fix` sets) folds it into the target.
-The `pre-push` hook refuses to push unsquashed `fixup!`/`squash!`/`amend!` commits.
-Use `amend!` (`git commit --fixup=amend:<commit>`) when you also need to reword the target's message.
-
 ## fixup-unsquashed
 A `fixup!`, `squash!` or `amend!` commit is about to be pushed.
 Fold it into its target first: `git rebase --autosquash <base>`, then push again.
+The whole workflow: `gir explain fixup`.
 
 ## config
 `.girconfig` at the repo root, git-config syntax (`git config --file .girconfig gir.subjectMax 100`):

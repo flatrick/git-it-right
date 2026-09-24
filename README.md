@@ -59,7 +59,8 @@ BREAKING CHANGE: clients must handle 404.
 Refs: #42
 ```
 
-Run `gir explain types` for the allowed types and what each one means.
+[CHEATSHEET.md](CHEATSHEET.md) explains when to use each type, with examples, plus the fixup workflow.
+The same text is built into gir: `gir explain types` lists the allowed types, and `gir explain feat` (or any other type) prints its section.
 
 ### What gets fixed automatically
 
@@ -96,7 +97,8 @@ gir never guesses a misspelled type for you, because a wrong guess changes the m
 
 ## Fixing an earlier commit
 
-Use this instead of an interactive rebase when a change belongs in an earlier commit on your branch:
+Use this instead of an interactive rebase when a change belongs in an earlier commit on your branch.
+The [fixup section of the cheatsheet](CHEATSHEET.md#fixup) also covers `amend!`, `reword` and `squash!`.
 
 ```sh
 git add path/to/fix
