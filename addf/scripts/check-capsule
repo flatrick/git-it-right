@@ -1,0 +1,776 @@
+#!/usr/bin/env python3
+"""Check a selected framework capsule using Python 3.9 or newer."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from collections import Counter
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Optional
+from urllib.parse import unquote
+
+
+ACTIVE = ("DEFINE", "UNDERSTAND", "INVESTIGATE", "DECIDE", "IMPLEMENT", "VERIFY", "LEARN")
+TERMINAL = ("COMPLETED", "BLOCKED", "IMPOSSIBLE", "DEFERRED", "ABANDONED", "FAILED")
+CLAIM_STATES = ("UNVERIFIED", "VERIFIED", "REFUTED", "DISPUTED")
+ANCHOR_NAME = r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*"
+ANCHOR = re.compile(r'<a id="(' + ANCHOR_NAME + r')"></a>')
+INLINE = re.compile(r"(`+)(.*?)\1")
+LINK = re.compile(r"\[[^\]\n]*\]\((?:<([^>\n]+)>|([^\s)]+))(?:\s+\"[^\"]*\")?\)")
+NAMESPACE = re.compile(r"(?:framework|history):[^\s`<>\[\](),;]+")
+HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
+FIELD = re.compile(r"^\s*(?:[-*]\s+)?(?:\*\*([^*]+?):\*\*|([A-Za-z][A-Za-z ]+):)\s*(.*)$")
+REFERENCE_FIELDS = ("Basis", "Reference", "Current contract", "Terminal publication", "Source", "Target")
+
+
+@dataclass(frozen=True, order=True)
+class Failure:
+    path: str
+    line: int
+    code: str
+    message: str
+
+    def render(self) -> str:
+        return f"{self.path}:{self.line}: {self.code}: {self.message}"
+
+
+@dataclass(frozen=True)
+class Config:
+    root: Path
+    include_archive: bool
+
+    def failure(self, path: Path, line: int, code: str, message: str) -> Failure:
+        try:
+            label = path.relative_to(self.root.parent).as_posix()
+        except ValueError:
+            label = path.as_posix()
+        return Failure(label.replace("\n", r"\n").replace("\r", r"\r"), max(1, line), code, message.replace("\n", r"\n").replace("\r", r"\r"))
+
+
+@dataclass(frozen=True)
+class Value:
+    name: str
+    line: int
+    text: str
+
+
+@dataclass(frozen=True)
+class Section:
+    title: str
+    level: int
+    start: int
+    end: int
+
+
+@dataclass(frozen=True)
+class Document:
+    path: Path
+    lines: tuple[str, ...]
+    prose: tuple[str, ...]
+    fields: tuple[Value, ...]
+    sections: tuple[Section, ...]
+    anchors: tuple[tuple[str, int], ...]
+
+    def section(self, title: str) -> Optional[Section]:
+        return next((s for s in self.sections if s.title == title), None)
+
+    def values(self, section: Optional[Section] = None) -> dict[str, Value]:
+        return {v.name: v for v in self.fields if section is None or section.start < v.line < section.end}
+
+
+@dataclass(frozen=True)
+class Task:
+    document: Document
+    archived: bool
+    version: str
+    cursor: tuple[Value, ...]
+
+    def value(self, name: str) -> Value:
+        return next((v for v in self.cursor if v.name == name), Value(name, 1, ""))
+
+    @property
+    def state(self) -> str:
+        return literal(self.value("State").text)
+
+
+@dataclass(frozen=True)
+class Reference:
+    source: Path
+    line: int
+    target: str
+
+
+@dataclass(frozen=True)
+class Resolved:
+    path: Path
+    anchor: str
+
+
+@dataclass(frozen=True)
+class SpecTree:
+    documents: tuple[Document, ...]
+    failures: tuple[Failure, ...]
+
+
+@dataclass(frozen=True)
+class ClaimRecord:
+    document: Document
+    section: Section
+    completed_success: bool = False
+
+
+@dataclass(frozen=True)
+class Context:
+    config: Config
+    documents: tuple[Document, ...]
+    tasks: tuple[Task, ...]
+    legacy: frozenset[str]
+    failures: tuple[Failure, ...]
+
+    def checked(self) -> tuple[Document, ...]:
+        result = []
+        for doc in self.documents:
+            parts = doc.path.relative_to(self.config.root).parts
+            if parts[0] != ".archive":
+                result.append(doc)
+            elif self.config.include_archive and len(parts) >= 4 and parts[1] == "tasks" and parts[2] not in self.legacy:
+                result.append(doc)
+        return tuple(result)
+
+    def document(self, path: Path) -> Optional[Document]:
+        return next((d for d in self.documents if d.path == path), None)
+
+
+def literal(text: str) -> str:
+    return text.strip().strip("`* ")
+
+
+def parse_document(path: Path, text: str) -> Document:
+    text = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group().count("\n"), text, flags=re.S)
+    lines = []
+    fence = None
+    for raw in text.splitlines():
+        opening = re.match(r"^\s{0,3}(`{3,}|~{3,})(.*)$", raw)
+        if fence:
+            if re.match(r"^\s{0,3}" + re.escape(fence[0]) + "{" + str(fence[1]) + r",}\s*$", raw):
+                fence = None
+            lines.append("")
+        elif opening:
+            fence = (opening[1][0], len(opening[1]))
+            lines.append("")
+        else:
+            lines.append(raw)
+    prose = tuple(INLINE.sub("", line) for line in lines)
+    headings = [(n, len(m[1]), literal(INLINE.sub(lambda code: code[2], m[2]))) for n, line in enumerate(lines, 1) if (m := HEADING.match(line))]
+    sections = tuple(Section(title, level, n, next((end for end, depth, _ in headings if end > n and depth <= level), len(lines) + 1)) for n, level, title in headings)
+    values = []
+    continuing = False
+    for n, line in enumerate(lines, 1):
+        match = FIELD.match(line)
+        if match:
+            values.append(Value(match[1] or match[2], n, match[3]))
+            continuing = True
+        elif continuing and line[:1].isspace() and line.strip() and not HEADING.match(line) and not re.match(r"^\s*[-*]\s", line):
+            previous = values[-1]
+            values[-1] = Value(previous.name, previous.line, previous.text + "\n" + line.strip())
+        else:
+            continuing = False
+    anchors = tuple((m[1], n) for n, line in enumerate(prose, 1) for m in ANCHOR.finditer(line))
+    return Document(path, tuple(lines), prose, tuple(values), sections, anchors)
+
+
+def load_context(config: Config) -> Context:
+    failures = []
+    documents = []
+    try:
+        paths = sorted(config.root.rglob("*.md"))
+    except OSError:
+        return Context(config, (), (), frozenset(), (config.failure(config.root, 1, "READ", "cannot enumerate framework files"),))
+    for path in paths:
+        relative = path.relative_to(config.root)
+        if relative.parts[0] == ".archive" and not (relative.parts[:2] == (".archive", "tasks") and path.name == "TASK.md"):
+            continue
+        if not path.is_file():
+            continue
+        try:
+            documents.append(parse_document(path, path.read_text(encoding="utf-8")))
+        except (OSError, UnicodeError):
+            failures.append(config.failure(path, 1, "READ", "cannot read UTF-8 file"))
+    tasks = []
+    for doc in documents:
+        parts = doc.path.relative_to(config.root).parts
+        if doc.path.name != "TASK.md" or not (parts[0] == "tasks" or parts[:2] == (".archive", "tasks")):
+            continue
+        resume = doc.section("Resume")
+        cursor = tuple(v for v in doc.fields if resume is None or resume.start < v.line < resume.end)
+        version = next((literal(v.text) for v in cursor if v.name == "Contract version"), "")
+        tasks.append(Task(doc, parts[0] == ".archive", version, cursor))
+    legacy = set()
+    baseline = config.root / ".archive/task-contract-v1.txt"
+    if config.include_archive and baseline.exists():
+        try:
+            entries = baseline.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeError):
+            entries = []
+            failures.append(config.failure(baseline, 1, "READ", "cannot read UTF-8 file"))
+        seen = set()
+        for n, entry in enumerate(entries, 1):
+            if not re.fullmatch(ANCHOR_NAME, entry):
+                failures.append(config.failure(baseline, n, "BASELINE_ENTRY", f"invalid v1 Task name: {entry}"))
+            elif entry in seen:
+                failures.append(config.failure(baseline, n, "BASELINE_DUPLICATE", f"duplicate v1 Task name: {entry}"))
+            else:
+                task = next((t for t in tasks if t.document.path == config.root / ".archive/tasks" / entry / "TASK.md"), None)
+                if task is None or task.version not in ("", "1"):
+                    failures.append(config.failure(baseline, n, "BASELINE_STALE", f"entry does not name an archived v1 Task: {entry}"))
+                else:
+                    legacy.add(entry)
+            seen.add(entry)
+    if config.include_archive:
+        loaded = {doc.path for doc in documents}
+        for path in paths:
+            parts = path.relative_to(config.root).parts
+            if path in loaded or len(parts) < 4 or parts[:2] != (".archive", "tasks") or parts[2] in legacy or not path.is_file():
+                continue
+            try:
+                documents.append(parse_document(path, path.read_text(encoding="utf-8")))
+            except (OSError, UnicodeError):
+                failures.append(config.failure(path, 1, "READ", "cannot read UTF-8 file"))
+    return Context(config, tuple(documents), tuple(tasks), frozenset(legacy), tuple(failures))
+
+
+def line_references(source: Path, line_number: int, line: str) -> tuple[Reference, ...]:
+    found = []
+    bare = list(line)
+    for match in LINK.finditer(line):
+        found.append(Reference(source, line_number, match[1] or match[2]))
+        bare[match.start():match.end()] = " " * (match.end() - match.start())
+    for match in NAMESPACE.finditer("".join(bare)):
+        found.append(Reference(source, line_number, match.group().rstrip(".")))
+    return tuple(found)
+
+
+def references(doc: Document) -> tuple[Reference, ...]:
+    found = set()
+    for n, line in enumerate(doc.prose, 1):
+        found.update(line_references(doc.path, n, line))
+    for value in doc.fields:
+        if value.name not in REFERENCE_FIELDS:
+            continue
+        for offset, line in enumerate(value.text.splitlines()):
+            for ref in line_references(doc.path, value.line + offset, line):
+                if "..." not in ref.target:
+                    found.add(ref)
+    return tuple(sorted(found, key=lambda r: (r.line, r.target)))
+
+
+def value_references(doc: Document, value: Value) -> tuple[Reference, ...]:
+    return tuple(ref for ref in references(doc) if value.line <= ref.line < value.line + len(value.text.splitlines()))
+
+
+def preceding_anchor(doc: Document, line: int, floor: int = 1) -> Optional[str]:
+    preceding = line - 2
+    while preceding >= floor - 1 and not doc.prose[preceding].strip():
+        preceding -= 1
+    match = ANCHOR.fullmatch(doc.prose[preceding].strip()) if preceding >= floor - 1 else None
+    return match[1] if match else None
+
+
+def claim_anchor(doc: Document, section: Section, claim: Value) -> Optional[str]:
+    return preceding_anchor(doc, section.start) or preceding_anchor(doc, claim.line, section.start + 1)
+
+
+def resolved_claim_values(context: Context, target: Resolved) -> Optional[dict[str, Value]]:
+    doc = context.document(target.path)
+    if doc is None:
+        try:
+            doc = parse_document(target.path, target.path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError):
+            return None
+    for section in doc.sections:
+        values = doc.values(section)
+        claim = values.get("Claim")
+        if claim and claim_anchor(doc, section, claim) == target.anchor:
+            return values
+    return None
+
+
+def same_claim(left: dict[str, Value], right: dict[str, Value]) -> bool:
+    return all(
+        name in left
+        and name in right
+        and " ".join(literal(left[name].text).split()) == " ".join(literal(right[name].text).split())
+        for name in ("Claim", "Scope")
+    )
+
+
+def resolve(context: Context, ref: Reference) -> tuple[Optional[Resolved], Optional[Failure]]:
+    config = context.config
+    target = unquote(ref.target)
+    namespace = target.split(":", 1)[0] if ":" in target else ""
+    durable = namespace in ("framework", "history")
+    if namespace and not durable and re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+        return None, None
+    body = target.split(":", 1)[1] if durable else target
+    path_text, _, anchor = body.partition("#")
+    base = config.root if namespace == "framework" else config.root / ".archive" if namespace == "history" else ref.source.parent
+    code = "REF" if durable else "LINK"
+    if durable and (not path_text or "\\" in path_text or PureWindowsPath(path_text).drive or PurePosixPath(path_text).is_absolute() or ".." in PurePosixPath(path_text).parts):
+        return None, config.failure(ref.source, ref.line, "REF_PATH", f"invalid durable path: {ref.target}")
+    try:
+        path = (base / path_text).resolve() if path_text else ref.source
+        if durable:
+            path.relative_to(base)
+            if namespace == "framework" and path.is_relative_to(config.root / ".archive"):
+                raise ValueError("archive")
+        if namespace == "history" and not path.exists():
+            parts = PurePosixPath(path_text).parts
+            task = next((t for t in context.tasks if not t.archived and len(parts) >= 3 and parts[0] == "tasks" and t.document.path == config.root / "tasks" / parts[1] / "TASK.md" and t.state in TERMINAL), None)
+            if task:
+                path = config.root / path_text
+        exists = path.exists()
+    except (OSError, ValueError, RuntimeError):
+        return None, config.failure(ref.source, ref.line, code + "_PATH", f"invalid durable path: {ref.target}")
+    if not exists:
+        return None, config.failure(ref.source, ref.line, code + "_TARGET", f"target does not exist: {ref.target}")
+    if anchor:
+        doc = context.document(path)
+        if doc is None:
+            try:
+                doc = parse_document(path, path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError):
+                return None, config.failure(ref.source, ref.line, code + "_TARGET", f"cannot read target: {ref.target}")
+        headings = set()
+        counts = Counter()
+        for section in doc.sections:
+            slug = re.sub(r"[^\w\- ]", "", section.title.lower()).replace(" ", "-")
+            headings.add(slug if not counts[slug] else f"{slug}-{counts[slug]}")
+            counts[slug] += 1
+        explicit = {name for name, _ in doc.anchors}
+        if anchor not in explicit | headings:
+            return None, config.failure(ref.source, ref.line, code + "_ANCHOR", f"anchor does not exist: {ref.target}")
+    return Resolved(path, anchor), None
+
+
+def check_conversion(context: Context) -> tuple[Failure, ...]:
+    failures = []
+    for doc in context.checked():
+        for n, line in enumerate(doc.prose, 1):
+            if "{=html}" in line:
+                failures.append(context.config.failure(doc.path, n, "CONVERSION", "pandoc artifact `{=html}`"))
+            if r"\<" in line or r"\>" in line:
+                failures.append(context.config.failure(doc.path, n, "CONVERSION", "escaped angle bracket from conversion"))
+    return tuple(failures)
+
+
+def check_placeholders(context: Context) -> tuple[Failure, ...]:
+    failures = []
+    for doc in context.checked():
+        parts = doc.path.relative_to(context.config.root).parts
+        if parts[0] == "templates":
+            continue
+        strict = parts == ("INDEX.md",) or parts == ("LEDGER.md",) or parts == ("SPEC.md",)
+        if not strict and parts[0] not in ("tasks", "rules", "skills", "knowledge", "commands", "evidence", "spec", ".archive", "SELF-IMPROVEMENT", "open-claims"):
+            continue
+        lines = doc.lines if strict else doc.prose
+        body = "\n".join(ANCHOR.sub("", line) for line in lines)
+        body = LINK.sub(lambda m: m.group().replace("<", " ").replace(">", " ") if "<" not in (m[1] or m[2]) else m.group(), body)
+        for match in re.finditer(r"<[^<>]{2,120}>" if strict else r"<[^<>\n]{2,60}>", body):
+            slot = match.group()
+            if slot[1:-1].startswith(("https://", "http://", "mailto:")):
+                continue
+            failures.append(context.config.failure(doc.path, body[:match.start()].count("\n") + 1, "PLACEHOLDER", f"unfilled placeholder `{' '.join(slot.split())}`"))
+    return tuple(failures)
+
+
+def check_references(context: Context) -> tuple[Failure, ...]:
+    failures = []
+    for doc in context.checked():
+        if doc.path.relative_to(context.config.root).parts[0] == "templates":
+            continue
+        for ref in references(doc):
+            _, failure = resolve(context, ref)
+            if failure:
+                failures.append(failure)
+        body = "\n".join(doc.prose)
+        for candidate in re.finditer(r"<a\b[^>]*\bid\b", body, re.I):
+            if not ANCHOR.match(body, candidate.start()):
+                line = body[:candidate.start()].count("\n") + 1
+                failures.append(context.config.failure(doc.path, line, "ANCHOR_FORMAT", "explicit anchor must use an empty lowercase ASCII kebab anchor"))
+        seen = set()
+        for name, line in doc.anchors:
+            if name in seen:
+                failures.append(context.config.failure(doc.path, line, "ANCHOR_DUPLICATE", f"duplicate explicit anchor: {name}"))
+            seen.add(name)
+    return tuple(failures)
+
+
+def spec_tree(context: Context) -> SpecTree:
+    config = context.config
+    root = context.document(config.root / "SPEC.md")
+    if root is None:
+        return SpecTree((), (config.failure(config.root / "SPEC.md", 1, "SPEC_ROOT", "SPEC.md is missing"),))
+    visited = {root.path}
+    pending = [root]
+    documents = []
+    failures = []
+    while pending:
+        doc = pending.pop(0)
+        documents.append(doc)
+        title = "Specification map" if doc.path == root.path else "Subspecifications"
+        section = next((s for s in doc.sections if s.level == 2 and s.title == title), None)
+        if section is None:
+            failures.append(config.failure(doc.path, 1, "SPEC_MAP", f"{title} section is missing"))
+            continue
+        children = []
+        empty = False
+        for n in range(section.start, section.end - 1):
+            empty = empty or bool(re.fullmatch(r"\s*(?:`NONE`|NONE)\.?\s*", doc.lines[n]))
+            for match in LINK.finditer(doc.prose[n]):
+                target = match[1] or match[2]
+                if target.split("#", 1)[0].endswith(".md"):
+                    children.append(Reference(doc.path, n + 1, target))
+        if not children and not empty:
+            failures.append(config.failure(doc.path, section.start, "SPEC_MAP", f"{title} requires child Markdown links or explicit NONE"))
+        elif children and empty:
+            failures.append(config.failure(doc.path, section.start, "SPEC_MAP", f"{title} cannot combine child links with NONE"))
+        for ref in children:
+            resolved, failure = resolve(context, ref)
+            if failure or resolved is None:
+                failures.append(config.failure(doc.path, ref.line, "SPEC_CHILD", f"child specification does not exist: {ref.target}"))
+                continue
+            child = context.document(resolved.path)
+            if child is None or not resolved.path.is_relative_to(config.root) or resolved.path.is_relative_to(config.root / ".archive"):
+                failures.append(config.failure(doc.path, ref.line, "SPEC_CHILD", f"child specification must be current framework Markdown: {ref.target}"))
+            elif child.path in visited:
+                failures.append(config.failure(doc.path, ref.line, "SPEC_DUPLICATE", f"child specification is already reachable: {ref.target}"))
+            else:
+                visited.add(child.path)
+                pending.append(child)
+    for doc in context.checked():
+        if doc.path.is_relative_to(config.root / "spec") and doc.path not in visited:
+            failures.append(config.failure(doc.path, 1, "SPEC_UNREACHABLE", "specification is not reachable from SPEC.md"))
+    return SpecTree(tuple(documents), tuple(failures))
+
+
+def check_spec(context: Context) -> tuple[Failure, ...]:
+    tree = spec_tree(context)
+    failures = list(tree.failures)
+    for doc in tree.documents:
+        for ref in references(doc):
+            resolved, _ = resolve(context, ref)
+            if ref.target.startswith("history:") or (resolved and resolved.path.is_relative_to(context.config.root / ".archive")):
+                failures.append(context.config.failure(doc.path, ref.line, "SPEC_HISTORY", f"current specification cannot target {ref.target}"))
+    return tuple(failures)
+
+
+def check_cursors(context: Context) -> tuple[Failure, ...]:
+    failures = []
+    for task in context.tasks:
+        doc = task.document
+        fail = lambda line, code, message: context.config.failure(doc.path, line, code, message)
+        values = {v.name: v for v in task.cursor}
+        for name in ("State", "State path", "Resume at"):
+            if not task.value(name).text:
+                failures.append(fail(1, "TASK_CURSOR", f"Resume block has no {name} field"))
+        state = task.state
+        steps = [s.strip() for s in literal(task.value("State path").text).split("->")]
+        resume = literal(task.value("Resume at").text)
+        if state and state not in ACTIVE + TERMINAL:
+            failures.append(fail(task.value("State").line, "TASK_CURSOR", f"unknown State `{state}`"))
+        if state and steps[-1] != state:
+            failures.append(fail(task.value("State path").line, "TASK_CURSOR", f"State `{state}` is not the final State path entry `{steps[-1]}`"))
+        if task.archived and state not in TERMINAL:
+            failures.append(fail(task.value("State").line, "TASK_ARCHIVE", f"archived Task retains active State `{state}`"))
+        if state in TERMINAL and resume != "NONE":
+            failures.append(fail(task.value("Resume at").line, "TASK_CURSOR", f"terminal State `{state}` must have Resume at `NONE`"))
+        if state in ACTIVE and (not resume or resume == "NONE"):
+            failures.append(fail(task.value("Resume at").line, "TASK_CURSOR", f"active State `{state}` needs a concrete Resume at"))
+        if task.archived and (not context.config.include_archive or doc.path.parent.name in context.legacy):
+            continue
+        if doc.section("Resume") is None:
+            failures.append(fail(1, "TASK_CURSOR", "Task requires a Resume section"))
+        if steps[0] != "DEFINE" or any(step not in ACTIVE + TERMINAL for step in steps) or any(step in TERMINAL for step in steps[:-1]):
+            failures.append(fail(task.value("State path").line, "TASK_CURSOR", "State path must start at DEFINE and contain only valid transitions before its final State"))
+        counts = Counter(v.name for v in task.cursor)
+        for name in ("State", "State path", "Resume at", "Contract version", "Open obligations"):
+            if counts[name] > 1:
+                failures.append(fail(values[name].line, "TASK_CURSOR", f"duplicate Resume field: {name}"))
+    return tuple(failures)
+
+
+def check_tasks(context: Context) -> tuple[Failure, ...]:
+    failures = []
+    spec_paths = {doc.path for doc in spec_tree(context).documents}
+    for task in context.tasks:
+        doc = task.document
+        if task.archived and (not context.config.include_archive or doc.path.parent.name in context.legacy):
+            continue
+        fail = lambda line, code, message: context.config.failure(doc.path, line, code, message)
+        if task.version != "2":
+            failures.append(fail(1, "TASK_VERSION", "Task must declare Contract version `2`"))
+        obligations = task.value("Open obligations")
+        if not obligations.text:
+            failures.append(fail(1, "TASK_OBLIGATIONS", "Open obligations field is missing"))
+        elif task.state in TERMINAL and literal(obligations.text) != "NONE":
+            failures.append(fail(obligations.line, "TASK_OBLIGATIONS", "terminal Task must have Open obligations `NONE`"))
+        impact = doc.section("Specification impact")
+        values = doc.values(impact) if impact else {}
+        for name in ("Current contract", "Proposed delta", "Terminal publication"):
+            if name not in values or not values[name].text.strip():
+                failures.append(fail(impact.start if impact else 1, "TASK_SPEC", f"Specification impact requires {name}"))
+        publication = values.get("Terminal publication")
+        if publication and task.state in TERMINAL and literal(publication.text) == "PENDING":
+            failures.append(fail(publication.line, "TASK_SPEC", "terminal Task cannot have Terminal publication `PENDING`"))
+        elif publication and task.state in ACTIVE and literal(publication.text) != "PENDING":
+            failures.append(fail(publication.line, "TASK_SPEC", "active Task must have Terminal publication `PENDING`"))
+        for name in ("Current contract", "Terminal publication"):
+            value = values.get(name)
+            if value is None or re.match(r"^`?NONE`?(?:\.|\s|$)", value.text) or (name == "Terminal publication" and task.state in ACTIVE):
+                continue
+            if name == "Terminal publication" and literal(value.text) == "PENDING":
+                continue
+            refs = value_references(doc, value)
+            valid = bool(refs)
+            for ref in refs:
+                target, _ = resolve(context, ref)
+                if not ref.target.startswith("framework:") or target is None or target.path not in spec_paths:
+                    valid = False
+            if not valid:
+                failures.append(fail(value.line, "TASK_SPEC", f"{name} must name current specification references or NONE"))
+    return tuple(failures)
+
+
+def verification(context: Context, target: Resolved) -> Optional[tuple[str, tuple[Reference, ...]]]:
+    doc = context.document(target.path)
+    if doc is None:
+        try:
+            doc = parse_document(target.path, target.path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError):
+            return None
+    if not target.anchor:
+        return None
+    positions = [line for name, line in doc.anchors if name == target.anchor]
+    if len(positions) != 1:
+        return None
+    line = positions[0]
+    verify = doc.section("Verify")
+    if verify and verify.start < line < verify.end:
+        following = next((s for s in doc.sections if s.start > line), None)
+        if following is None or not following.title.startswith("Verification:") or following.start >= verify.end:
+            return None
+        fields = doc.values(following)
+        required = ("Claim", "Method", "Evidence considered", "Conclusion", "Limitations")
+        if any(name not in fields or not fields[name].text for name in required):
+            return None
+        conclusion = re.match(r"`?(UNVERIFIED|VERIFIED|REFUTED|DISPUTED)\b", fields["Conclusion"].text)
+        refs = value_references(doc, fields["Claim"])
+    else:
+        section = doc.section("Conclusion")
+        if section is None or not section.start < line < section.end or not doc.sections or not doc.sections[0].title.startswith("Verification:"):
+            return None
+        for name in ("Claim", "Method", "Evidence considered"):
+            field = doc.section(name)
+            if field is None or not any(s.strip() for s in doc.lines[field.start:field.end - 1]):
+                return None
+        if not (doc.section("Limitations") or doc.section("Remaining uncertainty")):
+            return None
+        fields = doc.values(section)
+        result = fields.get("Result") or fields.get("State")
+        conclusion = re.match(r"`?(UNVERIFIED|VERIFIED|REFUTED|DISPUTED)\b", result.text) if result else None
+        claim_section = doc.section("Claim")
+        refs = tuple(r for r in references(doc) if claim_section.start < r.line < claim_section.end)
+        claim_values = doc.values(claim_section)
+        reference = claim_values.get("Reference")
+        if reference and literal(reference.text) == "LOCAL":
+            local_sections = [s for s in doc.sections if claim_section.start < s.start < claim_section.end and s.level == claim_section.level + 1]
+            local_anchors = [preceding_anchor(doc, section.start) for section in local_sections]
+            refs += tuple(Reference(doc.path, reference.line, f"#{anchor}") for anchor in local_anchors if anchor)
+    return (conclusion[1], refs) if conclusion and refs else None
+
+
+def claim_records(context: Context) -> tuple[tuple[ClaimRecord, ...], tuple[Failure, ...]]:
+    failures = []
+    result = []
+    checked = {doc.path for doc in context.checked()}
+    for task in context.tasks:
+        doc = task.document
+        if doc.path not in checked:
+            continue
+        for title in ("Success criteria", "Material empirical premises"):
+            parent = doc.section(title)
+            if parent is None:
+                failures.append(context.config.failure(doc.path, 1, "CLAIM_SECTION", f"Task requires {title}"))
+                continue
+            sections = [s for s in doc.sections if parent.start < s.start < parent.end and s.level == parent.level + 1]
+            if not sections and title == "Success criteria":
+                failures.append(context.config.failure(doc.path, parent.start, "CLAIM_RECORD", "Success criteria requires a Claim record"))
+            result.extend(ClaimRecord(doc, section, task.state == "COMPLETED" and title == "Success criteria") for section in sections)
+    task_paths = {task.document.path for task in context.tasks}
+    for doc in context.checked():
+        if doc.path in task_paths or doc.path.is_relative_to(context.config.root / "templates") or not doc.sections:
+            continue
+        first = doc.sections[0].title
+        if first == "Knowledge" or first.startswith("Knowledge:"):
+            section = doc.section("Claim")
+            if section:
+                result.append(ClaimRecord(doc, section))
+        elif first == "Open Claim" or first.startswith("Open Claim:"):
+            section = doc.section("Claim")
+            if section:
+                result.append(ClaimRecord(doc, section))
+        elif first == "Decision" or first.startswith("Decision:"):
+            parent = doc.section("Verification claims")
+            if parent:
+                result.extend(ClaimRecord(doc, section) for section in doc.sections if parent.start < section.start < parent.end and section.level == parent.level + 1)
+        elif first.startswith("Verification:"):
+            parent = doc.section("Claim")
+            reference = doc.values(parent).get("Reference") if parent else None
+            if parent and reference and literal(reference.text) == "LOCAL":
+                result.extend(ClaimRecord(doc, section) for section in doc.sections if parent.start < section.start < parent.end and section.level == parent.level + 1)
+        elif first == "Claim" or first.startswith("Claim:"):
+            section = doc.section("Claim")
+            if section:
+                result.append(ClaimRecord(doc, section))
+    return tuple(result), tuple(failures)
+
+
+def check_claims(context: Context) -> tuple[Failure, ...]:
+    records, discovery_failures = claim_records(context)
+    failures = list(discovery_failures)
+    for record in records:
+        doc = record.document
+        section = record.section
+        values = doc.values(section)
+        counts = Counter(v.name for v in doc.fields if section.start < v.line < section.end)
+        for name, count in counts.items():
+            if count > 1:
+                failures.append(context.config.failure(doc.path, values[name].line, "CLAIM_FIELD", f"duplicate Claim field: {name}"))
+        claim = values.get("Claim", Value("Claim", section.start, ""))
+        anchor = claim_anchor(doc, section, claim)
+        if anchor is None:
+            failures.append(context.config.failure(doc.path, claim.line, "CLAIM_ANCHOR", "Claim requires an explicit stable local anchor"))
+        for name in ("Claim", "State", "Scope", "Consequence if false", "Basis"):
+            if name not in values or not values[name].text:
+                failures.append(context.config.failure(doc.path, claim.line, "CLAIM_FIELD", f"Claim requires {name}"))
+        state = values.get("State")
+        if state and literal(state.text) not in CLAIM_STATES:
+            failures.append(context.config.failure(doc.path, state.line, "CLAIM_STATE", f"invalid Claim State: {literal(state.text)}"))
+        if state and record.completed_success and literal(state.text) != "VERIFIED":
+            failures.append(context.config.failure(doc.path, state.line, "CLAIM_STATE", "completed Task requires VERIFIED success Claims"))
+        if not state or literal(state.text) not in ("VERIFIED", "REFUTED", "DISPUTED") or "Basis" not in values:
+            continue
+        basis = values["Basis"]
+        conclusions = []
+        for ref in value_references(doc, basis):
+            resolved, failure = resolve(context, ref)
+            evaluated = verification(context, resolved) if resolved and not failure else None
+            if evaluated:
+                result, claim_refs = evaluated
+                for claim_ref in claim_refs:
+                    target, _ = resolve(context, claim_ref)
+                    direct = anchor and target == Resolved(doc.path, anchor)
+                    promoted = (
+                        doc.sections
+                        and (
+                            doc.sections[0].title == "Knowledge"
+                            or doc.sections[0].title.startswith("Knowledge:")
+                            or doc.sections[0].title == "Open Claim"
+                            or doc.sections[0].title.startswith("Open Claim:")
+                        )
+                        and ref.target.startswith("history:")
+                        and target
+                        and same_claim(values, resolved_claim_values(context, target) or {})
+                    )
+                    if direct or promoted:
+                        conclusions.append(result)
+        message = None
+        if not conclusions:
+            message = "settled Basis must resolve to an explicit Verification conclusion"
+        elif any(result != literal(state.text) for result in conclusions):
+            message = f"Verification conclusion does not supply Claim State `{literal(state.text)}`"
+        if message:
+            failures.append(context.config.failure(doc.path, basis.line, "CLAIM_BASIS", message))
+    return tuple(failures)
+
+
+def check_index(context: Context) -> tuple[Failure, ...]:
+    config = context.config
+    path = config.root / "INDEX.md"
+    doc = context.document(path)
+    if doc is None:
+        return (config.failure(path, 1, "INDEX", "INDEX.md is missing"),)
+    section = doc.section("Active Tasks")
+    if section is None:
+        return (config.failure(path, 1, "INDEX", "no Active Tasks section"),)
+    failures = []
+    listed = set()
+    tasks = {task.document.path: task for task in context.tasks}
+    for n in range(section.start, section.end - 1):
+        line = doc.lines[n]
+        match = LINK.search(line)
+        if not match:
+            continue
+        ref = Reference(path, n + 1, match[1] or match[2])
+        resolved, failure = resolve(context, ref)
+        if not resolved:
+            failures.append(config.failure(path, n + 1, "INDEX_TASK", f"lists a Task that does not exist: {ref.target}"))
+            continue
+        if resolved.path in listed:
+            failures.append(config.failure(path, n + 1, "INDEX_TASK", f"duplicate Task entry: {ref.target}"))
+        listed.add(resolved.path)
+        task = tasks.get(resolved.path)
+        if task is None:
+            failures.append(config.failure(path, n + 1, "INDEX_TASK", f"entry is not a Task: {ref.target}"))
+            continue
+        state = re.search(r"State:\s*`([^`]+)`", "\n".join(doc.lines[n:min(n + 3, section.end - 1)]))
+        if state is None or state[1] != task.state:
+            failures.append(config.failure(path, n + 1, "INDEX_STATE", f"{ref.target} is `{task.state}`, index says `{state[1] if state else '?'}`"))
+        if task.state in TERMINAL or task.archived:
+            failures.append(config.failure(path, n + 1, "INDEX_TASK", f"terminal Task still listed: {ref.target}"))
+    for task in context.tasks:
+        if not task.archived and task.state in ACTIVE and task.document.path not in listed:
+            failures.append(config.failure(path, section.start, "INDEX_TASK", f"active Task is not listed: {task.document.path.relative_to(config.root).as_posix()}"))
+    return tuple(failures)
+
+
+CHECKS = (
+    check_conversion,
+    check_placeholders,
+    check_references,
+    check_spec,
+    check_cursors,
+    check_tasks,
+    check_claims,
+    check_index,
+)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent, help="framework root (default: this script's parent directory's parent)")
+    parser.add_argument("--include-archive", action="store_true", help="also validate archived v2 Task bundles")
+    args = parser.parse_args()
+    try:
+        root = args.root.resolve()
+        if not root.is_dir():
+            parser.error(f"framework root is not a directory: {args.root}")
+        next(root.iterdir(), None)
+    except (OSError, RuntimeError, ValueError):
+        parser.error(f"framework root is unusable: {args.root}")
+    context = load_context(Config(root, args.include_archive))
+    failures = set(context.failures)
+    for check in CHECKS:
+        failures.update(check(context))
+    for failure in sorted(failures):
+        print(failure.render())
+    if not failures:
+        print("capsule is consistent")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
