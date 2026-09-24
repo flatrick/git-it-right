@@ -40,7 +40,9 @@ is available through its archived bundle, not through this index.
 
 ## Self-improvement
 
-`NONE`. No entry has been recorded yet.
+- [Self-improvement log](SELF-IMPROVEMENT/) — one entry per framework
+  change or friction noticed, per
+  [Self-improvement log](rules/self-improvement-log.md).
 
 ## Commands
 
