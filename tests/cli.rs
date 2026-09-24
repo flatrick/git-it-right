@@ -43,6 +43,12 @@ impl Repo {
         String::from_utf8_lossy(&out.stdout).trim_end().to_string()
     }
 
+    fn git_with(&self, args: &[&str], envs: &[(&str, &str)]) -> String {
+        let out = self.cmd("git").args(args).envs(envs.iter().copied()).output().unwrap();
+        assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
+        String::from_utf8_lossy(&out.stdout).trim_end().to_string()
+    }
+
     fn gir(&self, args: &[&str]) -> Output {
         self.cmd(env!("CARGO_BIN_EXE_gir")).args(args).output().unwrap()
     }
@@ -145,6 +151,53 @@ fn fixup_finds_the_target_from_staged_lines_and_autosquash_folds_it() {
     repo.git(&["-c", "sequence.editor=:", "rebase", "-q", "--autosquash", "main"]);
     assert_eq!(repo.git(&["log", "--format=%s", "main..topic"]), "feat: add b\nfeat: add a");
     assert_eq!(repo.git(&["show", "HEAD~1:a.txt"]), "one\nTWO\nthree");
+}
+
+/// Checks every row of the fixup table in CHEATSHEET.md against real git.
+#[test]
+fn cheatsheet_fixup_table_matches_git() {
+    let repo = Repo::new();
+    repo.commit_file("base.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    for name in ["a", "b", "c", "d"] {
+        repo.commit_file(&format!("{name}.txt"), "1\n", &format!("feat: add {name}"));
+    }
+    let sha = |subject: &str| repo.git(&["log", "--format=%H", "--grep", &format!("^{subject}$"), "topic"]);
+    let (a, b, c, d) = (sha("feat: add a"), sha("feat: add b"), sha("feat: add c"), sha("feat: add d"));
+
+    let log = repo.dir.parent().unwrap().join("editor.log");
+    let log_path = log.to_string_lossy().replace('\\', "/");
+    let editor = r#"f() { echo called >> "$EDLOG"; if [ -n "$NEWMSG" ]; then printf '%s\n' "$NEWMSG" > "$1"; fi; }; f"#;
+    let with_msg = |msg: &'static str| [("GIT_EDITOR", editor), ("EDLOG", log_path.as_str()), ("NEWMSG", msg)];
+
+    // Row 1, add forgotten changes and keep the message: fixup!
+    repo.write("a.txt", "2\n");
+    repo.git(&["add", "a.txt"]);
+    repo.git(&["commit", "-q", &format!("--fixup={a}")]);
+    // Row 2, add changes and write a new message: amend!
+    repo.write("b.txt", "2\n");
+    repo.git(&["add", "b.txt"]);
+    repo.git_with(&["commit", "-q", &format!("--fixup=amend:{b}")], &with_msg("amend! feat: add b\n\nfeat: add b with retries"));
+    // Row 3, only change the message: reword
+    repo.git_with(&["commit", "-q", &format!("--fixup=reword:{c}")], &with_msg("amend! feat: add c\n\nfeat: add c, reworded"));
+    // Row 4, add changes and merge both messages: squash!
+    repo.write("d.txt", "2\n");
+    repo.git(&["add", "d.txt"]);
+    repo.git(&["commit", "-q", &format!("--squash={d}"), "-m", "extra detail"]);
+
+    let _ = std::fs::remove_file(&log);
+    repo.git_with(&["rebase", "-q", "--autosquash", "main"], &with_msg("feat: add d\n\nextra detail"));
+
+    assert_eq!(
+        repo.git(&["log", "--format=%s", "main..topic"]),
+        "feat: add d\nfeat: add c, reworded\nfeat: add b with retries\nfeat: add a",
+        "fixup keeps, amend and reword replace, squash takes the edited message"
+    );
+    for (file, want) in [("a.txt", "2"), ("b.txt", "2"), ("c.txt", "1"), ("d.txt", "2")] {
+        assert_eq!(repo.git(&["show", &format!("HEAD:{file}")]), want, "{file}");
+    }
+    let calls = std::fs::read_to_string(&log).unwrap_or_default();
+    assert_eq!(calls.lines().count(), 1, "the rebase should open the editor only for squash!, got:\n{calls}");
 }
 
 #[test]
