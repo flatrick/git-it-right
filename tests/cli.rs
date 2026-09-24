@@ -1,0 +1,231 @@
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+
+struct Repo {
+    _tmp: tempfile::TempDir,
+    dir: PathBuf,
+    global: PathBuf,
+}
+
+impl Repo {
+    fn new() -> Repo {
+        let tmp = tempfile::tempdir().unwrap();
+        let dir = tmp.path().join("repo");
+        std::fs::create_dir(&dir).unwrap();
+        let global = tmp.path().join("gitconfig");
+        std::fs::write(&global, "[user]\n\tname = T\n\temail = t@example.com\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n").unwrap();
+        let repo = Repo { _tmp: tmp, dir, global };
+        repo.git(&["init", "-q"]);
+        repo
+    }
+
+    fn cmd(&self, program: &str) -> Command {
+        let bin_dir = Path::new(env!("CARGO_BIN_EXE_gir")).parent().unwrap().to_path_buf();
+        let mut paths = vec![bin_dir];
+        paths.extend(std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()));
+        let mut c = Command::new(program);
+        c.current_dir(&self.dir)
+            .env("PATH", std::env::join_paths(paths).unwrap())
+            .env("GIT_CONFIG_GLOBAL", &self.global)
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env_remove("GIT_DIR")
+            .env_remove("GIT_WORK_TREE");
+        c
+    }
+
+    fn git_out(&self, args: &[&str]) -> Output {
+        self.cmd("git").args(args).output().unwrap()
+    }
+
+    fn git(&self, args: &[&str]) -> String {
+        let out = self.git_out(args);
+        assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
+        String::from_utf8_lossy(&out.stdout).trim_end().to_string()
+    }
+
+    fn gir(&self, args: &[&str]) -> Output {
+        self.cmd(env!("CARGO_BIN_EXE_gir")).args(args).output().unwrap()
+    }
+
+    fn write(&self, rel: &str, content: &str) {
+        let p = self.dir.join(rel);
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(p, content).unwrap();
+    }
+
+    fn commit_file(&self, rel: &str, content: &str, msg: &str) {
+        self.write(rel, content);
+        self.git(&["add", rel]);
+        self.git(&["commit", "-q", "--no-verify", "-m", msg]);
+    }
+
+    fn head_message(&self) -> String {
+        self.git(&["log", "-1", "--format=%B"])
+    }
+}
+
+fn stderr(o: &Output) -> String {
+    String::from_utf8_lossy(&o.stderr).to_string()
+}
+
+#[test]
+fn commit_msg_hook_fixes_and_rejects_through_real_git_commit() {
+    let repo = Repo::new();
+    assert!(repo.gir(&["init"]).status.success());
+    assert_eq!(repo.git(&["config", "core.hooksPath"]), ".githooks");
+
+    repo.write("a.txt", "a\n");
+    repo.git(&["add", "a.txt"]);
+    let ok = repo.git_out(&["commit", "-q", "-m", "Feature(api) :Add a.", "-m", "breaking change: renamed"]);
+    assert!(ok.status.success(), "{}", stderr(&ok));
+    assert_eq!(repo.head_message(), "feat(api): Add a\n\nBREAKING CHANGE: renamed");
+    let err = stderr(&ok);
+    assert!(err.contains("gir: fixed [type-alias]"), "{err}");
+
+    repo.write("b.txt", "b\n");
+    repo.git(&["add", "b.txt"]);
+    let bad = repo.git_out(&["commit", "-q", "-m", "update stuff"]);
+    assert!(!bad.status.success());
+    let err = stderr(&bad);
+    assert!(err.contains("gir: commit rejected [type-missing]"), "{err}");
+    assert!(err.contains("  try: <type>: update stuff"), "{err}");
+    assert!(err.contains("  more: gir explain type-missing"), "{err}");
+    assert!(err.lines().filter(|l| l.starts_with("gir:") || l.starts_with("  ")).count() <= 3, "{err}");
+}
+
+#[test]
+fn commit_msg_hook_keeps_comments_and_verbose_diff_out_of_the_way() {
+    let repo = Repo::new();
+    let raw = "Feat: x\nbody\n# Please enter the commit message\n# ------------------------ >8 ------------------------\ndiff --git a/x b/x\n+feat: not a header\n";
+    repo.write("MSG", raw);
+    let out = repo.gir(&["hook", "commit-msg", "MSG"]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    let fixed = std::fs::read_to_string(repo.dir.join("MSG")).unwrap();
+    assert!(fixed.starts_with("feat: x\n\nbody\n\n# Please enter"), "{fixed}");
+    assert!(fixed.ends_with("diff --git a/x b/x\n+feat: not a header\n"), "{fixed}");
+}
+
+#[test]
+fn pre_push_rejects_unsquashed_fixups_and_no_verify_commits() {
+    let repo = Repo::new();
+    let remote = repo.dir.parent().unwrap().join("remote.git");
+    repo.git(&["init", "-q", "--bare", remote.to_str().unwrap()]);
+    repo.git(&["remote", "add", "origin", remote.to_str().unwrap()]);
+    assert!(repo.gir(&["init"]).status.success());
+    repo.git(&["commit", "-q", "-m", "chore: add gir setup"]);
+    repo.git(&["push", "-q", "origin", "main"]);
+
+    repo.commit_file("a.txt", "a\n", "feat: add a");
+    repo.commit_file("a.txt", "a2\n", "fixup! feat: add a");
+    let push = repo.git_out(&["push", "-q", "origin", "main"]);
+    assert!(!push.status.success());
+    assert!(stderr(&push).contains("[fixup-unsquashed]"), "{}", stderr(&push));
+
+    repo.git(&["reset", "-q", "--hard", "HEAD~1"]);
+    repo.commit_file("b.txt", "b\n", "wip");
+    let push = repo.git_out(&["push", "-q", "origin", "main"]);
+    assert!(!push.status.success());
+    assert!(stderr(&push).contains("push rejected [type-missing]"), "{}", stderr(&push));
+}
+
+#[test]
+fn fixup_finds_the_target_from_staged_lines_and_autosquash_folds_it() {
+    let repo = Repo::new();
+    repo.commit_file("base.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("a.txt", "one\ntwo\nthree\n", "feat: add a");
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+
+    repo.write("a.txt", "one\nTWO\nthree\n");
+    repo.git(&["add", "a.txt"]);
+    let out = repo.gir(&["fixup"]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    assert_eq!(repo.git(&["log", "-1", "--format=%s"]), "fixup! feat: add a");
+
+    repo.git(&["-c", "sequence.editor=:", "rebase", "-q", "--autosquash", "main"]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..topic"]), "feat: add b\nfeat: add a");
+    assert_eq!(repo.git(&["show", "HEAD~1:a.txt"]), "one\nTWO\nthree");
+}
+
+#[test]
+fn fixup_refuses_ambiguous_and_base_branch_targets() {
+    let repo = Repo::new();
+    repo.commit_file("base.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("a.txt", "a\n", "feat: add a");
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+
+    repo.write("a.txt", "A\n");
+    repo.write("b.txt", "B\n");
+    repo.git(&["add", "a.txt", "b.txt"]);
+    let out = repo.gir(&["fixup"]);
+    assert!(!out.status.success());
+    assert!(stderr(&out).contains("several commits"), "{}", stderr(&out));
+
+    repo.git(&["reset", "-q", "--hard"]);
+    repo.write("base.txt", "BASE\n");
+    repo.git(&["add", "base.txt"]);
+    let out = repo.gir(&["fixup"]);
+    assert!(!out.status.success());
+    assert!(stderr(&out).contains("already on the base branch"), "{}", stderr(&out));
+}
+
+#[test]
+fn lint_range_reports_json_per_commit() {
+    let repo = Repo::new();
+    repo.commit_file("a.txt", "a\n", "chore: base");
+    repo.commit_file("b.txt", "b\n", "Added b");
+    let out = repo.gir(&["lint", "--range", "HEAD~1..HEAD", "--json"]);
+    assert_eq!(out.status.code(), Some(1));
+    let json = String::from_utf8_lossy(&out.stdout);
+    assert!(json.starts_with("[{\"commit\":\""), "{json}");
+    assert!(json.contains("\"rule\":\"type-missing\""), "{json}");
+}
+
+#[test]
+fn doctor_fix_converges() {
+    let repo = Repo::new();
+    repo.write("Cargo.toml", "[package]\n");
+    repo.commit_file("run.sh", "#!/bin/sh\n", "chore: base");
+    let first = repo.gir(&["doctor"]);
+    assert_eq!(first.status.code(), Some(1));
+    let report = String::from_utf8_lossy(&first.stdout).to_string();
+    for id in [".gitattributes", ".gitignore: does not ignore: /target/", "exec-bit", "rebase.autoSquash"] {
+        assert!(report.contains(id), "{id} missing from:\n{report}");
+    }
+
+    assert!(repo.gir(&["init"]).status.success());
+    repo.gir(&["doctor", "--fix"]);
+    let second = repo.gir(&["doctor"]);
+    let report = String::from_utf8_lossy(&second.stdout).to_string();
+    assert!(!report.lines().any(|l| l.starts_with("warn ")), "{report}");
+    assert_eq!(second.status.code(), Some(0), "{report}");
+    assert!(repo.dir.join(".gitattributes").exists());
+    assert_eq!(repo.git(&["config", "--local", "rebase.autoSquash"]), "true");
+}
+
+#[test]
+fn init_is_idempotent_and_keeps_user_edits() {
+    let repo = Repo::new();
+    assert!(repo.gir(&["init"]).status.success());
+    let again = repo.gir(&["init"]);
+    assert!(again.status.success());
+    assert!(!stderr(&again).contains("wrote"), "{}", stderr(&again));
+
+    repo.write(".girconfig", "[gir]\n\ttypes = feat fix\n");
+    let kept = repo.gir(&["init"]);
+    assert_eq!(kept.status.code(), Some(1));
+    assert!(stderr(&kept).contains("kept .girconfig"));
+}
+
+#[test]
+fn explain_every_listed_topic() {
+    let repo = Repo::new();
+    let list = String::from_utf8_lossy(&repo.gir(&["explain"]).stdout).to_string();
+    let topics: Vec<&str> = list.trim().trim_start_matches("topics: ").split(' ').collect();
+    assert!(topics.len() > 15);
+    for t in topics {
+        let out = repo.gir(&["explain", t]);
+        assert!(out.status.success() && !out.stdout.is_empty(), "{t}");
+    }
+}
