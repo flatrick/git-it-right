@@ -11,3 +11,6 @@
 | `req-cli-unknown-short-option` | `unknown_short_flags_and_bad_arguments_exit_two` | `tests/args.rs:161-165` asserts both short-flag messages and exit `2` |
 | `req-cli-bad-arguments` | `unknown_short_flags_and_bad_arguments_exit_two` | `tests/args.rs:169-171` asserts exit `2`, the message and the usage text |
 | `req-cli-lint-arguments` | `unknown_short_flags_and_bad_arguments_exit_two` | `tests/args.rs:176-177` |
+| `req-cli-hook-arguments` | `hook_takes_its_documented_arguments` | `tests/args.rs:186-194` asserts `unknown hook` for bad hook names and counts, bad arguments for a bare `gir hook`, and extra pre-push arguments accepted |
+| `req-cli-repository-root` | `repository_commands_work_from_a_subdirectory` | `tests/args.rs:210-221` asserts doctor sees root files, fixup finds its target, and init stages both hooks from a subdirectory |
+| `req-cli-runtime-error` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:239-240` asserts git's own output precedes gir's single final message |

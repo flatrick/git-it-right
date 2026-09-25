@@ -18,6 +18,7 @@
 | `req-lint-scope-required` | `cc::tests::scope_rules_follow_config` | `src/cc/tests.rs:83` |
 | `req-lint-scope-unknown` | `cc::tests::scope_rules_follow_config` | `src/cc/tests.rs:84-85` asserts unknown rejected and listed accepted |
 | `req-lint-desc-empty` | `cc::tests::unfixable_messages_are_rejected_with_a_hint` | `src/cc/tests.rs:76` |
+| `req-lint-desc-empty` | `cc::tests::description_left_empty_by_period_fix_is_desc_empty` | `src/cc/tests.rs:135` |
 | `req-lint-header-length` | `cc::tests::unfixable_messages_are_rejected_with_a_hint` | `src/cc/tests.rs:77` |
 | `req-lint-spec` | `cc::tests::invalid_conventional_scope_is_rejected_as_spec` | `src/cc/tests.rs:128-129` asserts an otherwise accepted header with nested scope syntax fails with only rule `spec` |
 | `req-lint-valid-unchanged` | `cc::tests::spec_examples_pass_untouched` | `src/cc/tests.rs:24-25` asserts no fixes, no violations, same text |

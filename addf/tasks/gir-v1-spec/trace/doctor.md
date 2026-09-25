@@ -20,16 +20,16 @@
 | `req-doctor-user-identity` | `doctor_suggests_missing_identity_and_default_branch_without_setting_them` | `tests/doctor.rs:136,141-142` asserts each identity warning remains and neither key is set locally. |
 | `req-doctor-default-branch` | `doctor_suggests_missing_identity_and_default_branch_without_setting_them` | `tests/doctor.rs:138,144-145` asserts the exact info line and unchanged local config. |
 | `req-doctor-gitattributes-content` | `doctor_writes_complete_gitattributes_and_editorconfig` | `tests/doctor.rs:155,157,160` asserts the LF, CRLF, and binary rules in the created file. |
-| `req-doctor-gitattributes-autocrlf` | `doctor_reports_autocrlf_when_gitattributes_is_missing` | `tests/doctor.rs:172` asserts the exact extended warning. |
-| `req-doctor-gitattributes-rule` | `doctor_does_not_replace_readable_gitattributes_without_auto_rule` | `tests/doctor.rs:180,182-183` asserts the info line and unchanged file after `--fix`. |
+| `req-doctor-gitattributes-autocrlf` | `doctor_reports_autocrlf_when_gitattributes_is_missing` | `tests/doctor.rs:180` asserts the exact extended warning. |
+| `req-doctor-gitattributes-rule` | `doctor_does_not_replace_readable_gitattributes_without_auto_rule` | `tests/doctor.rs:188,190-191` asserts the info line and unchanged file after `--fix`. |
 | `req-doctor-editorconfig` | `doctor_writes_complete_gitattributes_and_editorconfig` | `tests/doctor.rs:153,163-164` asserts fixed status and the created file's required settings. |
-| `req-doctor-girconfig` | `doctor_reports_invalid_girconfig_without_editing_it` | `tests/doctor.rs:191,193-194` asserts the error line and unchanged file. |
-| `req-doctor-ignore-rules` | `doctor_appends_missing_ignore_rules_after_newline` | `tests/doctor.rs:204,207,209,211` asserts missing patterns, fixed status, newline, and appended rules. |
-| `req-doctor-ignore-patterns` | `doctor_checks_stack_and_local_directory_ignore_patterns_when_present` | `tests/doctor.rs:222-225,230,232` asserts stack and local patterns appear when relevant and `/target/` stays absent without Cargo. |
-| `req-doctor-ignore-patterns` | `doctor_appends_missing_ignore_rules_after_newline` | `tests/doctor.rs:204,211` asserts the three universal patterns and Cargo pattern. |
-| `req-doctor-tracked-ignore-probes` | `doctor_does_not_warn_for_exact_tracked_ignore_probe` | `tests/doctor.rs:241-242` asserts the tracked `.env` probe is absent from ignore warnings. |
-| `req-doctor-git-cliff` | `doctor_reports_missing_git_cliff_on_path` | `tests/doctor.rs:252` asserts the missing-program info line with a controlled PATH. |
-| `req-doctor-case-collision` | `doctor_reports_case_collisions_without_renaming_index_entries` | `tests/doctor.rs:264-265,267-268` asserts warning, paths, and unchanged index after `--fix`. |
-| `req-doctor-windows-names` | `doctor_reports_windows_unsafe_index_names_without_renaming` | `tests/doctor.rs:280,282-283` asserts warning, paths, and unchanged index after `--fix`. |
-| `req-doctor-index-clean` | `doctor_counts_clean_index_as_ok_without_index_warnings` | `tests/doctor.rs:290-293` asserts no index warnings and one OK check in the summary. |
-| `req-doctor-ignore-patterns` | `doctor_checks_each_stack_pattern_for_its_marker` | `tests/doctor.rs:309-311` asserts every stack marker's patterns appear without unrelated Cargo ignores. |
+| `req-doctor-girconfig` | `doctor_reports_invalid_girconfig_without_editing_it` | `tests/doctor.rs:199,201-202` asserts the error line and unchanged file. |
+| `req-doctor-ignore-rules` | `doctor_appends_missing_ignore_rules_after_newline` | `tests/doctor.rs:212,215,217,219` asserts missing patterns, fixed status, newline, and appended rules. |
+| `req-doctor-ignore-patterns` | `doctor_checks_stack_and_local_directory_ignore_patterns_when_present` | `tests/doctor.rs:230-233,238,240` asserts stack and local patterns appear when relevant and `/target/` stays absent without Cargo. |
+| `req-doctor-ignore-patterns` | `doctor_appends_missing_ignore_rules_after_newline` | `tests/doctor.rs:212,219` asserts the three universal patterns and Cargo pattern. |
+| `req-doctor-tracked-ignore-probes` | `doctor_does_not_warn_for_exact_tracked_ignore_probe` | `tests/doctor.rs:249-250` asserts the tracked `.env` probe is absent from ignore warnings. |
+| `req-doctor-git-cliff` | `doctor_reports_missing_git_cliff_on_path` | `tests/doctor.rs:260` asserts the missing-program info line with a controlled PATH. |
+| `req-doctor-case-collision` | `doctor_reports_case_collisions_without_renaming_index_entries` | `tests/doctor.rs:272-273,275-276` asserts warning, paths, and unchanged index after `--fix`. |
+| `req-doctor-windows-names` | `doctor_reports_windows_unsafe_index_names_without_renaming` | `tests/doctor.rs:288,290-291` asserts warning, paths, and unchanged index after `--fix`. |
+| `req-doctor-index-clean` | `doctor_counts_clean_index_as_ok_without_index_warnings` | `tests/doctor.rs:298-301` asserts no index warnings and one OK check in the summary. |
+| `req-doctor-ignore-patterns` | `doctor_checks_each_stack_pattern_for_its_marker` | `tests/doctor.rs:317-319` asserts every stack marker's patterns appear without unrelated Cargo ignores. |

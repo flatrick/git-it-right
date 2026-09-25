@@ -28,7 +28,10 @@ The accepted flags are `init --force`, `lint --fix --json --range`, `fixup --dry
 **unknown-short-option.** Before a subcommand, a short flag other than `-h` and `-V` SHALL print `gir: invalid option '-C'` (with the given letter) on stderr and exit `2`; after a subcommand, a short flag other than `-h` SHALL print `gir: unknown option -C` on stderr and exit `2`.
 
 <a id="req-cli-bad-arguments"></a>
-**bad-arguments.** An unknown subcommand, or a known subcommand other than `lint` with the wrong number of positional arguments, SHALL print `gir: bad arguments for` followed by the subcommand and the usage text on stderr, and exit `2`.
+**bad-arguments.** An unknown subcommand, `gir hook` without a hook name, or a known subcommand other than `lint` and `hook` with the wrong number of positional arguments, SHALL print `gir: bad arguments for` followed by the subcommand and the usage text on stderr, and exit `2`.
+
+<a id="req-cli-hook-arguments"></a>
+**hook-arguments.** `gir hook commit-msg` SHALL take exactly one file and `gir hook pre-push` SHALL take the remote and ignore any further arguments; any other hook name or argument count SHALL print ``gir: unknown hook `NAME` `` on stderr and exit `2`.
 
 <a id="req-cli-lint-arguments"></a>
 **lint-arguments.** `gir lint` with more than one positional argument, or with a positional argument and `--range`, SHALL print ``gir: gir lint takes one file, `-`, or --range`` on stderr and exit `2`.
@@ -37,6 +40,10 @@ The accepted flags are `init --force`, `lint --fix --json --range`, `fixup --dry
 
 <a id="req-cli-runtime-error"></a>
 **runtime-error.** Any error that stops a command (an unreadable file, an invalid `.girconfig`, a failing git call) SHALL print one message prefixed `gir: ` on stderr and exit `2`.
+Output from a git command that gir runs with inherited stdio (the `git commit` of `gir fixup`) SHALL appear before that message.
+
+<a id="req-cli-repository-root"></a>
+**repository-root.** `gir init`, `gir doctor` and `gir fixup` SHALL behave the same when run from any directory inside the repository as from its root.
 
 ## Module invariants
 

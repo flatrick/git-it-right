@@ -17,3 +17,4 @@
 | `req-config-invalid-value` | `invalid_values_report_key_value_expected_form_and_exit_two` | `tests/config.rs:126-131` |
 | `req-config-unknown-key` | `unknown_gir_key_reports_error_while_other_sections_are_ignored` | `tests/config.rs:140-141` |
 | `req-config-explain-tolerates-invalid` | `explain_uses_defaults_when_config_is_invalid` | `tests/config.rs:150-152` |
+| `req-config-malformed` | `malformed_config_fails_and_config_without_gir_keys_uses_defaults` | `tests/config.rs:161-165` |

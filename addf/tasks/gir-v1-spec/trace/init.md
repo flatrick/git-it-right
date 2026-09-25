@@ -8,7 +8,7 @@
 | `req-init-local-hook-path` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:9` asserts that Git reads `core.hooksPath` as `.githooks`. |
 | `req-init-accept-force` | `force_replaces_differing_files` | `tests/init.rs:99` asserts that `--force` succeeds. |
 | `req-init-require-repository` | `init_requires_a_repository` | `tests/init.rs:18-19` asserts exit `2` and the repository diagnostic. |
-| `req-init-root-paths` | `init_writes_files_at_the_repository_root_from_a_subdirectory` | `tests/init.rs:217-218` asserts root placement and absence in the current subdirectory. |
+| `req-init-root-paths` | `init_writes_files_at_the_repository_root_from_a_subdirectory` | `tests/init.rs:216-219` asserts exit `0`, root placement and absence in the current subdirectory. |
 | `req-init-success-output` | `init_creates_files_and_reports_each_write` | `tests/init.rs:27-28` asserts empty stdout and the next-step message. |
 | `req-init-hook-files` | `init_creates_files_and_reports_each_write` | `tests/init.rs:33-37` asserts both hook headers and Unix executable permissions. |
 | `req-init-config-file` | `init_creates_files_and_reports_each_write` | `tests/init.rs:41-42` asserts every required config entry and commented example. |

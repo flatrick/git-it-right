@@ -25,6 +25,6 @@
 | `req-fixup-success-message` | `successful_fixup_prints_target_and_base_and_preserves_config` | `tests/fixup.rs:214-215` asserts exit 0 and both exact stderr lines with short target and base IDs. |
 | `req-fixup-success-message` | `success_without_base_prints_base_placeholder` | `tests/fixup.rs:227-228` asserts exit 0 and the `<base>` fallback. |
 | `req-fixup-config-unchanged` | `successful_fixup_prints_target_and_base_and_preserves_config` | `tests/fixup.rs:217-218` asserts global and local Git configuration bytes are unchanged. |
-| `req-fixup-commit-failure` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:237-239` asserts exit 2, the exact failed command fragment and unchanged HEAD. |
+| `req-fixup-commit-failure` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:237-241` asserts exit 2, the exact failed command fragment and unchanged HEAD. |
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_master` | `tests/fixup.rs:122-123` asserts master supplies the base when main is absent. |
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_upstream` | `tests/fixup.rs:135-136` asserts upstream supplies the base when named branches are absent. |

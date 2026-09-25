@@ -1,10 +1,13 @@
 """Check that every requirement in delta/spec/ is traced to a test the suite contains.
 
-usage: python trace.py [--tests <file>]
+usage: python trace.py [--tests <file>] [--follow <rev>]
 
 Without --tests it runs `cargo test -- --list` from the repository root.
 A Test cell of `windows: name` names a test compiled only on that OS; it is
 checked there and listed, not failed, elsewhere.
+--follow REV rewrites every cited line number in trace/ through the diff of
+each cited file between REV and the working tree, then checks as usual. A
+citation inside a changed hunk cannot be mapped and is reported instead.
 Exits 1 when a requirement is untraced, a trace row names an unknown
 requirement, or a trace row names a test the suite does not list.
 """
@@ -31,6 +34,48 @@ def test_span(text, test):
     indent = len(text[start]) - len(text[start].lstrip())
     end = next(n for n in range(start + 1, len(text)) if text[n] == " " * indent + "}")
     return start + 1, end + 1
+
+
+def line_map(rev, path):
+    diff = subprocess.run(
+        ["git", "diff", "-U0", rev, "--", path], cwd=REPO, capture_output=True, text=True, encoding="utf-8", check=True
+    ).stdout
+    hunks = [tuple(int(x or 1) for x in m) for m in re.findall(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@", diff, re.M)]
+
+    def remap(n):
+        shift = 0
+        for old, old_len, new, new_len in hunks:
+            if n < old or (old_len == 0 and n == old):
+                break
+            if n < old + old_len:
+                return None
+            shift = (new + new_len if new_len else new + 1) - (old + old_len if old_len else old + 1)
+        return n + shift
+
+    return remap
+
+
+def follow(rev):
+    cite_spec = re.compile(r"`((?:src|tests)/[\w/.-]+\.rs):([\d,-]+)`")
+    maps = {}
+    unmapped = []
+    for table in sorted((BUNDLE / "trace").glob("*.md")):
+        text = table.read_text(encoding="utf-8")
+
+        def rewrite(m):
+            path, spec = m.groups()
+            remap = maps.setdefault(path, line_map(rev, path))
+            parts = []
+            for part in spec.split(","):
+                ends = [remap(int(x)) for x in part.split("-")]
+                if None in ends:
+                    unmapped.append(f"trace/{table.name}: {path}:{part} is inside a changed hunk")
+                    return m.group()
+                parts.append("-".join(map(str, ends)))
+            return f"`{path}:{','.join(parts)}`"
+
+        table.write_text(cite_spec.sub(rewrite, text), encoding="utf-8")
+    return unmapped
 
 
 def check_cite(path, lines, test):
@@ -65,7 +110,9 @@ def listed_tests(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tests")
+    parser.add_argument("--follow")
     args = parser.parse_args()
+    unmapped = follow(args.follow) if args.follow else []
 
     requirements = {}
     for spec in sorted((BUNDLE / "delta" / "spec").glob("*.md")):
@@ -77,7 +124,7 @@ def main():
                 requirements[anchor] = f"{spec.name}:{n}"
 
     traced = {}
-    problems = []
+    problems = list(unmapped)
     elsewhere = []
     tests = listed_tests(args.tests)
     for table in sorted((BUNDLE / "trace").glob("*.md")):

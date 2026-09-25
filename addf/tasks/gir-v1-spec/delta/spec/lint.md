@@ -48,7 +48,7 @@ When an allowed type is within edit distance 2 of it, and that distance is less 
 **scope-unknown.** With `gir.scopes` set, each comma-separated scope not in that list SHALL be rejected with rule `scope-unknown`; listed scopes SHALL pass.
 
 <a id="req-lint-desc-empty"></a>
-**desc-empty.** An empty description SHALL be rejected with rule `desc-empty`.
+**desc-empty.** A description that is empty, including one left empty by the `desc-period` fix, SHALL be rejected with rule `desc-empty`.
 
 <a id="req-lint-header-length"></a>
 **header-length.** A header longer than `gir.subjectMax` characters after fixes SHALL be rejected with rule `header-length`.

@@ -54,6 +54,9 @@ The default aliases SHALL be `feature` and `bugfix` to `feat` and `fix`, `hotfix
 <a id="req-config-unknown-key"></a>
 **unknown-key.** Any other key under `gir.` SHALL fail with `.girconfig: unknown key` and exit `2`.
 
+<a id="req-config-malformed"></a>
+**malformed.** A `.girconfig` that git cannot parse SHALL fail with `.girconfig: ` followed by git's error and exit `2`; a `.girconfig` with no `gir.` key SHALL mean the defaults.
+
 <a id="req-config-explain-tolerates-invalid"></a>
 **explain-tolerates-invalid.** `gir explain` SHALL fall back to the defaults when `.girconfig` is invalid instead of failing.
 

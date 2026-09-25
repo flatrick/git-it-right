@@ -68,7 +68,7 @@
 **gitattributes-rule.** A readable `.gitattributes` without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
 
 <a id="req-doctor-editorconfig"></a>
-**editorconfig.** When `.editorconfig` does not exist, `gir doctor` SHALL print `info  .editorconfig: missing`; `--fix` SHALL create it with `root = true` and a `[*]` section setting `charset = utf-8`.
+**editorconfig.** When `.editorconfig` does not exist, `gir doctor` SHALL print `info  .editorconfig: missing`; `--fix` SHALL create it with `root = true`; a `[*]` section setting `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`, `indent_style = space` and `indent_size = 4`; `trim_trailing_whitespace = false` for Markdown; `indent_size = 2` for YAML, JSON and TOML; `end_of_line = crlf` for `*.cmd`, `*.bat` and `*.sln`; and `indent_style = tab` for `Makefile`.
 
 <a id="req-doctor-girconfig"></a>
 **girconfig.** If `.girconfig` has an invalid `gir` setting, `gir doctor` SHALL print a `warn  .girconfig:` line describing the error; `--fix` SHALL NOT edit the file.
