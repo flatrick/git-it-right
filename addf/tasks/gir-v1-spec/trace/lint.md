@@ -3,7 +3,7 @@
 | Requirement | Test | Assertion |
 |---|---|---|
 | `req-lint-strip-comments` | `message::tests::strips_comments_and_everything_after_scissors` | `src/message.rs:53` asserts the text excludes the comment, scissors and diff |
-| `req-lint-strip-comments` | `commit_msg_hook_keeps_comments_and_verbose_diff_out_of_the_way` | `tests/cli.rs:108` asserts a diff line shaped like a header does not cause a rejection |
+| `req-lint-strip-comments` | `commit_msg_hook_keeps_comments_and_verbose_diff_out_of_the_way` | `tests/cli.rs:36` asserts a diff line shaped like a header does not cause a rejection |
 | `req-lint-comment-string` | `message::tests::honours_custom_comment_char_and_crlf` | `src/message.rs:61-62` asserts `;` lines are set aside and `#` lines kept |
 | `req-lint-crlf` | `message::tests::honours_custom_comment_char_and_crlf` | `src/message.rs:61` asserts the text has LF only |
 | `req-lint-normalize` | `cc::tests::safe_fixes_are_applied_and_reported` | `src/cc/tests.rs:44-45` on the case at line 40 asserts trailing spaces and blank runs vanish with only `header-spacing` reported |
@@ -27,9 +27,9 @@
 | `req-lint-breaking-footer` | `cc::tests::safe_fixes_are_applied_and_reported` | `src/cc/tests.rs:44-45` on the case at line 38-39 |
 | `req-lint-breaking-footer` | `cc::tests::breaking_change_hyphen_form_is_left_alone` | `src/cc/tests.rs:62` |
 | `req-lint-fix-idempotent` | `cc::tests::fixes_are_idempotent` | `src/cc/tests.rs:54-55` |
-| `req-lint-fixes-do-not-fail` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:86` asserts the commit with four fixes succeeds |
-| `req-lint-fix-line` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:89` asserts `gir: fixed [type-alias]` |
-| `req-lint-rejection-lines` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:96-99` asserts the three lines and the three-line bound |
-| `req-lint-json` | `lint_range_reports_json_per_commit` | `tests/cli.rs:234-235` asserts the array opens with a `commit` key and carries the rule |
+| `req-lint-fixes-do-not-fail` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:14` asserts the commit with four fixes succeeds |
+| `req-lint-fix-line` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:17` asserts `gir: fixed [type-alias]` |
+| `req-lint-rejection-lines` | `commit_msg_hook_fixes_and_rejects_through_real_git_commit` | `tests/cli.rs:24-27` asserts the three lines and the three-line bound |
+| `req-lint-json` | `lint_range_reports_json_per_commit` | `tests/cli.rs:162-163` asserts the array opens with a `commit` key and carries the rule |
 | `req-lint-json-escaping` | `report::tests::json_escapes` | `src/report.rs:81` |
-| `req-lint-range` | `lint_range_reports_json_per_commit` | `tests/cli.rs:232` asserts exit `1` for a bad commit in range |
+| `req-lint-range` | `lint_range_reports_json_per_commit` | `tests/cli.rs:160` asserts exit `1` for a bad commit in range |
