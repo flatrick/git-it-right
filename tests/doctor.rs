@@ -319,3 +319,16 @@ fn doctor_checks_each_stack_pattern_for_its_marker() {
         assert!(!report.contains("/target/"), "{marker} should not require Cargo ignores: {report}");
     }
 }
+
+#[test]
+fn doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision() {
+    let repo = Repo::new();
+    repo.commit_file("c.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "other"]);
+    repo.commit_file("c.txt", "other\n", "feat: other");
+    repo.git(&["switch", "-q", "main"]);
+    repo.commit_file("c.txt", "main\n", "feat: main");
+    assert!(!repo.git_out(&["merge", "-q", "other"]).status.success(), "the merge must conflict");
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(!report.contains("case-collision"), "{report}");
+}

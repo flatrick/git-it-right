@@ -187,8 +187,12 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
     let mut by_lower: BTreeMap<String, Vec<&str>> = BTreeMap::new();
     let mut not_exec = Vec::new();
     let mut unsafe_names = Vec::new();
+    let mut previous = None;
     for line in staged.lines() {
         let Some((meta, path)) = line.split_once('\t') else { continue };
+        if previous.replace(path) == Some(path) {
+            continue;
+        }
         by_lower.entry(path.to_lowercase()).or_default().push(path);
         if windows_unsafe(path) {
             unsafe_names.push(path);
