@@ -54,6 +54,7 @@ fn find_base() -> Option<String> {
 struct Hunk {
     path: String,
     lines: Vec<u32>,
+    insertion: bool,
 }
 
 fn auto_target(base: Option<&str>) -> Result<String, String> {
@@ -63,9 +64,13 @@ fn auto_target(base: Option<&str>) -> Result<String, String> {
     ])?;
     let hunks = parse_hunks(&diff)?;
     let traced: BTreeSet<&str> = hunks.iter().map(|h| h.path.as_str()).collect();
-    let staged = git::run(&["-c", "core.quotePath=false", "diff", "--cached", "--name-only", "--no-renames"])?;
-    if let Some(path) = staged.lines().find(|p| !traced.contains(p)) {
-        return Err(format!("cannot tell which commit {path} belongs to; pass one: gir fixup <commit>"));
+    let staged = git::run(&["-c", "core.quotePath=false", "diff", "--cached", "--name-status", "--no-renames"])?;
+    if let Some((status, path)) = staged.lines().filter_map(|l| l.split_once('\t')).find(|(_, p)| !traced.contains(p)) {
+        return Err(if status == "A" {
+            format!("{path} is a new file, so it has no earlier commit; pass one: gir fixup <commit>")
+        } else {
+            format!("cannot tell which commit {path} belongs to; pass one: gir fixup <commit>")
+        });
     }
     let allowed: Option<HashSet<String>> = match base {
         Some(b) => Some(git::run(&["rev-list", &format!("{b}..HEAD")])?.lines().map(str::to_string).collect()),
@@ -81,8 +86,8 @@ fn auto_target(base: Option<&str>) -> Result<String, String> {
             return Err(format!("cannot tell which commit {place} belongs to; pass one: gir fixup <commit>"));
         }
         let in_range: BTreeSet<&String> = blamed.iter().filter(|s| allowed.as_ref().is_none_or(|a| a.contains(*s))).collect();
-        if in_range.is_empty() {
-            let outside = blamed.iter().next().unwrap();
+        let on_base = blamed.iter().find(|s| !in_range.contains(s));
+        if let Some(outside) = on_base.filter(|_| in_range.is_empty() || !hunk.insertion) {
             return Err(format!(
                 "{place} was last changed by {} which is already on the base branch; commit it normally instead",
                 &outside[..10]
@@ -134,7 +139,7 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
                 (start..start + count).collect()
             };
             if let Some(p) = &path {
-                hunks.push(Hunk { path: p.clone(), lines });
+                hunks.push(Hunk { path: p.clone(), lines, insertion: count == 0 });
             }
         }
     }

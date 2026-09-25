@@ -252,3 +252,41 @@ fn automatic_target_refuses_a_staged_file_without_line_changes() {
     assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
     assert_eq!(stderr(&out), "gir: cannot tell which commit b.bin belongs to; pass one: gir fixup <commit>\n");
 }
+
+#[test]
+fn mixed_base_and_topic_replacement_is_refused() {
+    let repo = Repo::new();
+    repo.commit_file("lines.txt", "base\n", "chore: base");
+    let base = repo.git(&["rev-parse", "HEAD"]);
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("lines.txt", "base\ntopic\n", "feat: topic line");
+    stage(&repo, "lines.txt", "BASE\nTOPIC\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert_eq!(stderr(&out), format!("gir: lines.txt:1 was last changed by {} which is already on the base branch; commit it normally instead\n", &base[..10]));
+    assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "lines.txt");
+}
+
+#[test]
+fn automatic_target_refuses_a_new_binary_file() {
+    let repo = topic_repo();
+    std::fs::write(repo.dir.join("new.bin"), b"one\0two").unwrap();
+    repo.git(&["add", "new.bin"]);
+    let out = repo.gir(&["fixup"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert_eq!(stderr(&out), "gir: new.bin is a new file, so it has no earlier commit; pass one: gir fixup <commit>\n");
+    assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "new.bin");
+}
+
+#[test]
+fn insertion_between_base_and_topic_lines_targets_topic() {
+    let repo = Repo::new();
+    repo.commit_file("lines.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("lines.txt", "base\ntopic\n", "feat: topic line");
+    let topic = repo.git(&["rev-parse", "HEAD"]);
+    stage(&repo, "lines.txt", "base\ninserted\ntopic\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: topic line\n", &topic[..10]));
+}
