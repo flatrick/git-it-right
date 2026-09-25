@@ -35,7 +35,7 @@ pub fn lint(source: Source, opts: Options, cfg: &Config) -> Result<i32, String> 
                 .into_iter()
                 .map(|(sha, body)| {
                     let mut outcome = cc::check(&body, cfg);
-                    reject_autosquash(&mut outcome);
+                    reject_recorded(&mut outcome);
                     (Some(sha), outcome)
                 })
                 .collect();
@@ -90,12 +90,21 @@ pub fn commits(args: &[&str]) -> Result<Vec<(String, String)>, String> {
         .collect())
 }
 
-pub fn reject_autosquash(outcome: &mut Outcome) {
+/// Rejections for commits already recorded, which the commit-msg hook can no longer fix.
+pub fn reject_recorded(outcome: &mut Outcome) {
     if let Kind::Autosquash(prefix) = &outcome.kind {
         outcome.violations.push(Violation {
             rule: "fixup-unsquashed",
             message: format!("`{prefix}` commit must be squashed before pushing"),
             hint: Some("git rebase --autosquash <base>".into()),
+        });
+    }
+    if !outcome.fixes.is_empty() {
+        let rules: Vec<&str> = outcome.fixes.iter().map(|f| f.rule).collect();
+        outcome.violations.push(Violation {
+            rule: "fix-pending",
+            message: format!("message skipped the commit-msg hook; pending fixes: {}", rules.join(" ")),
+            hint: outcome.text.lines().next().map(str::to_string),
         });
     }
 }

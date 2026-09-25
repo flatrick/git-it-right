@@ -28,7 +28,7 @@ pub fn pre_push(remote: &str, cfg: &Config) -> Result<i32, String> {
         };
         for (sha, body) in commits {
             let mut outcome = cc::check(&body, cfg);
-            lint::reject_autosquash(&mut outcome);
+            lint::reject_recorded(&mut outcome);
             outcomes.push((Some(sha), outcome));
         }
     }

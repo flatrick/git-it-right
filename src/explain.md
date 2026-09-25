@@ -94,6 +94,11 @@ A `fixup!`, `squash!` or `amend!` commit is about to be pushed.
 Fold it into its target first: `git rebase --autosquash <base>`, then push again.
 The whole workflow: `gir explain fixup`.
 
+## fix-pending
+A recorded commit has a message the `commit-msg` hook would have fixed, so it was made with `--no-verify` or without the hook installed.
+The `try:` line shows the fixed subject; the message lists every pending fix by rule id.
+Reword the commit: `git commit --amend` for the last commit, or `git rebase -i <base>` and mark it `reword`.
+
 ## config
 `.girconfig` at the repo root, git-config syntax (`git config --file .girconfig gir.subjectMax 100`):
 
