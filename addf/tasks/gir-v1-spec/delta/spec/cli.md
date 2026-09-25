@@ -25,10 +25,13 @@ The accepted flags are `init --force`, `lint --fix --json --range`, `fixup --dry
 **range-lint-only.** `--range` SHALL be accepted only by `gir lint`; any other subcommand given `--range` SHALL fail as an unknown option with exit `2`.
 
 <a id="req-cli-unknown-short-option"></a>
-**unknown-short-option.** A short flag other than `-h` and `-V` SHALL print `gir: unknown option -C` (with the given letter) on stderr and exit `2`.
+**unknown-short-option.** Before a subcommand, a short flag other than `-h` and `-V` SHALL print `gir: invalid option '-C'` (with the given letter) on stderr and exit `2`; after a subcommand, a short flag other than `-h` SHALL print `gir: unknown option -C` on stderr and exit `2`.
 
 <a id="req-cli-bad-arguments"></a>
-**bad-arguments.** An unknown subcommand, or a known subcommand with the wrong number of positional arguments, SHALL print `gir: bad arguments for` followed by the subcommand and the usage text on stderr, and exit `2`.
+**bad-arguments.** An unknown subcommand, or a known subcommand other than `lint` with the wrong number of positional arguments, SHALL print `gir: bad arguments for` followed by the subcommand and the usage text on stderr, and exit `2`.
+
+<a id="req-cli-lint-arguments"></a>
+**lint-arguments.** `gir lint` with more than one positional argument, or with a positional argument and `--range`, SHALL print ``gir: gir lint takes one file, `-`, or --range`` on stderr and exit `2`.
 
 ## Exit codes
 
