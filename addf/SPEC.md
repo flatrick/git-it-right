@@ -32,7 +32,14 @@ rules (`explain`).
 List child specifications in required reading order, or use `NONE` when this
 file contains the complete specification.
 
-`NONE`.
+1. [CLI](spec/cli.md) - invocation, argument errors and exit codes.
+2. [Configuration](spec/config.md) - `.girconfig` keys, defaults and errors.
+3. [Lint](spec/lint.md) - message rules, safe fixes, output and `gir lint`.
+4. [Hooks](spec/hooks.md) - `commit-msg`, `pre-push` and the installed scripts.
+5. [Fixup](spec/fixup.md) - target selection and `fixup!` commits.
+6. [Doctor](spec/doctor.md) - repository hygiene checks and fixes.
+7. [Init](spec/init.md) - generated files and git setup.
+8. [Explain](spec/explain.md) - topics and pages.
 
 ## Change contract
 

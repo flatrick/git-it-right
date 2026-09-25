@@ -13,12 +13,11 @@ is available through its archived bundle, not through this index.
 ## Specification
 
 - [Current specification](SPEC.md) - the root of this repository's completed,
-  accepted product contract.
+  accepted product contract, with eight child modules under `spec/`.
 
 ## Active Tasks
 
-- [gir-v1-spec](tasks/gir-v1-spec/TASK.md) - specify gir v1 and verify
-  it conforms. State: `IMPLEMENT`
+`NONE`. No Task is currently active.
 
 ## Ledger
 
@@ -61,7 +60,9 @@ is available through its archived bundle, not through this index.
 
 ## Open Claims
 
-`NONE`. No standing Claim is carried forward.
+- [gir-v1-windows-macos](open-claims/gir-v1-windows-macos.md) - gir v1's
+  tests and clippy pass on Windows and macOS; unverified, awaiting the
+  operator's Windows run.
 
 ## Reusable Evidence
 

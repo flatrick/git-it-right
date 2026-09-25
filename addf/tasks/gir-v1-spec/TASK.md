@@ -4,16 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Implement rulings C1 and C2 in `src/`, then dispatch the Codex
-test and ruling workers described under Decide.
+**Resume at:** `NONE`
 
-**Open obligations:** rulings C1 to C6 need their code and doc changes
-(blocks `VERIFY`); each requirement without a detecting test needs a new test
-(blocks `VERIFY`).
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -22,7 +19,10 @@ test and ruling workers described under Decide.
 -   `trace/` - one table per module mapping each requirement anchor to the
     tests that detect its violation.
 -   `trace.py` - checks that every requirement is traced to a test the suite
-    actually contains, and that every cited `path:line` holds an assertion.
+    actually contains, that every cited `path:line` holds an assertion inside
+    the named test, and remaps citations through a diff with `--follow`.
+-   `inventory.py` - lists user-visible identifiers from the source and binary
+    that `delta/spec/` does not mention.
 
 ## Specification impact
 
@@ -30,7 +30,11 @@ test and ruling workers described under Decide.
 - Proposed delta: add one `spec/` module per gir surface (CLI, config, lint
   rules, hooks, fixup, doctor, init, explain), linked from the
   `SPEC.md` specification map, stating the v1 behavior the operator accepts.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/cli.md`, `framework:spec/config.md`,
+  `framework:spec/lint.md`, `framework:spec/hooks.md`,
+  `framework:spec/fixup.md`, `framework:spec/doctor.md`,
+  `framework:spec/init.md`, `framework:spec/explain.md`, linked from
+  `framework:SPEC.md`
 
 ## Define
 
@@ -40,39 +44,40 @@ test and ruling workers described under Decide.
 
 ### Success criteria
 
-<a id="spec-covers-gir"></a>
-#### `spec-covers-gir`
+<a id="spec-covers-reviewed-gir"></a>
+#### `spec-covers-reviewed-gir`
 
--   Claim: Every user-observable behavior of gir at the final revision
-    (subcommands, flags, exit codes, output shape, config keys, rule ids,
-    generated files) is stated by a requirement in `delta/spec/`, and no
-    requirement states behavior gir lacks.
--   State: `UNVERIFIED`
--   Scope: The final revision of `feat/gir-v1`, Linux.
+-   Claim: Every user-visible identifier gir's source and binary expose
+    (rule ids, config keys, flags, doctor check ids, explain topics) appears
+    in `delta/spec/`, and every defect found by three independent read-only
+    Codex reviews of `delta/spec/` against `src/` is resolved in code or spec.
+-   State: `VERIFIED`
+-   Scope: `src/` and `tests/` at `f83b6bb`, Linux; the three review passes
+    recorded under Implement.
 -   Consequence if false: `The published spec misleads the next Task about what gir promises.`
--   Basis: Pending an inventory of `src/` against the modules plus an
-    independent Codex review.
+-   Basis: [Verification](#verification-spec-covers-reviewed-gir)
 
 <a id="every-requirement-traced"></a>
 #### `every-requirement-traced`
 
 -   Claim: Every requirement anchor in `delta/spec/` is traced to at least
     one test that asserts it, and each traced test exists in the suite.
--   State: `UNVERIFIED`
--   Scope: The final revision of `feat/gir-v1`, `trace.py` against
-    `cargo test -- --list`.
+-   State: `VERIFIED`
+-   Scope: `src/` and `tests/` at `f83b6bb`, `trace.py` against
+    `cargo test -- --list` on Linux; the one Windows-gated row is checked
+    only on Windows.
 -   Consequence if false: `A spec requirement can regress without any test failing.`
--   Basis: Pending the trace tables and a `trace.py` run.
+-   Basis: [Verification](#verification-every-requirement-traced)
 
 <a id="suite-green"></a>
 #### `suite-green`
 
 -   Claim: `cargo test`, `cargo clippy --all-targets -- -D warnings` and
     `check-capsule` all pass.
--   State: `UNVERIFIED`
--   Scope: The final revision of `feat/gir-v1`, Linux.
+-   State: `VERIFIED`
+-   Scope: `src/` and `tests/` at `f83b6bb`, Linux.
 -   Consequence if false: `The branch is not mergeable.`
--   Basis: Pending the final-revision run.
+-   Basis: [Verification](#verification-suite-green)
 
 ### Constraints
 
@@ -84,6 +89,10 @@ test and ruling workers described under Decide.
     missing tests; Claude drafts lint, hooks, config and CLI and verifies
     every Codex artifact before it lands.
 -   Nothing is pushed; merging into main is the operator's action.
+-   2026-09-25: the operator bounded coverage after three review passes,
+    replacing the unbounded `spec-covers-gir` Claim with
+    `spec-covers-reviewed-gir`, and chose to run the Windows checks
+    personally instead of pushing for CI.
 
 ### Material empirical premises
 
@@ -106,6 +115,17 @@ test and ruling workers described under Decide.
 -   Scope: Revision `8961126`, Linux, before any Task change.
 -   Consequence if false: `Later failures could not be attributed to this Task.`
 -   Basis: [Verification](#verification-baseline-green)
+
+<a id="gir-v1-windows-macos"></a>
+#### `gir-v1-windows-macos`
+
+-   Claim: `cargo test` and `cargo clippy --all-targets -- -D warnings`
+    pass on Windows and macOS, including the Windows-only
+    `doctor_repairs_unset_windows_longpaths`.
+-   State: `UNVERIFIED`
+-   Scope: `src/` and `tests/` at `f83b6bb`, Windows and macOS.
+-   Consequence if false: `gir, which promises Windows, Linux and macOS, could fail on a platform the Linux evidence does not cover.`
+-   Basis: `DEFERRED_VERIFICATION`; see Deferred verification.
 
 ## Understand
 
@@ -134,7 +154,12 @@ the `hooks` module.
 
 ### Deferred verification
 
--   NONE.
+-   [gir-v1-windows-macos](#gir-v1-windows-macos): the operator has no push
+    for CI and will run the suite on Windows personally; macOS has no
+    available machine. Earliest checkpoint: the operator's Windows run.
+    Settling observation: `cargo test` and clippy exit `0` on each OS.
+    Consequence if false: platform-specific failure in a cross-platform
+    tool. Blocked work: none in this Task; carried forward as an open Claim.
 
 ## Investigate
 
@@ -246,8 +271,93 @@ Gate `DECIDE` exit: `ESTABLISHED`.
 -   `inventory.py` lists every rule id, config key, flag, doctor check id and
     explain topic from the source and binary that `delta/spec/` does not
     mention.
+-   Second Codex review pass (5 findings), each reproduced by Claude first.
+    Fixed with detecting tests: a staged binary change reported an empty
+    "several commits" list (`f996721`); an unmerged path's stages were
+    reported as a case collision (`0cd6708`); `--range --fix` printed
+    "fixed" lines for recorded commits and is now refused (`0427bf4`).
+    Specified: `--range` takes any revision `git log` takes; `--version`
+    and `--help` ignore trailing arguments.
+-   Third Codex review pass (10 findings), each reproduced by Claude first.
+    Fixed with detecting tests: `doctor --fix` replaced a non-UTF-8
+    `.gitignore` and could overwrite a non-UTF-8 `.gitattributes`
+    (`7aab161`); `init` overwrote a differing non-UTF-8 file without
+    `--force` (`95cf5c7`); fixup folded a hunk replacing a base-branch line
+    into a later commit, and gave a staged new binary file the wrong refusal
+    (`9802fb6`). Specified: footer-block scope, body separator only for
+    Conventional headers, a repeated `--range`, init's last line on exit
+    `1`, pre-push skipping malformed stdin lines, and an unknown short flag
+    before `--help`. Codex wrote these tests (`640ffc0` and the fix
+    commits); reverting each source fix failed exactly its new tests.
+-   The operator bounded coverage after pass 3, since the passes found
+    8, 5 and 10 increasingly marginal defects and would not converge.
 
 ## Verify
+
+Gate `IMPLEMENT` exit: `ESTABLISHED`. Every ruling and review fix is
+committed, and each has a test that fails when it is reverted.
+
+Final evidence run at `f83b6bb` on Linux (full logs in `.scratch/`, suffix
+`final-20260925-2109`, not committed): `cargo clippy --all-targets -- -D
+warnings` exit `0`; `cargo test --no-fail-fast` exit `0` with 153 passed and
+0 failed across 14 test binaries; `trace.py` exit `0`, `167 requirements, 201
+trace rows, 0 problems, 1 checked only on another OS`; `inventory.py` exit
+`0`, `92 identifiers, 0 missing`; `check-capsule` exit `0`, `capsule is
+consistent`.
+
+<a id="verification-spec-covers-reviewed-gir"></a>
+### Verification: `spec-covers-reviewed-gir`
+
+- Claim: [spec-covers-reviewed-gir](#spec-covers-reviewed-gir)
+- Method: `inventory.py` extracted 20 rule ids, 8 config keys, 5 flags, 21
+  doctor check ids and 38 explain topics from `src/` and `gir explain`, and
+  searched `delta/spec/` for each. Three independent read-only Codex reviews
+  (`codex exec -s read-only`, same prompt) compared `delta/spec/` against
+  `src/`; Claude reproduced every finding before acting on it.
+- Evidence considered: The inventory reported `92 identifiers, 0 missing`.
+  The reviews reported 8, 5 and 10 defects; every one is resolved under
+  Implement, by a code fix with a detecting test or by a spec correction to
+  intentional behavior. One further defect Claude found while reproducing
+  (fixup from a subdirectory) is fixed too.
+- Conclusion: `VERIFIED`, every inventoried identifier is specified and
+  every review finding is resolved.
+- Limitations: a substring match shows an identifier is mentioned, not that
+  its requirement is correct. The review passes did not converge, so
+  behaviors none of them examined may remain unspecified; the operator
+  accepted that bound. Not blocking.
+
+<a id="verification-every-requirement-traced"></a>
+### Verification: `every-requirement-traced`
+
+- Claim: [every-requirement-traced](#every-requirement-traced)
+- Method: `trace.py` against `cargo test -- --list` at `f83b6bb`. It fails
+  on an untraced requirement, an unknown requirement, a test missing from
+  the suite, a cited range without an `assert`, or a cited range outside the
+  named test. Each rule was exercised during Implement: untraced
+  requirements were reported throughout, and a deliberately wrong citation
+  was reported as outside its test. Mutation checks under Implement show the
+  tests for every ruling and review fix fail when the fix is reverted.
+- Evidence considered: `167 requirements, 201 trace rows, 0 problems, 1
+  checked only on another OS`. The OS-gated row is
+  `doctor_repairs_unset_windows_longpaths`.
+- Conclusion: `VERIFIED`, every requirement is traced to a listed test on
+  Linux, and the Windows-gated row names a test compiled only there.
+- Limitations: a trace row shows that a test asserts the cited lines; only
+  the mutated requirements were proven to fail under violation. The
+  Windows-gated test's run is deferred with
+  [gir-v1-windows-macos](#gir-v1-windows-macos). Not blocking.
+
+<a id="verification-suite-green"></a>
+### Verification: `suite-green`
+
+- Claim: [suite-green](#suite-green)
+- Method: the final evidence run above.
+- Evidence considered: clippy exit `0`, `cargo test` exit `0` with 153
+  passed and 0 failed, `check-capsule` exit `0`.
+- Conclusion: `VERIFIED` on Linux.
+- Limitations: Windows and macOS are deferred with
+  [gir-v1-windows-macos](#gir-v1-windows-macos). Not blocking for the
+  Linux-scoped Claim.
 
 <a id="verification-spec-is-a-stub"></a>
 ### Verification: `spec-is-a-stub`
@@ -273,18 +383,92 @@ Gate `DECIDE` exit: `ESTABLISHED`.
 
 ## Learn
 
+Gate `VERIFY` exit: `ESTABLISHED`. All three success Claims are `VERIFIED`.
+
 ### Technical
+
+-   Treating a failed `read_to_string` as "file missing" caused all three
+    data-loss bugs (doctor on `.gitignore` and `.gitattributes`, init on
+    kept files). Reading bytes and checking `NotFound` explicitly is the
+    fix pattern for any gir code that decides whether to overwrite.
+-   Commands that pass root-relative paths to git must run from the
+    repository root; `git::enter_toplevel` does that for init, doctor and
+    fixup.
 
 ### Process
 
+-   Hand-cited test line numbers drifted four times. The fix is encoded in
+    `trace.py` (in-test check, `--follow`) rather than in guidance.
+-   Repeated read-only reviews of a spec against its code found real bugs on
+    every pass but never converged; bounding coverage needed an operator
+    decision, which similar Tasks should plan for in DEFINE.
+
+Gate `LEARN` exit: `ESTABLISHED`.
+
 ## Retention and promotion
 
+### Promotion: `spec-covers-reviewed-gir`
+
+-   Claim: [spec-covers-reviewed-gir](#spec-covers-reviewed-gir)
+-   Will this Claim's validity outlive this Task and inform a future
+    decision? `no`, the published spec is the durable artifact; this Claim
+    only records how it was checked.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `every-requirement-traced`
+
+-   Claim: [every-requirement-traced](#every-requirement-traced)
+-   Will this Claim's validity outlive this Task and inform a future
+    decision? `no`, it holds only for `f83b6bb` and the trace tables archive
+    with this bundle.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `suite-green`
+
+-   Claim: [suite-green](#suite-green)
+-   Will this Claim's validity outlive this Task and inform a future
+    decision? `no`, the next run supersedes it.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `gir-v1-windows-macos`
+
+-   Claim: [gir-v1-windows-macos](#gir-v1-windows-macos)
+-   Will this Claim's validity outlive this Task and inform a future
+    decision? `yes`, it decides whether gir's cross-platform promise holds
+    before `feat/gir-v1` merges.
+-   Disposition: carried forward to `open-claims/gir-v1-windows-macos.md`.
+
+Learning disposition: the two technical learnings are encoded in code
+(`git::enter_toplevel`, byte reads); the drift learning is encoded in
+`trace.py`; the review-convergence learning is recorded here only, since no
+permanent destination fits it yet. `trace.py` and `inventory.py` archive
+with this bundle; the friction that causes is logged in `SELF-IMPROVEMENT/`.
+
 ## Archive readiness
+
+The bundle is self-contained: `TASK.md`, `delta/spec/` (the verified
+proposal, kept as provenance beside its published copy), `trace/`,
+`trace.py` and `inventory.py` reference only each other and repository
+source. `trace.py` and `inventory.py` locate the repository from their own
+path, so reproducing the evidence means checking out `f83b6bb` and running
+them from `addf/tasks/gir-v1-spec/`. `.scratch/` logs and Codex run
+directories are supplemental and not required to reconstruct the outcome.
 
 ## Terminal record
 
 ### Summary
 
+gir v1's behavior is published as eight specification modules linked from
+`SPEC.md`. Every one of its 167 requirements is traced to a passing test.
+The operator ruled on six code/doc conflicts. The review passes surfaced
+code defects fixed in nine commits, each with tests that fail when the fix
+is reverted.
+
 ### Gate basis
+
+`spec-covers-reviewed-gir`, `every-requirement-traced` and `suite-green` are
+`VERIFIED` through the Verifications above. The deferred Windows and macOS
+verification is carried forward as
+`framework:open-claims/gir-v1-windows-macos.md`.
 
 ## Stop record
