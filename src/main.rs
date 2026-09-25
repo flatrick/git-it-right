@@ -47,7 +47,7 @@ fn run() -> Result<i32, String> {
     let mut range = None;
     while let Some(arg) = parser.next().map_err(err)? {
         match arg {
-            Long("range") => range = Some(parser.value().map_err(err)?.string().map_err(err)?),
+            Long("range") if sub == "lint" => range =Some(parser.value().map_err(err)?.string().map_err(err)?),
             Long(f) => flags.push(f.to_string()),
             Short('h') => flags.push("help".into()),
             Short(c) => return Err(format!("unknown option -{c}")),
