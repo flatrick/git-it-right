@@ -23,17 +23,31 @@ ROW = re.compile(r"^\|\s*`(req-[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|")
 CITE = re.compile(r"`((?:src|tests)/[\w/.-]+\.rs):([\d,-]+)`")
 
 
-def check_cite(path, lines):
+def test_span(text, test):
+    name = test.rpartition(": ")[2].rpartition("::")[2]
+    start = next((n for n, l in enumerate(text) if re.match(rf"\s*fn {name}\(", l)), None)
+    if start is None:
+        return None
+    indent = len(text[start]) - len(text[start].lstrip())
+    end = next(n for n in range(start + 1, len(text)) if text[n] == " " * indent + "}")
+    return start + 1, end + 1
+
+
+def check_cite(path, lines, test):
     source = REPO / path
     if not source.is_file():
         return [f"cited file does not exist: {path}"]
     text = source.read_text(encoding="utf-8").splitlines()
+    span_of_test = test_span(text, test)
     problems = []
     for part in lines.split(","):
         first, _, last = part.partition("-")
-        span = text[int(first) - 1 : int(last or first)]
+        first, last = int(first), int(last or first)
+        span = text[first - 1 : last]
         if not span or not any("assert" in l for l in span):
             problems.append(f"no assert at {path}:{part}")
+        elif span_of_test and not span_of_test[0] <= first <= last <= span_of_test[1]:
+            problems.append(f"{path}:{part} is outside {test}")
     return problems
 
 
@@ -81,7 +95,7 @@ def main():
             elif (gated if os_name else test) not in tests:
                 problems.append(f"{where}: test not in suite: {test}")
             for cite in CITE.finditer(line):
-                problems.extend(f"{where}: {p}" for p in check_cite(*cite.groups()))
+                problems.extend(f"{where}: {p}" for p in check_cite(*cite.groups(), test))
             traced.setdefault(req, []).append(test)
 
     for req, where in requirements.items():

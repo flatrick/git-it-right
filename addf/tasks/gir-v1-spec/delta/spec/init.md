@@ -82,7 +82,7 @@
 **write-diagnostics.** For every created or replaced file, `gir init` SHALL print `gir: wrote ` followed by its repository-relative path to stderr.
 
 <a id="req-init-config-error"></a>
-**config-error.** If the effective `.girconfig` has an unknown `gir.` key or an invalid recognized value, `gir init` SHALL exit `2` and print an error beginning `gir: .girconfig:` to stderr before generating `cliff.toml` or running Git setup.
+**config-error.** If the effective `.girconfig` has an unknown `gir.` key or a value that the config module's invalid-value requirement rejects, `gir init` SHALL exit `2` and print an error beginning `gir: .girconfig:` to stderr before generating `cliff.toml` or running Git setup.
 
 <a id="req-init-git-error"></a>
 **git-error.** If staging the hooks or setting the local hook path fails, `gir init` SHALL exit `2` and print `gir: ` followed by Git's error to stderr.
