@@ -45,7 +45,7 @@
 **new-file.** Without a commit argument, `gir fixup` SHALL refuse a staged new file with `<path> is a new file, so it has no earlier commit; pass one: gir fixup <commit>` on stderr and exit `2`.
 
 <a id="req-fixup-unattributed-lines"></a>
-**unattributed-lines.** If no commit can be identified for a staged hunk, automatic selection SHALL print `cannot tell which commit` and `pass one: gir fixup <commit>` on stderr and exit `2`.
+**unattributed-lines.** If no commit can be identified for a staged hunk, or a staged file has no changed lines to trace (a binary or mode-only change), automatic selection SHALL print `cannot tell which commit` and `pass one: gir fixup <commit>` on stderr and exit `2`.
 
 <a id="req-fixup-multiple-targets"></a>
 **multiple-targets.** If staged hunks identify several eligible commits, `gir fixup` SHALL refuse with `staged changes belong to several commits:` on stderr.

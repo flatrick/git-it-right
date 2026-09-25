@@ -14,3 +14,5 @@
 | `req-cli-hook-arguments` | `hook_takes_its_documented_arguments` | `tests/args.rs:186-194` asserts `unknown hook` for bad hook names and counts, bad arguments for a bare `gir hook`, and extra pre-push arguments accepted |
 | `req-cli-repository-root` | `repository_commands_work_from_a_subdirectory` | `tests/args.rs:210-221` asserts doctor sees root files, fixup finds its target, and init stages both hooks from a subdirectory |
 | `req-cli-runtime-error` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:239-240` asserts git's own output precedes gir's single final message |
+| `req-cli-version` | `version_and_help_ignore_trailing_arguments` | `tests/args.rs:228-229` |
+| `req-cli-help` | `version_and_help_ignore_trailing_arguments` | `tests/args.rs:231-232` |

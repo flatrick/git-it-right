@@ -28,3 +28,4 @@
 | `req-fixup-commit-failure` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:237-241` asserts exit 2, the exact failed command fragment and unchanged HEAD. |
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_master` | `tests/fixup.rs:122-123` asserts master supplies the base when main is absent. |
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_upstream` | `tests/fixup.rs:135-136` asserts upstream supplies the base when named branches are absent. |
+| `req-fixup-unattributed-lines` | `automatic_target_refuses_a_staged_file_without_line_changes` | `tests/fixup.rs:252-253` asserts a staged binary change gets the unattributed error |

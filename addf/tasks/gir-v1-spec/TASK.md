@@ -211,8 +211,41 @@ Gate `DECIDE` exit: `ESTABLISHED`.
 -   `e3dffb3` (C3): the `src/explain.md` config page shows `bugfix = fix`;
     observed in `gir explain config` output.
 -   Codex workers (`codex-cli 0.157.0`, `-s workspace-write`, one worktree
-    each) are implementing C4 and C5 (fixup), C6 (init) and the missing tests
-    for all eight modules.
+    per module) wrote the missing tests for all eight modules and the C4, C5
+    and C6 changes. Claude reviewed every diff before it landed and changed
+    three things: the missing-gir and missing-git-cliff tests filter `PATH`
+    instead of copying the `git` binary; the Windows-names test disables
+    `core.protectNTFS` for its own setup; `Repo::cmd` points
+    `XDG_CONFIG_HOME` into the sandbox so a global ignore file cannot change
+    doctor's report.
+-   `07382af` (C4, C5): explicit fixup targets are validated; README and
+    CHEATSHEET name the base branches. `506c49e` (C6): init stages a hook
+    only when written or not `100755` in the index. `2cb383f`, `8ffbf1f`:
+    tests for the remaining modules.
+-   Mutation checks, each reverting only the source change and running the
+    named test binaries (full output in `.scratch/mutation-*.log`, not
+    committed): reverting C1 failed `pre_push_rejects_commits_that_skipped_safe_fixes`
+    and `lint_range_rejects_every_pending_safe_fix_and_shows_fixed_subject`;
+    C2 failed `range_is_rejected_outside_lint_and_accepted_by_lint`; C4 failed
+    `explicit_target_must_be_after_base` and
+    `explicit_target_must_be_in_current_branch_history`; C6 failed four
+    `tests/init.rs` tests.
+-   An independent read-only Codex review of `delta/spec/` against `src/`
+    reported eight defects. Claude reproduced each, plus one it missed
+    (`gir fixup` from a subdirectory). Fixed in code, each with a test that
+    fails when the fix is reverted: init, doctor and fixup from a
+    subdirectory (`c52089c`); a malformed `.girconfig` silently meaning
+    defaults (`7e146de`); `feat: .` reported as `spec` instead of
+    `desc-empty` (`a88739d`). Corrected in the spec to the code's
+    intentional behavior: `gir hook pre-push` ignores extra arguments, and
+    `gir fixup` passes git's own output through before its error. Added to
+    the spec: the full `.editorconfig` content.
+-   `trace.py` gained two checks after cited line numbers drifted four
+    times: a cited range must lie inside the test the row names, and
+    `--follow REV` remaps citations through the diff since `REV`.
+-   `inventory.py` lists every rule id, config key, flag, doctor check id and
+    explain topic from the source and binary that `delta/spec/` does not
+    mention.
 
 ## Verify
 

@@ -44,3 +44,5 @@
 | `req-lint-range` | `lint_range_reports_json_per_commit` | `tests/cli.rs:160` asserts exit `1` for a bad commit in range |
 | `req-lint-range-unsquashed` | `lint_range_rejects_each_unsquashed_autosquash_subject` | `tests/lint.rs:72-74` asserts exit 1, SHA label, rule `fixup-unsquashed`, and autosquash hint for each prefix |
 | `req-lint-range-fix-pending` | `lint_range_rejects_every_pending_safe_fix_and_shows_fixed_subject` | `tests/lint.rs:84-90` asserts exit 1, rule `fix-pending`, all four pending rules, and the fixed subject hint |
+| `req-lint-range-no-fix` | `lint_range_refuses_fix` | `tests/lint.rs:98-99` |
+| `req-lint-range` | `lint_range_accepts_any_revision_git_log_takes` | `tests/lint.rs:108-109` asserts a bare revision lints its whole history |

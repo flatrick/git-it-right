@@ -117,7 +117,10 @@ When an allowed type is within edit distance 2 of it, and that distance is less 
 **stdin.** `gir lint` and `gir lint -` SHALL read the message from stdin; with `--fix` and without `--json` they SHALL print the fixed message on stdout.
 
 <a id="req-lint-range"></a>
-**range.** `gir lint --range A..B` SHALL lint every commit `git log A..B` selects, labelling each rejection with the first 10 characters of its SHA and `rejected`, and exit `1` when any commit is rejected.
+**range.** `gir lint --range REV` SHALL lint every commit `git log REV` selects (for example `A..B`), labelling each rejection with the first 10 characters of its SHA and `rejected`, and exit `1` when any commit is rejected.
+
+<a id="req-lint-range-no-fix"></a>
+**range-no-fix.** `gir lint --range REV --fix` SHALL print `gir: gir lint --range cannot --fix recorded commits` on stderr and exit `2`, linting nothing.
 
 <a id="req-lint-range-unsquashed"></a>
 **range-unsquashed.** `gir lint --range` SHALL reject a commit whose subject starts with `fixup! `, `squash! ` or `amend! ` with rule `fixup-unsquashed` and a hint `git rebase --autosquash <base>`.

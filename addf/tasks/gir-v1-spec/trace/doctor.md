@@ -33,3 +33,4 @@
 | `req-doctor-windows-names` | `doctor_reports_windows_unsafe_index_names_without_renaming` | `tests/doctor.rs:288,290-291` asserts warning, paths, and unchanged index after `--fix`. |
 | `req-doctor-index-clean` | `doctor_counts_clean_index_as_ok_without_index_warnings` | `tests/doctor.rs:298-301` asserts no index warnings and one OK check in the summary. |
 | `req-doctor-ignore-patterns` | `doctor_checks_each_stack_pattern_for_its_marker` | `tests/doctor.rs:317-319` asserts every stack marker's patterns appear without unrelated Cargo ignores. |
+| `req-doctor-case-collision` | `doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision` | `tests/doctor.rs:333` |

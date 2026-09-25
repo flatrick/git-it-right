@@ -88,7 +88,7 @@
 ## Git index
 
 <a id="req-doctor-case-collision"></a>
-**case-collision.** For indexed paths that differ only in case, `gir doctor` SHALL print `warn  case-collision: paths differ only in case` with the paths; `--fix` SHALL NOT rename them.
+**case-collision.** For indexed paths that differ only in case, `gir doctor` SHALL print `warn  case-collision: paths differ only in case` with the paths; `--fix` SHALL NOT rename them. The stages of one unmerged path SHALL NOT count as a collision.
 
 <a id="req-doctor-windows-names"></a>
 **windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, or the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
