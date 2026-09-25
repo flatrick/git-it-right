@@ -2,3 +2,7 @@
 .scratch/
 .claude/settings.local.json
 .claude/worktrees/
+.DS_Store
+Thumbs.db
+.env
+__pycache__/

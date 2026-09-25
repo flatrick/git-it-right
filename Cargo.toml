@@ -1,0 +1,18 @@
+[package]
+name = "gir"
+version = "0.0.1"
+edition = "2024"
+description = "Keeps git usage honest: Conventional Commits lint + autofix, fixup workflow, repo hygiene doctor"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+git-conventional = "1.1"
+lexopt = "0.3.2"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
