@@ -212,7 +212,8 @@ fn init_writes_files_at_the_repository_root_from_a_subdirectory() {
     let repo = Repo::new();
     let sub = repo.dir.join("nested");
     fs::create_dir(&sub).unwrap();
-    let _out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(&sub).arg("init").output().unwrap();
+    let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(&sub).arg("init").output().unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     for path in [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "cliff.toml"] {
         assert!(repo.dir.join(path).is_file(), "{path} is at the repository root");
         assert!(!sub.join(path).exists(), "{path} is absent from the current subdirectory");

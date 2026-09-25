@@ -47,6 +47,13 @@ pub fn toplevel() -> Option<PathBuf> {
     run(&["rev-parse", "--show-toplevel"]).ok().map(PathBuf::from)
 }
 
+/// Makes the repository root the current directory, so root-relative paths from git work from any subdirectory.
+pub fn enter_toplevel() -> Result<PathBuf, String> {
+    let root = toplevel().ok_or("not inside a git repository")?;
+    std::env::set_current_dir(&root).map_err(|e| format!("cannot enter {}: {e}", root.display()))?;
+    Ok(root)
+}
+
 /// `core.commentString` (git >= 2.45) wins over `core.commentChar`; `auto` falls back to `#`.
 pub fn comment_string() -> String {
     get_config("core.commentString")

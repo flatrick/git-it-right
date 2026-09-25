@@ -44,7 +44,7 @@ const LOCAL_CONFIG: &[(&str, &str, &str)] = &[
 ];
 
 pub fn doctor(fix: bool) -> Result<i32, String> {
-    let root = git::toplevel().ok_or("not inside a git repository")?;
+    let root = git::enter_toplevel()?;
     let mut checks = Vec::new();
     config_checks(&root, &mut checks);
     file_checks(&root, &mut checks)?;

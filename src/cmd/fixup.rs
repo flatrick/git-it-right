@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use crate::git;
 
 pub fn fixup(target: Option<String>, dry_run: bool) -> Result<i32, String> {
+    git::enter_toplevel()?;
     if git::run(&["diff", "--cached", "--name-only"])?.is_empty() {
         return Err("nothing staged; `git add` the fix first (more: gir explain fixup)".into());
     }

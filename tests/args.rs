@@ -177,3 +177,46 @@ fn unknown_short_flags_and_bad_arguments_exit_two() {
         assert_eq!(stderr(&out), "gir: gir lint takes one file, `-`, or --range\n", "{args:?}");
     }
 }
+
+#[test]
+fn hook_takes_its_documented_arguments() {
+    let repo = Repo::new();
+    for args in [vec!["hook", "commit-msg"], vec!["hook", "commit-msg", "a", "b"], vec!["hook", "pre-push"], vec!["hook", "post-merge", "x"]] {
+        let out = repo.gir(&args);
+        assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
+        assert_eq!(stderr(&out), format!("gir: unknown hook `{}`\n", args[1]), "{args:?}");
+    }
+    let bare = repo.gir(&["hook"]);
+    assert_eq!(bare.status.code(), Some(2), "{}", stderr(&bare));
+    assert!(stderr(&bare).starts_with("gir: bad arguments for `hook`\n"), "{}", stderr(&bare));
+    for args in [vec!["hook", "pre-push", "origin"], vec!["hook", "pre-push", "origin", "url", "extra"]] {
+        let out = repo.gir(&args);
+        assert_eq!(out.status.code(), Some(0), "{args:?}: {}", stderr(&out));
+    }
+}
+
+#[test]
+fn repository_commands_work_from_a_subdirectory() {
+    let repo = Repo::new();
+    repo.commit_file("base.txt", "base\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("run.sh", "one\ntwo\n", "feat: add run");
+    let target = repo.git(&["rev-parse", "HEAD"]);
+    std::fs::create_dir(repo.dir.join("sub")).unwrap();
+    let in_sub = |args: &[&str]| repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(repo.dir.join("sub")).args(args).output().unwrap();
+
+    let doctor = in_sub(&["doctor"]);
+    let report = String::from_utf8_lossy(&doctor.stdout);
+    assert!(report.contains("warn  exec-bit: scripts not executable in git: run.sh"), "doctor must see root files: {report}");
+
+    repo.write("run.sh", "one\nTWO\n");
+    repo.git(&["add", "run.sh"]);
+    let fixup = in_sub(&["fixup", "--dry-run"]);
+    assert_eq!(fixup.status.code(), Some(0), "{}", stderr(&fixup));
+    assert_eq!(String::from_utf8_lossy(&fixup.stdout), format!("{} feat: add run\n", &target[..10]));
+
+    let init = in_sub(&["init"]);
+    assert_eq!(init.status.code(), Some(0), "{}", stderr(&init));
+    let staged = repo.git(&["ls-files", "--stage", "--", ".githooks"]);
+    assert_eq!(staged.lines().filter(|l| l.starts_with("100755 ")).count(), 2, "{staged}");
+}

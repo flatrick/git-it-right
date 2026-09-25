@@ -6,7 +6,7 @@ use crate::git;
 
 /// Converges the repo to the gir setup; re-running changes nothing that is already right.
 pub fn init(force: bool) -> Result<i32, String> {
-    let root = git::toplevel().ok_or("not inside a git repository")?;
+    let root = git::enter_toplevel()?;
     let mut conflicts = 0;
 
     let mut hook_paths = Vec::new();
