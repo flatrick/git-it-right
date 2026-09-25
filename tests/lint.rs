@@ -89,3 +89,22 @@ fn lint_range_rejects_every_pending_safe_fix_and_shows_fixed_subject() {
     }
     assert!(err.contains("  try: feat(api): Add retry"), "{err}");
 }
+
+#[test]
+fn lint_range_refuses_fix() {
+    let repo = Repo::new();
+    repo.commit_file("a.txt", "a\n", "Feat: add a.");
+    let out = repo.gir(&["lint", "--range", "HEAD", "--fix"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert_eq!(stderr(&out), "gir: gir lint --range cannot --fix recorded commits\n");
+}
+
+#[test]
+fn lint_range_accepts_any_revision_git_log_takes() {
+    let repo = Repo::new();
+    repo.commit_file("a.txt", "a\n", "not conventional");
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    let out = repo.gir(&["lint", "--range", "HEAD"]);
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert!(stderr(&out).contains("rejected [type-missing]"), "a bare revision must lint its whole history: {}", stderr(&out));
+}

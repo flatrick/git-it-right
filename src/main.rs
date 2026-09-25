@@ -90,6 +90,7 @@ fn run() -> Result<i32, String> {
             let cfg = Config::load()?;
             let opts = lint::Options { fix: flag("fix"), json: flag("json") };
             let source = match (range, rest) {
+                (Some(_), []) if opts.fix => return Err("gir lint --range cannot --fix recorded commits".into()),
                 (Some(r), []) => lint::Source::Range(r),
                 (None, [] ) => lint::Source::Stdin,
                 (None, [p]) if p == "-" => lint::Source::Stdin,
