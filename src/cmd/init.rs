@@ -12,17 +12,23 @@ pub fn init(force: bool) -> Result<i32, String> {
     let mut hook_paths = Vec::new();
     for name in HOOKS {
         let rel = format!(".githooks/{name}");
-        conflicts += write(&root, &rel, &templates::hook_shim(name), force)?;
-        hook_paths.push(rel);
+        let outcome = write(&root, &rel, &templates::hook_shim(name), force)?;
+        conflicts += i32::from(outcome == WriteOutcome::Kept);
+        let entry = git::run(&["ls-files", "--stage", "--", &rel])?;
+        if outcome == WriteOutcome::Written || !entry.starts_with("100755 ") {
+            hook_paths.push(rel);
+        }
     }
-    conflicts += write(&root, config::FILE, &config::default_file(), force)?;
+    conflicts += i32::from(write(&root, config::FILE, &config::default_file(), force)? == WriteOutcome::Kept);
     let cfg = Config::load_from(&root.join(config::FILE))?;
-    conflicts += write(&root, "cliff.toml", &templates::cliff_toml(&cfg), force)?;
+    conflicts += i32::from(write(&root, "cliff.toml", &templates::cliff_toml(&cfg), force)? == WriteOutcome::Kept);
 
-    let mut add = vec!["add", "--chmod=+x", "--"];
-    add.extend(hook_paths.iter().map(String::as_str));
-    git::run(&add)?;
-    eprintln!("gir: staged .githooks/* as executable");
+    if !hook_paths.is_empty() {
+        let mut add = vec!["add", "--chmod=+x", "--"];
+        add.extend(hook_paths.iter().map(String::as_str));
+        git::run(&add)?;
+        eprintln!("gir: staged {} as executable", hook_paths.join(" "));
+    }
 
     if git::get_config("core.hooksPath").as_deref() != Some(".githooks") {
         git::run(&["config", "--local", "core.hooksPath", ".githooks"])?;
@@ -32,14 +38,20 @@ pub fn init(force: bool) -> Result<i32, String> {
     Ok(i32::from(conflicts > 0))
 }
 
-/// Returns 1 when the file exists with different content and `force` is off.
-fn write(root: &Path, rel: &str, content: &str, force: bool) -> Result<i32, String> {
+#[derive(PartialEq, Eq)]
+enum WriteOutcome {
+    Unchanged,
+    Kept,
+    Written,
+}
+
+fn write(root: &Path, rel: &str, content: &str, force: bool) -> Result<WriteOutcome, String> {
     let path = root.join(rel);
     match std::fs::read_to_string(&path) {
-        Ok(existing) if existing.replace("\r\n", "\n") == content => return Ok(0),
+        Ok(existing) if existing.replace("\r\n", "\n") == content => return Ok(WriteOutcome::Unchanged),
         Ok(_) if !force => {
             eprintln!("gir: kept {rel} (differs from the template; --force overwrites)");
-            return Ok(1);
+            return Ok(WriteOutcome::Kept);
         }
         _ => {}
     }
@@ -53,5 +65,5 @@ fn write(root: &Path, rel: &str, content: &str, force: bool) -> Result<i32, Stri
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).map_err(|e| e.to_string())?;
     }
     eprintln!("gir: wrote {rel}");
-    Ok(0)
+    Ok(WriteOutcome::Written)
 }
