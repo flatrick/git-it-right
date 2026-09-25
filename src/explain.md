@@ -108,6 +108,7 @@ The whole workflow: `gir explain fixup`.
         hookMissing = warn          # or fail: hooks block when gir is not installed
     [gir "alias"]
         feature = feat
+        bugfix = fix
 
 ## hooks
 `gir init` installs `.githooks/commit-msg` and `.githooks/pre-push` and sets `core.hooksPath = .githooks`.
