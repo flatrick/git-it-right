@@ -114,3 +114,17 @@ fn every_emitted_rule_is_listed() {
         }
     }
 }
+
+#[test]
+fn empty_message_is_rejected_after_normalization() {
+    let outcome = run(" \n\t\n");
+    assert_eq!(rules(&outcome).1, vec!["empty"]);
+    assert!(!outcome.ok());
+}
+
+#[test]
+fn invalid_conventional_scope_is_rejected_as_spec() {
+    let outcome = run("feat(a(b): add x");
+    assert_eq!(rules(&outcome), (vec![], vec!["spec"]));
+    assert!(!outcome.ok());
+}
