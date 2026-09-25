@@ -177,14 +177,14 @@ fn fix_header(h: &mut Header, cfg: &Config, fixes: &mut Vec<Fix>, violations: &m
         _ => {}
     }
 
-    if h.desc.is_empty() {
-        violations.push(violation("desc-empty", "description after `: ` is empty".into(), Some(format!("{}: <what changed, imperative mood>", h.ty))));
-        return;
-    }
     if h.desc.ends_with('.') && !h.desc.ends_with("..") {
         let trimmed = h.desc.trim_end_matches('.').trim_end().to_string();
         fixes.push(Fix { rule: "desc-period", from: h.desc.clone(), to: trimmed.clone() });
         h.desc = trimmed;
+    }
+    if h.desc.is_empty() {
+        violations.push(violation("desc-empty", "description after `: ` is empty".into(), Some(format!("{}: <what changed, imperative mood>", h.ty))));
+        return;
     }
     if cfg.desc_case == DescCase::Lower {
         let mut chars = h.desc.chars();

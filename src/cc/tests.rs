@@ -128,3 +128,9 @@ fn invalid_conventional_scope_is_rejected_as_spec() {
     assert_eq!(rules(&outcome), (vec![], vec!["spec"]));
     assert!(!outcome.ok());
 }
+
+#[test]
+fn description_left_empty_by_period_fix_is_desc_empty() {
+    let outcome = run("feat: .");
+    assert_eq!(rules(&outcome), (vec!["desc-period"], vec!["desc-empty"]));
+}
