@@ -1,0 +1,96 @@
+# gir init
+
+## Subspecifications
+
+`NONE`.
+
+## Invocation and status
+
+<a id="req-init-accept-force"></a>
+**accept-force.** `gir init` SHALL accept the optional `--force` flag.
+
+<a id="req-init-require-repository"></a>
+**require-repository.** Outside a Git repository, `gir init` SHALL exit `2` and print `gir: not inside a git repository` to stderr.
+
+<a id="req-init-root-paths"></a>
+**root-paths.** From any directory inside a Git repository, `gir init` SHALL write its files at that repository's top level.
+
+<a id="req-init-success-status"></a>
+**success-status.** When setup succeeds without differing existing files, `gir init` SHALL exit `0`.
+
+<a id="req-init-success-output"></a>
+**success-output.** On successful setup, `gir init` SHALL print `gir: next: gir doctor` to stderr and print nothing to stdout.
+
+## Generated files
+
+<a id="req-init-hook-files"></a>
+**hook-files.** `gir init` SHALL create `.githooks/commit-msg` and `.githooks/pre-push` with a `#!/bin/sh` header and executable permissions on Unix.
+
+<a id="req-init-config-file"></a>
+**config-file.** `gir init` SHALL create `.girconfig` with `[gir]` entries `types = feat fix docs style refactor perf test build ci chore revert` and `subjectMax = 72`, a `[gir "alias"]` section with `feature = feat` and `bugfix = fix`, and commented examples for `scopes`, `scopeRequired`, `descCase`, and `hookMissing`.
+
+<a id="req-init-cliff-file"></a>
+**cliff-file.** `gir init` SHALL create `cliff.toml` with `[changelog]` and `[git]` sections, `conventional_commits = true`, `filter_unconventional = true`, `protect_breaking_commits = true`, and `sort_commits = "oldest"`.
+
+<a id="req-init-cliff-format"></a>
+**cliff-format.** Generated `cliff.toml` SHALL format versioned and unreleased headings, group commits, show scopes and breaking markers, and set `trim = true`.
+
+<a id="req-init-cliff-parsers"></a>
+**cliff-parsers.** Generated `cliff.toml` SHALL skip messages beginning `fixup!`, `squash!`, or `amend!` and SHALL include a commit parser for each type in the effective `.girconfig` `gir.types` list.
+
+<a id="req-init-cliff-groups"></a>
+**cliff-groups.** Generated `cliff.toml` SHALL use the built-in titles `Features`, `Bug Fixes`, `Documentation`, `Styling`, `Refactor`, `Performance`, `Testing`, `Build`, `CI`, `Miscellaneous`, and `Reverts` for the corresponding default types; other types SHALL use their name with the first character capitalized.
+
+## Existing files
+
+<a id="req-init-identical-files"></a>
+**identical-files.** `gir init` SHALL leave an existing file unchanged when its content matches the template, treating CRLF line endings as equivalent to LF.
+
+<a id="req-init-clean-rerun-output"></a>
+**clean-rerun-output.** On a rerun with files matching their templates, `gir init` SHALL NOT print `gir: wrote` to stderr.
+
+<a id="req-init-keep-edits"></a>
+**keep-edits.** Without `--force`, `gir init` SHALL leave each existing file with different content unchanged.
+
+<a id="req-init-kept-output"></a>
+**kept-output.** For each differing file kept without `--force`, `gir init` SHALL print `gir: kept ` followed by its path and `(differs from the template; --force overwrites)` to stderr.
+
+<a id="req-init-conflict-status"></a>
+**conflict-status.** If one or more differing files are kept, `gir init` SHALL exit `1` after processing the remaining files and Git setup.
+
+<a id="req-init-force-overwrite"></a>
+**force-overwrite.** With `--force`, `gir init` SHALL replace each existing file whose content differs from its template, print `gir: wrote ` followed by its path to stderr, and exit `0` if setup otherwise succeeds.
+
+<a id="req-init-config-before-cliff"></a>
+**config-before-cliff.** `gir init` SHALL generate `cliff.toml` from the effective `.girconfig` after deciding whether to create, keep, or replace that file, so a kept custom `gir.types` list controls the generated parsers.
+
+## Git setup and diagnostics
+
+<a id="req-init-stage-hooks"></a>
+**stage-hooks.** `gir init` SHALL stage with mode `100755` each hook file it wrote in this run, and each hook file whose index entry is missing or not `100755`, and print `gir: staged ` followed by those paths and ` as executable` on stderr.
+
+<a id="req-init-no-restage"></a>
+**no-restage.** `gir init` SHALL NOT stage a hook file it did not write and whose index entry is already `100755`, so a rerun leaves the index unchanged.
+
+<a id="req-init-local-hook-path"></a>
+**local-hook-path.** Unless the effective `core.hooksPath` is already `.githooks`, `gir init` SHALL run `git config --local core.hooksPath .githooks` and print `gir: set core.hooksPath=.githooks (this clone)` to stderr.
+
+<a id="req-init-no-repeat-hook-path"></a>
+**no-repeat-hook-path.** When the effective `core.hooksPath` is `.githooks`, `gir init` SHALL NOT print `gir: set core.hooksPath=.githooks (this clone)`.
+
+<a id="req-init-write-diagnostics"></a>
+**write-diagnostics.** For every created or replaced file, `gir init` SHALL print `gir: wrote ` followed by its repository-relative path to stderr.
+
+<a id="req-init-config-error"></a>
+**config-error.** If the effective `.girconfig` has an unknown `gir.` key or an invalid recognized value, `gir init` SHALL exit `2` and print an error beginning `gir: .girconfig:` to stderr before generating `cliff.toml` or running Git setup.
+
+<a id="req-init-git-error"></a>
+**git-error.** If staging the hooks or setting the local hook path fails, `gir init` SHALL exit `2` and print `gir: ` followed by Git's error to stderr.
+
+## Generated hook behavior
+
+## Module invariants
+
+- This file is reachable from `SPEC.md` through one ordered parent link.
+- This file contains current requirements only.
+- This file does not require archived material to define current behavior.

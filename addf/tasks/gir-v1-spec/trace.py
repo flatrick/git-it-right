@@ -17,6 +17,21 @@ BUNDLE = Path(__file__).resolve().parent
 REPO = BUNDLE.parents[2]
 ANCHOR = re.compile(r'<a id="(req-[a-z0-9-]+)"></a>')
 ROW = re.compile(r"^\|\s*`(req-[a-z0-9-]+)`\s*\|\s*`([^`]+)`\s*\|")
+CITE = re.compile(r"`((?:src|tests)/[\w/.-]+\.rs):([\d,-]+)`")
+
+
+def check_cite(path, lines):
+    source = REPO / path
+    if not source.is_file():
+        return [f"cited file does not exist: {path}"]
+    text = source.read_text(encoding="utf-8").splitlines()
+    problems = []
+    for part in lines.split(","):
+        first, _, last = part.partition("-")
+        span = text[int(first) - 1 : int(last or first)]
+        if not span or not any("assert" in l for l in span):
+            problems.append(f"no assert at {path}:{part}")
+    return problems
 
 
 def listed_tests(path):
@@ -58,6 +73,8 @@ def main():
                 problems.append(f"{where}: unknown requirement {req}")
             if test not in tests:
                 problems.append(f"{where}: test not in suite: {test}")
+            for cite in CITE.finditer(line):
+                problems.extend(f"{where}: {p}" for p in check_cite(*cite.groups()))
             traced.setdefault(req, []).append(test)
 
     for req, where in requirements.items():

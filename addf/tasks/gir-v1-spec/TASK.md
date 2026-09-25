@@ -4,17 +4,16 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Draft the lint, hooks, config and CLI modules under
-`delta/spec/`; review Codex's fixup, doctor, init and explain drafts against
-the source.
+**Resume at:** Implement rulings C1 and C2 in `src/`, then dispatch the Codex
+test and ruling workers described under Decide.
 
-**Open obligations:** each code/README/CHEATSHEET conflict needs an
-operator ruling (blocks `DECIDE`); each requirement without a detecting test
-needs a new test (blocks `VERIFY`).
+**Open obligations:** rulings C1 to C6 need their code and doc changes
+(blocks `VERIFY`); each requirement without a detecting test needs a new test
+(blocks `VERIFY`).
 
 ## Owned artifacts
 
@@ -23,7 +22,7 @@ needs a new test (blocks `VERIFY`).
 -   `trace/` - one table per module mapping each requirement anchor to the
     tests that detect its violation.
 -   `trace.py` - checks that every requirement is traced to a test the suite
-    actually contains.
+    actually contains, and that every cited `path:line` holds an assertion.
 
 ## Specification impact
 
@@ -116,13 +115,22 @@ gir was implemented before addf was adopted, so no Task produced its
 behavior and `SPEC.md` never received it. README.md, CHEATSHEET.md and
 `gir explain` pages describe the behavior informally.
 
+Claude drafted `cli`, `config`, `lint` and `hooks` from `src/main.rs`,
+`src/config.rs`, `src/cc/`, `src/message.rs`, `src/report.rs`,
+`src/cmd/lint.rs` and `src/cmd/hook.rs`. Codex (`codex-cli 0.157.0`,
+`-s workspace-write`, one throwaway worktree per module at `7870ffd`)
+drafted `fixup`, `doctor`, `init` and `explain`. Claude reviewed each Codex
+module against its source file and removed 22 requirements that restated
+argument handling owned by the `cli` module or hook-script behavior owned by
+the `hooks` module.
+
 ### Assumptions
 
 -   NONE.
 
 ### Open questions
 
--   NONE yet.
+-   NONE. The six conflicts found are resolved under Investigate.
 
 ### Deferred verification
 
@@ -130,7 +138,62 @@ behavior and `SPEC.md` never received it. README.md, CHEATSHEET.md and
 
 ## Investigate
 
+Gate `UNDERSTAND` exit: `ESTABLISHED`. Every gir source file was read by the
+module's drafter and every Codex draft was reviewed against its source.
+
+Drafting surfaced six places where code and documentation disagree. Each got
+an operator ruling on 2026-09-25.
+
+-   C1. README says `gir lint --range` catches `--no-verify` commits and the
+    pre-push hook blocks messages that skipped the hook. Observed: a commit
+    `Feature(api) :Add retry.` made with `--no-verify` passed
+    `gir lint --range HEAD~1..HEAD` with exit `0` and `"ok":true`, because
+    only rejections fail. Ruling: `--range` and pre-push reject a commit a safe
+    fix would change.
+-   C2. `src/main.rs` parses `--range` for every subcommand, so `init`,
+    `doctor`, `fixup` and `explain` silently ignore it. Ruling: reject it
+    outside `lint`.
+-   C3. README says `gir explain config` shows its sample, which includes
+    `bugfix = fix`; the page in `src/explain.md` lists only `feature = feat`.
+    Ruling: add `bugfix = fix` to the page.
+-   C4. README and CHEATSHEET say `gir fixup` refuses new-file, multi-commit
+    and base-branch lines; an explicit `gir fixup COMMIT` skips every check.
+    Ruling: validate an explicit target, which must be in `HEAD`'s history
+    and after the base.
+-   C5. CHEATSHEET says fixup refuses lines from `main`; the code uses the
+    first base of `origin/HEAD`, `main`, `master`, `@{upstream}`. Ruling:
+    keep the behavior and say "base branch" in CHEATSHEET.
+-   C6. README says rerunning `gir init` changes nothing, but every run
+    re-stages both hooks. Ruling: stage a hook only when init wrote it or its
+    index mode is not `100755`.
+
+Every material uncertainty is resolved by these rulings; none is deferred.
+
 ## Decide
+
+Gate `INVESTIGATE` exit: `ESTABLISHED`. Each conflict has an operator
+ruling, recorded above.
+
+Selected approach: the delta in `delta/spec/` states the ruled behavior.
+Claude implements C1 (a `fix-pending` rejection in `src/cmd/lint.rs`, used
+by `--range` and pre-push, with an explain page) and C2 (`src/main.rs`).
+Before any test is added, Claude moves the `Repo` helper from `tests/cli.rs`
+into `tests/common/mod.rs`, so parallel workers each add a separate test
+file instead of editing one shared file. Codex workers, one per module in
+its own worktree, then implement C4 and C5 (fixup), C6 (init) and C3
+(explain), and write a detecting test for every untraced requirement of
+their module, with a trace row for each. Claude reviews every diff before it
+lands.
+
+Rejected alternatives: one Codex run for all tests (slower, and one large
+diff to review); tests added to `tests/cli.rs` by all workers (concurrent
+edits to one file).
+
+Verification strategy: `trace.py` reports `0 problems`; `cargo test`,
+`cargo clippy --all-targets -- -D warnings` and `check-capsule` pass; for
+each ruling, reverting the code change makes its new test fail.
+
+Gate `DECIDE` exit: `ESTABLISHED`.
 
 ## Implement
 

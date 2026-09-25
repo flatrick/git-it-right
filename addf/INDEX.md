@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [gir-v1-spec](tasks/gir-v1-spec/TASK.md) - specify gir v1 and verify
-  it conforms. State: `UNDERSTAND`
+  it conforms. State: `IMPLEMENT`
 
 ## Ledger
 
