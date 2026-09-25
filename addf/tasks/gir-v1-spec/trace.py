@@ -3,12 +3,15 @@
 usage: python trace.py [--tests <file>]
 
 Without --tests it runs `cargo test -- --list` from the repository root.
+A Test cell of `windows: name` names a test compiled only on that OS; it is
+checked there and listed, not failed, elsewhere.
 Exits 1 when a requirement is untraced, a trace row names an unknown
 requirement, or a trace row names a test the suite does not list.
 """
 
 import argparse
 import re
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -61,6 +64,7 @@ def main():
 
     traced = {}
     problems = []
+    elsewhere = []
     tests = listed_tests(args.tests)
     for table in sorted((BUNDLE / "trace").glob("*.md")):
         for n, line in enumerate(table.read_text(encoding="utf-8").splitlines(), 1):
@@ -71,7 +75,10 @@ def main():
             where = f"trace/{table.name}:{n}"
             if req not in requirements:
                 problems.append(f"{where}: unknown requirement {req}")
-            if test not in tests:
+            os_name, _, gated = test.rpartition(": ")
+            if os_name and os_name != platform.system().lower():
+                elsewhere.append(f"{where}: {os_name}-only test not checked here: {gated}")
+            elif (gated if os_name else test) not in tests:
                 problems.append(f"{where}: test not in suite: {test}")
             for cite in CITE.finditer(line):
                 problems.extend(f"{where}: {p}" for p in check_cite(*cite.groups()))
@@ -81,9 +88,9 @@ def main():
         if req not in traced:
             problems.append(f"{where}: untraced requirement {req}")
 
-    for problem in problems:
-        print(problem)
-    print(f"{len(requirements)} requirements, {sum(map(len, traced.values()))} trace rows, {len(problems)} problems")
+    for line in problems + elsewhere:
+        print(line)
+    print(f"{len(requirements)} requirements, {sum(map(len, traced.values()))} trace rows, {len(problems)} problems, {len(elsewhere)} checked only on another OS")
     return 1 if problems else 0
 
 
