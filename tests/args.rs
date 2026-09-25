@@ -220,3 +220,14 @@ fn repository_commands_work_from_a_subdirectory() {
     let staged = repo.git(&["ls-files", "--stage", "--", ".githooks"]);
     assert_eq!(staged.lines().filter(|l| l.starts_with("100755 ")).count(), 2, "{staged}");
 }
+
+#[test]
+fn version_and_help_ignore_trailing_arguments() {
+    let repo = Repo::new();
+    let version = repo.gir(&["--version", "junk"]);
+    assert_eq!(version.status.code(), Some(0), "{}", stderr(&version));
+    assert_eq!(String::from_utf8_lossy(&version.stdout), format!("gir {}\n", env!("CARGO_PKG_VERSION")));
+    let help = repo.gir(&["--help", "junk"]);
+    assert_eq!(help.status.code(), Some(0), "{}", stderr(&help));
+    assert!(String::from_utf8_lossy(&help.stdout).starts_with("gir: keeps git usage honest"));
+}
