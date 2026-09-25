@@ -1,7 +1,7 @@
 # Friction log
 
 Every bit of friction we hit while building or using gir goes here, including friction from our own tools, shells, and agents.
-`cargo test` checks this file's format (`tests/friction.rs`).
+`cargo test` checks this file's format (`tests/logs.rs`).
 
 ## Format
 

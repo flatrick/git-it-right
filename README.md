@@ -184,3 +184,4 @@ git-cliff --bumped-version
 - `cargo test` runs unit tests, end-to-end tests with real git repositories, and a 750 ms latency budget for the commit-msg hook.
 - `cargo clippy --all-targets -- -D warnings` must pass.
 - Log any friction you hit, with the OS it happened on, in [FRICTION.md](FRICTION.md).
+- Log any bug you find but do not fix right away in [BUGS.md](BUGS.md).
