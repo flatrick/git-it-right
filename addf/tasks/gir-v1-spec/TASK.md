@@ -197,6 +197,23 @@ Gate `DECIDE` exit: `ESTABLISHED`.
 
 ## Implement
 
+-   `b1530d0` moved the `Repo` helper to `tests/common/mod.rs`; clippy and all
+    36 tests passed before and after.
+-   `ed7459b` (C2): `src/main.rs` parses `--range` only for `lint`. Observed:
+    `gir init|doctor|fixup|explain --range x` each print
+    `gir: unknown option --range for` and exit `2`; `gir lint --range` still
+    runs.
+-   `f820c92` (C1): `reject_recorded` in `src/cmd/lint.rs` adds `fix-pending`
+    for `--range` and pre-push, with a `fix-pending` explain page. Observed: a
+    `--no-verify` commit `Feature(api) :Add retry.` is rejected with
+    `pending fixes: header-spacing type-case type-alias desc-period` and
+    `try: feat(api): Add retry`, exit `1`; a clean range exits `0`.
+-   `e3dffb3` (C3): the `src/explain.md` config page shows `bugfix = fix`;
+    observed in `gir explain config` output.
+-   Codex workers (`codex-cli 0.157.0`, `-s workspace-write`, one worktree
+    each) are implementing C4 and C5 (fixup), C6 (init) and the missing tests
+    for all eight modules.
+
 ## Verify
 
 <a id="verification-spec-is-a-stub"></a>
