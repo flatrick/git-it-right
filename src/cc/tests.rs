@@ -134,3 +134,23 @@ fn description_left_empty_by_period_fix_is_desc_empty() {
     let outcome = run("feat: .");
     assert_eq!(rules(&outcome), (vec!["desc-period"], vec!["desc-empty"]));
 }
+
+#[test]
+fn breaking_footer_rewrite_applies_only_to_last_paragraph() {
+    let earlier = "feat: x\n\nbreaking change: y\n\nRefs: #1";
+    let outcome = run(earlier);
+    assert_eq!(outcome.text, earlier);
+    assert!(!rules(&outcome).0.contains(&"breaking-footer"));
+
+    let outcome = run("feat: x\n\nRefs: #1\n\nbreaking change: y");
+    assert_eq!(outcome.text, "feat: x\n\nRefs: #1\n\nBREAKING CHANGE: y");
+    assert_eq!(rules(&outcome).0, vec!["breaking-footer"]);
+}
+
+#[test]
+fn missing_type_does_not_add_body_separator_fix() {
+    let input = "not a conventional header\nbody line";
+    let outcome = run(input);
+    assert_eq!(outcome.text, input);
+    assert_eq!(rules(&outcome), (vec![], vec!["type-missing"]));
+}

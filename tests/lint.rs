@@ -108,3 +108,14 @@ fn lint_range_accepts_any_revision_git_log_takes() {
     assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
     assert!(stderr(&out).contains("rejected [type-missing]"), "a bare revision must lint its whole history: {}", stderr(&out));
 }
+
+#[test]
+fn lint_uses_last_range_value() {
+    let repo = Repo::new();
+    repo.commit_file("bad.txt", "bad\n", "not conventional");
+    repo.commit_file("good.txt", "good\n", "feat: good");
+    let out = repo.gir(&["lint", "--range", "HEAD", "--range", "HEAD~1..HEAD"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(out.stdout.is_empty());
+    assert_eq!(stderr(&out), "");
+}

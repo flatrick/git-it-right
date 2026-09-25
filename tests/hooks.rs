@@ -125,3 +125,25 @@ fn pre_push_rejects_commits_that_skipped_safe_fixes() {
     assert!(stderr(&out).contains("  try: feat(api): Add retry"), "{}", stderr(&out));
     assert_eq!(repo.head_message(), "Feature(api) :Add retry.", "pre-push must not modify the commit");
 }
+
+#[test]
+fn pre_push_skips_malformed_lines_and_lints_following_valid_line() {
+    let repo = Repo::new();
+    repo.commit_file("base.txt", "base\n", "chore: base");
+    let base = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file("bad.txt", "bad\n", "invalid subject");
+    let bad = repo.git(&["rev-parse", "HEAD"]);
+    let input = format!("refs/heads/topic {bad} refs/heads/topic\nrefs/heads/topic {bad} refs/heads/topic {base} extra\nrefs/heads/topic {bad} refs/heads/topic {base}\n");
+    let mut child = repo.cmd(env!("CARGO_BIN_EXE_gir"))
+        .args(["hook", "pre-push", "origin", "unused-url"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child.stdin.take().unwrap().write_all(input.as_bytes()).unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert_eq!(stderr(&out), format!("gir: {} push rejected [type-missing] header must start with `<type>[(scope)][!]: `\n  try: <type>: invalid subject   types: feat fix docs style refactor perf test build ci chore revert\n  more: gir explain type-missing\n", &bad[..10]));
+    assert!(out.stdout.is_empty());
+}

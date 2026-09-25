@@ -231,3 +231,12 @@ fn version_and_help_ignore_trailing_arguments() {
     assert_eq!(help.status.code(), Some(0), "{}", stderr(&help));
     assert!(String::from_utf8_lossy(&help.stdout).starts_with("gir: keeps git usage honest"));
 }
+
+#[test]
+fn unknown_short_option_before_help_exits_two() {
+    let repo = Repo::new();
+    let out = repo.gir(&["lint", "-Z", "--help"]);
+    assert_eq!(out.status.code(), Some(2));
+    assert_eq!(stderr(&out), "gir: unknown option -Z\n");
+    assert!(out.stdout.is_empty());
+}
