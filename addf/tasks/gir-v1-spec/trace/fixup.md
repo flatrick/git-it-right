@@ -29,3 +29,6 @@
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_master` | `tests/fixup.rs:122-123` asserts master supplies the base when main is absent. |
 | `req-fixup-base-lookup` | `base_lookup_falls_back_to_upstream` | `tests/fixup.rs:135-136` asserts upstream supplies the base when named branches are absent. |
 | `req-fixup-unattributed-lines` | `automatic_target_refuses_a_staged_file_without_line_changes` | `tests/fixup.rs:252-253` asserts a staged binary change gets the unattributed error |
+| `req-fixup-base-limit` | `mixed_base_and_topic_replacement_is_refused` | `tests/fixup.rs:265-267` asserts the exact base refusal and unchanged staged path. |
+| `req-fixup-new-file` | `automatic_target_refuses_a_new_binary_file` | `tests/fixup.rs:276-278` asserts exit 2, the exact new-file refusal and staged path. |
+| `req-fixup-base-limit` | `insertion_between_base_and_topic_lines_targets_topic` | `tests/fixup.rs:290-291` asserts exit 0 and the exact topic target. |

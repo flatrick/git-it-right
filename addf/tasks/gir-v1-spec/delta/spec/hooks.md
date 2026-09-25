@@ -21,7 +21,7 @@
 ## pre-push
 
 <a id="req-hooks-pre-push-scope"></a>
-**pre-push-scope.** `gir hook pre-push REMOTE URL` SHALL read git's `local-ref local-sha remote-ref remote-sha` lines from stdin and lint each commit being pushed that the remote does not already have: `remote-sha..local-sha` for an existing remote branch, or commits not reachable from any `REMOTE` remote-tracking ref for a new branch or when that range fails.
+**pre-push-scope.** `gir hook pre-push REMOTE URL` SHALL read git's `local-ref local-sha remote-ref remote-sha` lines from stdin and lint each commit being pushed that the remote does not already have: `remote-sha..local-sha` for an existing remote branch, or commits not reachable from any `REMOTE` remote-tracking ref for a new branch or when that range fails. A stdin line without exactly four fields SHALL be skipped.
 
 <a id="req-hooks-pre-push-deletes"></a>
 **pre-push-deletes.** A line whose local SHA is all zeros (a branch deletion) SHALL be skipped.

@@ -19,7 +19,7 @@
 **success-status.** When setup succeeds without differing existing files, `gir init` SHALL exit `0`.
 
 <a id="req-init-success-output"></a>
-**success-output.** On successful setup, `gir init` SHALL print `gir: next: gir doctor` to stderr and print nothing to stdout.
+**success-output.** Whenever `gir init` completes setup, including when it exits `1` for kept files, it SHALL print `gir: next: gir doctor` as its last stderr line and print nothing to stdout.
 
 ## Generated files
 
@@ -50,7 +50,7 @@
 **clean-rerun-output.** On a rerun with files matching their templates, `gir init` SHALL NOT print `gir: wrote` to stderr.
 
 <a id="req-init-keep-edits"></a>
-**keep-edits.** Without `--force`, `gir init` SHALL leave each existing file with different content unchanged.
+**keep-edits.** Without `--force`, `gir init` SHALL leave each existing file with different content unchanged, including a file that is not valid UTF-8.
 
 <a id="req-init-kept-output"></a>
 **kept-output.** For each differing file kept without `--force`, `gir init` SHALL print `gir: kept ` followed by its path and `(differs from the template; --force overwrites)` to stderr.

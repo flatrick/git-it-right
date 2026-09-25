@@ -46,3 +46,6 @@
 | `req-lint-range-fix-pending` | `lint_range_rejects_every_pending_safe_fix_and_shows_fixed_subject` | `tests/lint.rs:84-90` asserts exit 1, rule `fix-pending`, all four pending rules, and the fixed subject hint |
 | `req-lint-range-no-fix` | `lint_range_refuses_fix` | `tests/lint.rs:98-99` |
 | `req-lint-range` | `lint_range_accepts_any_revision_git_log_takes` | `tests/lint.rs:108-109` asserts a bare revision lints its whole history |
+| `req-lint-breaking-footer` | `cc::tests::breaking_footer_rewrite_applies_only_to_last_paragraph` | `src/cc/tests.rs:142-143`, `src/cc/tests.rs:146-147` asserts the earlier token stays unchanged and the last token is rewritten. |
+| `req-lint-body-separator` | `cc::tests::missing_type_does_not_add_body_separator_fix` | `src/cc/tests.rs:154-155` asserts unchanged text, no fixes and type-missing. |
+| `req-lint-range` | `lint_uses_last_range_value` | `tests/lint.rs:118-120` asserts exit 0 with empty output for the last range. |

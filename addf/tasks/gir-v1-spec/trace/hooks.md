@@ -14,3 +14,4 @@
 | `req-hooks-shim-missing-warn` | `installed_hooks_warn_when_gir_is_missing` | `tests/hooks.rs:96-98` asserts both scripts skip with the named warning and exit 0 |
 | `req-hooks-shim-missing-fail` | `installed_hooks_block_when_gir_is_missing_and_configured_to_fail` | `tests/hooks.rs:109-111` asserts both scripts block with the named warning and exit 1 |
 | `req-hooks-commit-msg-latency` | `commit_msg_hook_stays_within_budget` | `tests/perf.rs:48` |
+| `req-hooks-pre-push-scope` | `pre_push_skips_malformed_lines_and_lints_following_valid_line` | `tests/hooks.rs:146-148` asserts exit 1 and exactly one rejection from the valid line. |

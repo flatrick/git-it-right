@@ -16,3 +16,4 @@
 | `req-cli-runtime-error` | `commit_failure_reports_git_command_and_target` | `tests/fixup.rs:239-240` asserts git's own output precedes gir's single final message |
 | `req-cli-version` | `version_and_help_ignore_trailing_arguments` | `tests/args.rs:228-229` |
 | `req-cli-help` | `version_and_help_ignore_trailing_arguments` | `tests/args.rs:231-232` |
+| `req-cli-help` | `unknown_short_option_before_help_exits_two` | `tests/args.rs:239-241` asserts exit 2, exact unknown-option stderr and empty stdout. |

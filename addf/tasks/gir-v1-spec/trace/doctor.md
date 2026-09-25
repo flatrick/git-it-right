@@ -34,3 +34,5 @@
 | `req-doctor-index-clean` | `doctor_counts_clean_index_as_ok_without_index_warnings` | `tests/doctor.rs:298-301` asserts no index warnings and one OK check in the summary. |
 | `req-doctor-ignore-patterns` | `doctor_checks_each_stack_pattern_for_its_marker` | `tests/doctor.rs:317-319` asserts every stack marker's patterns appear without unrelated Cargo ignores. |
 | `req-doctor-case-collision` | `doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision` | `tests/doctor.rs:333` |
+| `req-doctor-ignore-rules` | `doctor_appends_ignore_rules_without_losing_invalid_utf8_bytes` | `tests/doctor.rs:342-343` asserts exit 1 and the exact original and appended bytes. |
+| `req-doctor-gitattributes-rule` | `doctor_reports_invalid_utf8_gitattributes_without_replacing_it` | `tests/doctor.rs:352-354` asserts exit 1, the exact info line and unchanged bytes. |

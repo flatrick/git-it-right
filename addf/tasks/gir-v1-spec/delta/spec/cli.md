@@ -10,7 +10,7 @@
 **version.** `gir --version` and `gir -V` SHALL print `gir` followed by the crate version on stdout and exit `0`, ignoring any arguments after them.
 
 <a id="req-cli-help"></a>
-**help.** `gir` with no arguments, `gir -h`, `gir --help`, and `-h` or `--help` after any subcommand SHALL print the usage text on stdout and exit `0`, ignoring any other arguments.
+**help.** `gir` with no arguments, `gir -h`, `gir --help`, and `-h` or `--help` after any subcommand SHALL print the usage text on stdout and exit `0`, ignoring any other arguments except an unknown short flag before it, which fails as below.
 
 <a id="req-cli-usage-lists-commands"></a>
 **usage-lists-commands.** The usage text SHALL list `init`, `lint`, `fixup`, `doctor`, `explain` and `hook` with their accepted arguments and flags.

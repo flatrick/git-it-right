@@ -36,7 +36,7 @@
 **base-lookup.** The base commit SHALL be the merge base with `HEAD` of the first of `refs/remotes/origin/HEAD`, `refs/heads/main`, `refs/heads/master` and `@{upstream}` whose merge base resolves and is not `HEAD` itself; when none qualifies, no base is found.
 
 <a id="req-fixup-base-limit"></a>
-**base-limit.** When a base branch is found, automatic selection SHALL accept only commits after the base commit and SHALL refuse a staged line last changed on the base branch with `already on the base branch` on stderr.
+**base-limit.** When a base branch is found, automatic selection SHALL accept only commits after the base commit and SHALL refuse a hunk that replaces any line last changed on the base branch with `already on the base branch` on stderr, even when it also replaces later lines. A pure insertion SHALL be refused only when every neighbouring line is on the base branch.
 
 <a id="req-fixup-no-base-limit"></a>
 **no-base-limit.** When no branch base can be found, automatic selection SHALL permit a commit already present on the current branch if its staged lines identify that commit.

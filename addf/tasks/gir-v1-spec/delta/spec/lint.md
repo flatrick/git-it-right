@@ -80,10 +80,10 @@ When an allowed type is within edit distance 2 of it, and that distance is less 
 **desc-case.** With `gir.descCase` `lower`, an uppercase first letter of the description SHALL be lowercased, reported as rule `desc-case`, unless the second letter is also uppercase; with `any` the description SHALL be left alone.
 
 <a id="req-lint-body-separator"></a>
-**body-separator.** A missing blank line between header and body SHALL be inserted, reported as rule `body-separator`.
+**body-separator.** For a message whose header is not rejected with `type-missing`, a missing blank line between header and body SHALL be inserted, reported as rule `body-separator`.
 
 <a id="req-lint-breaking-footer"></a>
-**breaking-footer.** In the footer block, any case or underscore variant of `BREAKING CHANGE` before a colon SHALL be rewritten to `BREAKING CHANGE: value`, reported as rule `breaking-footer`; `BREAKING-CHANGE: value` SHALL be left alone.
+**breaking-footer.** In the footer block (the lines after the last blank line), any case or underscore variant of `BREAKING CHANGE` before a colon SHALL be rewritten to `BREAKING CHANGE: value`, reported as rule `breaking-footer`; `BREAKING-CHANGE: value` SHALL be left alone.
 
 <a id="req-lint-fix-idempotent"></a>
 **fix-idempotent.** Linting an already fixed message SHALL produce no further fixes and the same text.
@@ -117,7 +117,7 @@ When an allowed type is within edit distance 2 of it, and that distance is less 
 **stdin.** `gir lint` and `gir lint -` SHALL read the message from stdin; with `--fix` and without `--json` they SHALL print the fixed message on stdout.
 
 <a id="req-lint-range"></a>
-**range.** `gir lint --range REV` SHALL lint every commit `git log REV` selects (for example `A..B`), labelling each rejection with the first 10 characters of its SHA and `rejected`, and exit `1` when any commit is rejected.
+**range.** `gir lint --range REV` SHALL lint every commit `git log REV` selects (for example `A..B`), labelling each rejection with the first 10 characters of its SHA and `rejected`, and exit `1` when any commit is rejected; when `--range` is given more than once, the last value SHALL be used.
 
 <a id="req-lint-range-no-fix"></a>
 **range-no-fix.** `gir lint --range REV --fix` SHALL print `gir: gir lint --range cannot --fix recorded commits` on stderr and exit `2`, linting nothing.

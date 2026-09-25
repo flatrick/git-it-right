@@ -65,7 +65,7 @@
 **gitattributes-autocrlf.** When `.gitattributes` cannot be read and `core.autocrlf` is set to a value other than `false`, `gir doctor` SHALL append `and core.autocrlf=VALUE, so line endings depend on each clone` to its missing-file warning.
 
 <a id="req-doctor-gitattributes-rule"></a>
-**gitattributes-rule.** A readable `.gitattributes` without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
+**gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
 
 <a id="req-doctor-editorconfig"></a>
 **editorconfig.** When `.editorconfig` does not exist, `gir doctor` SHALL print `info  .editorconfig: missing`; `--fix` SHALL create it with `root = true`; a `[*]` section setting `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`, `indent_style = space` and `indent_size = 4`; `trim_trailing_whitespace = false` for Markdown; `indent_size = 2` for YAML, JSON and TOML; `end_of_line = crlf` for `*.cmd`, `*.bat` and `*.sln`; and `indent_style = tab` for `Makefile`.
@@ -74,7 +74,7 @@
 **girconfig.** If `.girconfig` has an invalid `gir` setting, `gir doctor` SHALL print a `warn  .girconfig:` line describing the error; `--fix` SHALL NOT edit the file.
 
 <a id="req-doctor-ignore-rules"></a>
-**ignore-rules.** When a relevant untracked probe is not ignored, `gir doctor` SHALL print `warn  .gitignore: does not ignore: ` followed by the missing patterns; `--fix` SHALL append those patterns to `.gitignore`, adding a newline before them if needed.
+**ignore-rules.** When a relevant untracked probe is not ignored, `gir doctor` SHALL print `warn  .gitignore: does not ignore: ` followed by the missing patterns; `--fix` SHALL append those patterns to `.gitignore`, adding a newline before them if needed and keeping every existing byte, including bytes that are not valid UTF-8.
 
 <a id="req-doctor-ignore-patterns"></a>
 **ignore-patterns.** `gir doctor` SHALL check `.DS_Store`, `Thumbs.db`, and `.env` in every repository, and SHALL check stack patterns only when the matching marker is present; `.claude/settings.local.json` and `.scratch/` SHALL be checked when their parent directories exist.

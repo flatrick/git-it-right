@@ -31,3 +31,5 @@
 | `req-init-git-error` | `git_staging_failure_is_reported` | `tests/init.rs:197-198` asserts exit `2` and Git's staging error. |
 | `req-init-git-error` | `git_hook_path_failure_is_reported` | `tests/init.rs:206-207` asserts exit `2` and Git's config error. |
 | `req-init-config-error` | `invalid_config_stops_before_cliff_and_git_setup` | `tests/init.rs:185-188` asserts exit `2`, the `.girconfig` error, no `cliff.toml` and no hook path for an unknown key and an invalid `subjectMax` |
+| `req-init-keep-edits` | `init_keeps_invalid_utf8_cliff_toml_without_force` | `tests/init.rs:229-230` asserts exit 1 and unchanged invalid UTF-8 bytes. |
+| `req-init-success-output` | `init_kept_file_prints_next_step_last` | `tests/init.rs:238-240` asserts exit 1, empty stdout and the last stderr line. |
