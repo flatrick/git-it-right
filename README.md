@@ -106,8 +106,8 @@ gir fixup                        # finds the target from the staged lines
 git rebase --autosquash main     # folds the fixup into its target
 ```
 
-- `gir fixup <commit>` names the target explicitly; `gir fixup --dry-run` only prints the target it found.
-- gir refuses when the staged lines belong to several commits, come from the base branch, or are in a new file.
+- `gir fixup <commit>` names a target on the current branch after the base; `gir fixup --dry-run` only prints the target it found.
+- When gir finds the target itself, it refuses staged lines that belong to several commits, come from the base branch (`origin/HEAD`, `main`, `master` or the upstream), or are in a new file.
   It tells you which, so you can stage per commit with `git add -p`.
 - `rebase.autoSquash = true` (set by `gir doctor --fix`) makes every `git rebase -i` autosquash too.
 - The `pre-push` hook refuses `fixup!`, `squash!` and `amend!` commits, so they never reach the remote.

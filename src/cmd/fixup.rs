@@ -8,8 +8,17 @@ pub fn fixup(target: Option<String>, dry_run: bool) -> Result<i32, String> {
     }
     let base = find_base();
     let sha = match target {
-        Some(t) => git::run(&["rev-parse", "--verify", "--quiet", &format!("{t}^{{commit}}")])
-            .map_err(|_| format!("`{t}` is not a commit"))?,
+        Some(t) => {
+            let sha = git::run(&["rev-parse", "--verify", "--quiet", &format!("{t}^{{commit}}")])
+                .map_err(|_| format!("`{t}` is not a commit"))?;
+            if git::run(&["merge-base", "--is-ancestor", &sha, "HEAD"]).is_err() {
+                return Err(format!("`{t}` is not in the current branch's history"));
+            }
+            if base.as_deref().is_some_and(|b| git::run(&["merge-base", "--is-ancestor", &sha, b]).is_ok()) {
+                return Err(format!("`{t}` is already on the base branch"));
+            }
+            sha
+        }
         None => auto_target(base.as_deref())?,
     };
     let subject = git::run(&["log", "-1", "--format=%s", &sha])?;

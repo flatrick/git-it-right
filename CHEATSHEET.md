@@ -199,7 +199,8 @@ git rebase --autosquash main
 ```
 
 - `gir fixup` finds the target itself by looking at which commit last changed the staged lines.
-  It refuses, and says why, when the lines belong to several commits, come from `main`, or are in a new file.
+  When gir finds the target itself, it refuses lines that belong to several commits, come from the base branch (`origin/HEAD`, `main`, `master` or the upstream), or are in a new file.
+  `gir fixup <commit>` accepts a target on the current branch after the base.
 - Stage one target at a time (`git add -p`) when a change touches several earlier commits.
 - The `pre-push` hook rejects `fixup!`, `amend!` and `squash!` commits, so they cannot reach the remote by accident.
 - `rebase.autoSquash = true` (set by `gir doctor --fix`) applies the same folding to every `git rebase -i`.
