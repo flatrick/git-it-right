@@ -110,7 +110,7 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
 }
 
 fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
-    match std::fs::read_to_string(root.join(".gitattributes")) {
+    match std::fs::read(root.join(".gitattributes")).map(|b| String::from_utf8_lossy(&b).into_owned()) {
         Err(_) => {
             let crlf = git::get_config("core.autocrlf").filter(|v| v != "false");
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();
@@ -227,13 +227,17 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
         Fix::WriteFile(rel, content) => std::fs::write(root.join(rel), content).map_err(|e| format!("cannot write {rel}: {e}")),
         Fix::AppendIgnore(patterns) => {
             let path = root.join(".gitignore");
-            let mut text = std::fs::read_to_string(&path).unwrap_or_default();
-            if !text.is_empty() && !text.ends_with('\n') {
-                text.push('\n');
+            let mut text = match std::fs::read(&path) {
+                Ok(bytes) => bytes,
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => Vec::new(),
+                Err(e) => return Err(format!("cannot read .gitignore: {e}")),
+            };
+            if !text.is_empty() && !text.ends_with(b"\n") {
+                text.push(b'\n');
             }
             for p in patterns {
-                text.push_str(p);
-                text.push('\n');
+                text.extend_from_slice(p.as_bytes());
+                text.push(b'\n');
             }
             std::fs::write(&path, text).map_err(|e| format!("cannot write .gitignore: {e}"))
         }

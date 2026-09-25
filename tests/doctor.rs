@@ -332,3 +332,24 @@ fn doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision() {
     let report = stdout(&repo.gir(&["doctor"]));
     assert!(!report.contains("case-collision"), "{report}");
 }
+
+#[test]
+fn doctor_appends_ignore_rules_without_losing_invalid_utf8_bytes() {
+    let repo = Repo::new();
+    let original = b"custom-\xff-rule";
+    std::fs::write(repo.dir.join(".gitignore"), original).unwrap();
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert_eq!(std::fs::read(repo.dir.join(".gitignore")).unwrap(), b"custom-\xff-rule\n.DS_Store\nThumbs.db\n.env\n");
+}
+
+#[test]
+fn doctor_reports_invalid_utf8_gitattributes_without_replacing_it() {
+    let repo = Repo::new();
+    let original = b"# keep \xff\n*.txt text\n";
+    std::fs::write(repo.dir.join(".gitattributes"), original).unwrap();
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert!(stdout(&out).lines().any(|line| line == "info  .gitattributes: no `* text=auto` line; line endings are not normalised"), "{}", stdout(&out));
+    assert_eq!(std::fs::read(repo.dir.join(".gitattributes")).unwrap(), original);
+}
