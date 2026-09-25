@@ -161,7 +161,15 @@ fn doctor_writes_complete_gitattributes_and_editorconfig() {
     }
     let editor = std::fs::read_to_string(repo.dir.join(".editorconfig")).unwrap();
     assert!(editor.lines().any(|line| line == "root = true"), "{editor}");
-    assert!(editor.contains("[*]\ncharset = utf-8"), "{editor}");
+    for section in [
+        "[*]\ncharset = utf-8\nend_of_line = lf\ninsert_final_newline = true\ntrim_trailing_whitespace = true\nindent_style = space\nindent_size = 4\n",
+        "[*.{md,markdown}]\ntrim_trailing_whitespace = false\n",
+        "[*.{yml,yaml,json,toml}]\nindent_size = 2\n",
+        "[{*.cmd,*.bat,*.sln}]\nend_of_line = crlf\n",
+        "[Makefile]\nindent_style = tab\n",
+    ] {
+        assert!(editor.contains(section), "{section}: {editor}");
+    }
 }
 
 #[test]

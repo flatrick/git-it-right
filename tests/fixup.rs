@@ -235,6 +235,8 @@ fn commit_failure_reports_git_command_and_target() {
     stage(&repo, "a.txt", "one\nTWO\nthree\n");
     let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).args(["fixup"]).env("GIT_COMMITTER_DATE", "not-a-date").output().unwrap();
     assert_eq!(out.status.code(), Some(2));
-    assert!(stderr(&out).contains(&format!("gir: git commit --quiet --fixup={target} failed")), "{}", stderr(&out));
+    let err = stderr(&out);
+    assert_eq!(err.lines().last(), Some(format!("gir: git commit --quiet --fixup={target} failed").as_str()), "{err}");
+    assert!(err.lines().count() > 1, "git's own output must precede gir's message: {err}");
     assert_eq!(repo.git(&["rev-parse", "HEAD"]), target);
 }
