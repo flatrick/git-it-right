@@ -62,6 +62,11 @@ fn auto_target(base: Option<&str>) -> Result<String, String> {
         "--no-renames", "--src-prefix=a/", "--dst-prefix=b/",
     ])?;
     let hunks = parse_hunks(&diff)?;
+    let traced: BTreeSet<&str> = hunks.iter().map(|h| h.path.as_str()).collect();
+    let staged = git::run(&["-c", "core.quotePath=false", "diff", "--cached", "--name-only", "--no-renames"])?;
+    if let Some(path) = staged.lines().find(|p| !traced.contains(p)) {
+        return Err(format!("cannot tell which commit {path} belongs to; pass one: gir fixup <commit>"));
+    }
     let allowed: Option<HashSet<String>> = match base {
         Some(b) => Some(git::run(&["rev-list", &format!("{b}..HEAD")])?.lines().map(str::to_string).collect()),
         None => None,

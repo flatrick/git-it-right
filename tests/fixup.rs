@@ -240,3 +240,15 @@ fn commit_failure_reports_git_command_and_target() {
     assert!(err.lines().count() > 1, "git's own output must precede gir's message: {err}");
     assert_eq!(repo.git(&["rev-parse", "HEAD"]), target);
 }
+
+#[test]
+fn automatic_target_refuses_a_staged_file_without_line_changes() {
+    let repo = topic_repo();
+    repo.write("b.bin", "\0one");
+    repo.git(&["add", "b.bin"]);
+    repo.git(&["commit", "-q", "--no-verify", "-m", "feat: add b.bin"]);
+    stage(&repo, "b.bin", "\0two");
+    let out = repo.gir(&["fixup"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert_eq!(stderr(&out), "gir: cannot tell which commit b.bin belongs to; pass one: gir fixup <commit>\n");
+}
