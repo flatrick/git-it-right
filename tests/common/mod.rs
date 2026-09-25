@@ -29,6 +29,7 @@ impl Repo {
         c.current_dir(&self.dir)
             .env("PATH", std::env::join_paths(paths).unwrap())
             .env("GIT_CONFIG_GLOBAL", &self.global)
+            .env("XDG_CONFIG_HOME", self.global.with_file_name("xdg"))
             .env("GIT_CONFIG_NOSYSTEM", "1")
             .env_remove("GIT_DIR")
             .env_remove("GIT_WORK_TREE");

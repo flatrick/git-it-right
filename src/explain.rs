@@ -51,7 +51,7 @@ mod tests {
     fn every_rule_and_type_has_a_page() {
         let cfg = Config::default();
         let types = DEFAULT_TYPES.iter().map(|(t, _)| t);
-        let extra = ["fixup-unsquashed", "fixup", "breaking", "scopes", "config", "hooks", "doctor", "types"];
+        let extra = ["fixup-unsquashed", "fix-pending", "fixup", "breaking", "scopes", "config", "hooks", "doctor", "types"];
         for topic in RULES.iter().chain(types).chain(&extra) {
             let p = page(topic, &cfg).unwrap_or_else(|| panic!("no page for {topic}"));
             assert!(!p.is_empty() && !p.contains("\n## "), "{topic}");
@@ -70,16 +70,15 @@ mod tests {
     #[test]
     fn cheatsheet_examples_pass_the_linter_untouched() {
         let cfg = Config::default();
-        let mut checked = 0;
         for (ty, _) in DEFAULT_TYPES {
             let page = section(CHEATSHEET, ty).unwrap();
-            for example in page.lines().filter_map(|l| l.strip_prefix("- `")?.strip_suffix('`')) {
+            let examples: Vec<_> = page.lines().filter_map(|l| l.strip_prefix("- `")?.strip_suffix('`')).collect();
+            assert!(examples.len() >= 2, "{ty} has fewer than two examples");
+            for example in examples {
                 let o = cc::check(example, &cfg);
                 assert!(o.ok() && o.fixes.is_empty(), "{example}: {:?} {:?}", o.violations, o.fixes);
                 assert!(example.starts_with(ty), "{example} is listed under {ty}");
-                checked += 1;
             }
         }
-        assert!(checked >= 2 * DEFAULT_TYPES.len(), "only {checked} examples found");
     }
 }
