@@ -21,7 +21,7 @@ When a bug is fixed, set `Status: fixed` and name the commit in the text.
 
 ### B-001 gir panics when stdout is closed early
 
-- OS: windows=untested linux=seen macos=untested
+- OS: windows=seen linux=seen macos=untested
 - Area: cli
 - Status: open
 - Reproduced: yes
@@ -30,10 +30,12 @@ When a bug is fixed, set `Status: fixed` and name the commit in the text.
 `gir explain | head -c 0` prints `failed printing to stdout: Broken pipe (os error 32)` from a Rust panic and exits `101`.
 Any command that writes to stdout through `println!` is affected when the reader closes the pipe first.
 It should exit quietly, as other command-line tools do when their output pipe closes.
+On Windows the panic reads `failed printing to stdout: The pipe is being closed. (os error 232)`, also exit `101`.
+`gir explain` writes only 365 bytes, so `| head -c 0` races and fired 1 run in 10 there; `(sleep 0.5; gir explain) | true` in Git Bash fires every time.
 
 ### B-002 `gir doctor` reports an unreadable `.gitattributes` as missing
 
-- OS: windows=untested linux=seen macos=untested
+- OS: windows=seen linux=seen macos=untested
 - Area: doctor
 - Status: open
 - Reproduced: yes
@@ -42,3 +44,6 @@ It should exit quietly, as other command-line tools do when their output pipe cl
 With `.gitattributes` present but unreadable (`chmod 000`), `gir doctor` prints `warn  .gitattributes: missing`.
 `gir doctor --fix` then tries to write the template and fails with `gir: cannot write .gitattributes: Permission denied (os error 13)`, exit `2`; the file was not changed in that run.
 `src/cmd/doctor.rs` treats any read error as a missing file; only `NotFound` should mean missing, and other errors should be reported as they are.
+On Windows, denying read with `icacls .gitattributes /deny "%USERNAME%:(R)"` gives the same `missing` warning, and `--fix` fails with `os error 5`, exit `2`, file unchanged.
+Denying only read-data with `(RD)` leaves the file writable: `--fix` then reports `fixed .gitattributes` and replaces the user's file with the template.
+The same overwrite is likely on Linux with a write-only file (`chmod 200`); that is untested.
