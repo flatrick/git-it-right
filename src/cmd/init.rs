@@ -47,8 +47,8 @@ enum WriteOutcome {
 
 fn write(root: &Path, rel: &str, content: &str, force: bool) -> Result<WriteOutcome, String> {
     let path = root.join(rel);
-    match std::fs::read_to_string(&path) {
-        Ok(existing) if existing.replace("\r\n", "\n") == content => return Ok(WriteOutcome::Unchanged),
+    match std::fs::read(&path) {
+        Ok(existing) if String::from_utf8_lossy(&existing).replace("\r\n", "\n") == content => return Ok(WriteOutcome::Unchanged),
         Ok(_) if !force => {
             eprintln!("gir: kept {rel} (differs from the template; --force overwrites)");
             return Ok(WriteOutcome::Kept);

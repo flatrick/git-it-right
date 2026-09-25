@@ -219,3 +219,23 @@ fn init_writes_files_at_the_repository_root_from_a_subdirectory() {
         assert!(!sub.join(path).exists(), "{path} is absent from the current subdirectory");
     }
 }
+
+#[test]
+fn init_keeps_invalid_utf8_cliff_toml_without_force() {
+    let repo = Repo::new();
+    let original = b"custom = \xff\n";
+    fs::write(repo.dir.join("cliff.toml"), original).unwrap();
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert_eq!(fs::read(repo.dir.join("cliff.toml")).unwrap(), original);
+}
+
+#[test]
+fn init_kept_file_prints_next_step_last() {
+    let repo = Repo::new();
+    repo.write("cliff.toml", "custom = true\n");
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
+    assert!(out.stdout.is_empty());
+    assert_eq!(stderr(&out).lines().last(), Some("gir: next: gir doctor"));
+}
