@@ -151,3 +151,16 @@ fn explain_uses_defaults_when_config_is_invalid() {
     assert_eq!(stdout(&invalid), stdout(&defaults), "invalid config must not change explain types");
     assert!(!stderr(&invalid).contains(".girconfig:"), "{}", stderr(&invalid));
 }
+
+#[test]
+fn malformed_config_fails_and_config_without_gir_keys_uses_defaults() {
+    let repo = Repo::new();
+    repo.write("MSG", "feat: add x\n");
+    repo.write(".girconfig", "[gir\n\ttypes = x\n");
+    let malformed = repo.gir(&["lint", "MSG"]);
+    assert_eq!(malformed.status.code(), Some(2), "{}", stderr(&malformed));
+    assert!(stderr(&malformed).starts_with("gir: .girconfig: "), "{}", stderr(&malformed));
+    repo.write(".girconfig", "[other]\n\tkey = value\n");
+    let unrelated = repo.gir(&["lint", "MSG"]);
+    assert_eq!(unrelated.status.code(), Some(0), "{}", stderr(&unrelated));
+}

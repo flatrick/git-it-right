@@ -76,8 +76,11 @@ impl Config {
             return Ok(cfg);
         }
         let path_str = path.to_string_lossy();
-        let out = git::run(&["config", "--file", &path_str, "--get-regexp", r"^gir\."])
-            .unwrap_or_default();
+        let out = match git::run(&["config", "--file", &path_str, "--get-regexp", r"^gir\."]) {
+            Ok(out) => out,
+            Err(e) if e.is_empty() => String::new(),
+            Err(e) => return Err(format!("{FILE}: {e}")),
+        };
         for line in out.lines() {
             let (key, value) = line.split_once(' ').unwrap_or((line, ""));
             if let Some(from) = key.strip_prefix("gir.alias.") {
