@@ -17,7 +17,8 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [fix-b001-b002](tasks/fix-b001-b002/TASK.md) - B-001 and B-002 are
+  fixed; State `IMPLEMENT`.
 
 ## Ledger
 
