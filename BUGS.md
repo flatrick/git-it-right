@@ -116,28 +116,38 @@ When a push names a URL instead of a remote, git passes the URL as the remote na
 For a new branch, `gir hook pre-push` then lints the whole history: pushing to a bare repository by path rejected `old bad message`, a commit that repository already had, exit `1`; the same push through a named remote exited `0`.
 This follows `spec/hooks.md#req-hooks-pre-push-scope` as written, so the spec needs a decision first, for example asking the remote what it has with `git ls-remote`.
 
-### B-008 `gir fixup` cannot trace quoted or non-UTF-8 paths
+### B-008 `gir fixup` cannot trace paths with a space, quote, backslash, tab or non-UTF-8 byte
 
-- OS: windows=untested linux=untested macos=untested
+- OS: windows=untested linux=seen macos=untested
 - Area: fixup
 - Status: open
-- Reproduced: no
+- Reproduced: yes
 - Found: 2026-09-26
 
-`src/git.rs` `run` decodes git's output lossily, and `parse_hunks` strips quotes from a path without undoing git's C escapes.
-A staged change to a committed file named `x\xff.txt`, or one containing a tab, would reach `git blame` under a different name, so `gir fixup` would report that it cannot tell which commit the path belongs to.
-Suspected from a Codex review; not reproduced.
+`src/cmd/fixup.rs` `parse_hunks` takes the path from the `--- a/` header line as it is.
+Git ends that line with a tab when the name contains a space, and quotes it with C escapes when it contains `"`, `\`, a tab or another control byte, even with `core.quotePath=false`.
+`src/git.rs` `run` also decodes output lossily, so a non-UTF-8 byte becomes U+FFFD.
+Repro: on a branch after the commit that added the file, change one line of it, stage it and run `gir fixup --dry-run`.
+`plain.txt` prints the commit, exit `0`.
+`sp ace.txt` prints `gir: cannot tell which commit sp ace.txt belongs to`, exit `2`; its header is `--- a/sp ace.txt` followed by a tab.
+A name with byte `0xff` (`x\377.txt` in `printf`) prints `x` U+FFFD `.txt:2`, exit `2`.
+`a<TAB>b.txt`, `q"uote.txt` and `b\s.txt` print the quoted name, exit `2`.
+Paths should come from `-z` output, which needs no unquoting, and be kept as bytes.
 
-### B-009 `gir doctor` can report a case collision between different non-UTF-8 paths
+### B-009 `gir doctor` mishandles non-UTF-8 index paths
 
-- OS: windows=untested linux=untested macos=untested
+- OS: windows=untested linux=seen macos=untested
 - Area: doctor
 - Status: open
-- Reproduced: no
+- Reproduced: yes
 - Found: 2026-09-26
 
-`src/cmd/doctor.rs` `index_checks` groups `git ls-files -s` paths after lossy UTF-8 decoding, so `a\x80` and `a\x81` both become `a\u{fffd}` and would be reported as `paths differ only in case`.
-Suspected from a Codex review; not reproduced.
+`src/cmd/doctor.rs` `index_checks` reads `git ls-files -s` through lossy UTF-8 decoding, so distinct names can decode to the same string.
+Staged names `A` + byte `0x80` and `a` + byte `0x81` give `warn  case-collision: paths differ only in case`, although they differ in more than case.
+Staged names `a` + `0x80` and `a` + `0x81` decode to the same adjacent string, so the unmerged-stage dedup drops the second and no warning appears; that is right only by accident.
+Staged scripts `x` + `0x80` + `.sh` and `x` + `0x81` + `.sh` at mode `100644` give an `exec-bit` warning that names one lossy path.
+`gir doctor --fix` then fails with `gir: error: x` U+FFFD `.sh: does not exist and --remove not passed`, exit `2`, and neither script becomes executable.
+Paths should be read with `-z` and kept as bytes for comparison and for the `git update-index` fix.
 
 ### B-010 The fixup-table test never reads `CHEATSHEET.md`
 
