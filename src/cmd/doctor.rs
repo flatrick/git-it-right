@@ -111,6 +111,9 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
 
 fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     match std::fs::read(root.join(".gitattributes")).map(|b| String::from_utf8_lossy(&b).into_owned()) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+            out.push(check(Level::Warn, ".gitattributes", format!("cannot read: {e}"), None));
+        }
         Err(_) => {
             let crlf = git::get_config("core.autocrlf").filter(|v| v != "false");
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();
