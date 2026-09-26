@@ -8,12 +8,10 @@
     `icacls .gitattributes /deny "%USERNAME%:(R)"` or `(RD)`, `gir doctor`
     prints `warn  .gitattributes: cannot read: ` and `gir doctor --fix` leaves
     the file unchanged.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: `src/` at `86fb64b`, Windows.
 -   Consequence if false: `B-001 or B-002 remains open on Windows, where both were first seen.`
--   Basis: `DEFERRED_VERIFICATION`; no Windows host in the originating
-    session. Rust std maps `ERROR_NO_DATA` (232) to `ErrorKind::BrokenPipe`,
-    which supports but does not settle the B-001 half.
+-   Basis: `framework:evidence/b001-b002-windows-verification.md#conclusion`
 
 ## Originating Task
 

@@ -60,15 +60,15 @@ is available through its archived bundle, not through this index.
 
 ## Open Claims
 
-- [gir-v1-windows-macos](open-claims/gir-v1-windows-macos.md) - gir v1's
-  tests and clippy pass on Windows and macOS; unverified, awaiting the
-  operator's Windows run.
-- [b001-b002-windows](open-claims/b001-b002-windows.md) - B-001 and
-  B-002 are fixed on Windows; unverified, awaiting the operator's Windows run.
+`NONE`. No standing Claim is open.
 
 ## Reusable Evidence
 
-`NONE`. No Evidence artifact is reused outside its originating Task.
+- [b001-b002-windows-verification](evidence/b001-b002-windows-verification.md) -
+  B-001 and B-002 are fixed on Windows; verified.
+- [gir-v1-windows-verification](evidence/gir-v1-windows-verification.md) -
+  gir's tests and clippy pass on Windows; verified. macOS is assumed, not
+  verified.
 
 ## Index invariants
 

@@ -9,8 +9,10 @@
 -   State: `UNVERIFIED`
 -   Scope: `src/` and `tests/` at `f83b6bb`, Windows and macOS.
 -   Consequence if false: `gir, which promises Windows, Linux and macOS, could fail on a platform the Linux evidence does not cover.`
--   Basis: `DEFERRED_VERIFICATION`; the operator will run the suite on
-    Windows personally, and no macOS machine was available.
+-   Basis: retired on 2026-09-26. The Windows part is narrowed to
+    `framework:evidence/gir-v1-windows-verification.md#gir-v1-windows`.
+    The operator decided macOS will not be verified and rests on POSIX
+    adherence shared with Linux, an accepted assumption, not a Verification.
 
 ## Originating Task
 

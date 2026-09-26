@@ -33,7 +33,7 @@ It should exit quietly, as other command-line tools do when their output pipe cl
 On Windows the panic reads `failed printing to stdout: The pipe is being closed. (os error 232)`, also exit `101`.
 `gir explain` writes only 365 bytes, so `| head -c 0` races and fired 1 run in 10 there; `(sleep 0.5; gir explain) | true` in Git Bash fires every time.
 Fixed in `9333a1f`: every stdout write goes through `src/stdout.rs`, which exits `141` silently on a broken pipe (`tests/args.rs` `closed_stdout_exits_141_without_output`).
-Windows is not yet re-checked after the fix.
+Re-checked on Windows on 2026-09-26: `(sleep 0.5; gir explain) | true` in Git Bash exits `141` with nothing on stderr.
 
 ### B-002 `gir doctor` reports an unreadable `.gitattributes` as missing
 
@@ -50,7 +50,7 @@ On Windows, denying read with `icacls .gitattributes /deny "%USERNAME%:(R)"` giv
 Denying only read-data with `(RD)` leaves the file writable: `--fix` then reports `fixed .gitattributes` and replaces the user's file with the template.
 The same overwrite happens on Linux with a write-only file (`chmod 200`): `--fix` reported `fixed .gitattributes` and replaced the content (reproduced 2026-09-26).
 Fixed in `3d95b90`: only `NotFound` means missing; any other read error prints `warn  .gitattributes: cannot read: <error>` with no fix (`tests/doctor.rs`).
-Windows is not yet re-checked after the fix.
+Re-checked on Windows on 2026-09-26: with `(R)` or `(RD)` denied, `gir doctor` prints `cannot read` and `--fix` leaves the file unchanged.
 
 ### B-003 `gir doctor --fix` can overwrite a file created after its check
 
