@@ -25,7 +25,7 @@ pub fn fixup(target: Option<String>, dry_run: bool) -> Result<i32, String> {
     let subject = git::run(&["log", "-1", "--format=%s", &sha])?;
     let short = &sha[..10];
     if dry_run {
-        println!("{short} {subject}");
+        crate::outln!("{short} {subject}");
         return Ok(0);
     }
     git::passthrough(&["commit", "--quiet", &format!("--fixup={sha}")])?;

@@ -25,7 +25,7 @@ pub fn lint(source: Source, opts: Options, cfg: &Config) -> Result<i32, String> 
             let msg = message::split(&raw, &git::comment_string());
             let outcome = cc::check(&msg.text, cfg);
             if opts.fix && !opts.json {
-                print!("{}", message::join(&message::RawMessage { text: outcome.text.clone(), tail: msg.tail }));
+                crate::out!("{}", message::join(&message::RawMessage { text: outcome.text.clone(), tail: msg.tail }));
             }
             Ok(emit(&[(None, outcome)], &opts, "rejected"))
         }
@@ -60,7 +60,7 @@ pub fn emit(outcomes: &[(Option<String>, Outcome)], opts: &Options, label: &str)
     let failed = outcomes.iter().any(|(_, o)| !o.ok());
     if opts.json {
         let refs: Vec<_> = outcomes.iter().map(|(s, o)| (s.clone(), o)).collect();
-        println!("{}", report::json(&refs));
+        crate::outln!("{}", report::json(&refs));
     } else {
         for (sha, o) in outcomes {
             let label = match sha {

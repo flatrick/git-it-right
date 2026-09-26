@@ -32,11 +32,11 @@ fn run() -> Result<i32, String> {
     let sub = match parser.next().map_err(err)? {
         Some(Value(v)) => v.string().map_err(err)?,
         Some(Short('V') | Long("version")) => {
-            println!("gir {}", env!("CARGO_PKG_VERSION"));
+            gir::outln!("gir {}", env!("CARGO_PKG_VERSION"));
             return Ok(0);
         }
         Some(Short('h') | Long("help")) | None => {
-            println!("{USAGE}");
+            gir::outln!("{USAGE}");
             return Ok(0);
         }
         Some(a) => return Err(err(a.unexpected())),
@@ -63,7 +63,7 @@ fn run() -> Result<i32, String> {
         _ => &[],
     };
     if flag("help") {
-        println!("{USAGE}");
+        gir::outln!("{USAGE}");
         return Ok(0);
     }
     if let Some(f) = flags.iter().find(|f| !allowed.contains(&f.as_str())) {
@@ -76,14 +76,14 @@ fn run() -> Result<i32, String> {
         ("fixup", []) => fixup::fixup(None, flag("dry-run")),
         ("fixup", [target]) => fixup::fixup(Some(target.clone()), flag("dry-run")),
         ("explain", []) => {
-            println!("topics: {}", explain::topics().join(" "));
+            gir::outln!("topics: {}", explain::topics().join(" "));
             Ok(0)
         }
         ("explain", [topic]) => {
             let cfg = Config::load().unwrap_or_default();
             let page = explain::page(topic, &cfg)
                 .ok_or_else(|| format!("no topic `{topic}`; topics: {}", explain::topics().join(" ")))?;
-            println!("{page}");
+            gir::outln!("{page}");
             Ok(0)
         }
         ("lint", rest) => {

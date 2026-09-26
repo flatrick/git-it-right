@@ -66,11 +66,11 @@ pub fn doctor(fix: bool) -> Result<i32, String> {
         if c.fix.is_some() && !fix {
             fixable += 1;
         }
-        println!("{status:<5} {}: {}", c.id, c.msg);
+        crate::outln!("{status:<5} {}: {}", c.id, c.msg);
     }
     let ok = checks.iter().filter(|c| c.level == Level::Ok).count();
     let fix_hint = if fixable > 0 { format!(", {fixable} fixable with: gir doctor --fix") } else { String::new() };
-    println!("gir doctor: {ok} ok, {remaining} warnings{fix_hint}   more: gir explain doctor");
+    crate::outln!("gir doctor: {ok} ok, {remaining} warnings{fix_hint}   more: gir explain doctor");
     Ok(i32::from(remaining > 0))
 }
 
