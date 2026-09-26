@@ -7,7 +7,7 @@ const USAGE: &str = "\
 gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
 
 usage:
-  gir init [--force]              install hooks, .girconfig, cliff.toml; set core.hooksPath
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
   gir lint [<file>|-] [--fix] [--json]
   gir lint --range <A..B> [--json]
   gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
@@ -56,7 +56,7 @@ fn run() -> Result<i32, String> {
     }
     let flag = |name: &str| flags.iter().any(|f| f == name);
     let allowed: &[&str] = match sub.as_str() {
-        "init" => &["force"],
+        "init" => &["force", "optional"],
         "lint" => &["fix", "json"],
         "fixup" => &["dry-run"],
         "doctor" => &["fix"],
@@ -71,7 +71,7 @@ fn run() -> Result<i32, String> {
     }
 
     match (sub.as_str(), positional.as_slice()) {
-        ("init", []) => init::init(flag("force")),
+        ("init", []) => init::init(flag("force"), flag("optional")),
         ("doctor", []) => doctor::doctor(flag("fix")),
         ("fixup", []) => fixup::fixup(None, flag("dry-run")),
         ("fixup", [target]) => fixup::fixup(Some(target.clone()), flag("dry-run")),

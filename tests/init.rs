@@ -239,3 +239,89 @@ fn init_kept_file_prints_next_step_last() {
     assert!(out.stdout.is_empty());
     assert_eq!(stderr(&out).lines().last(), Some("gir: next: gir doctor"));
 }
+
+fn adopt(repo: &Repo) {
+    assert!(repo.gir(&["init"]).status.success());
+    repo.git(&["add", ".girconfig"]);
+}
+
+#[test]
+fn init_writes_git_it_right_md_in_a_fresh_repository() {
+    let repo = Repo::new();
+    let out = repo.gir(&["init"]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    assert!(stderr(&out).contains("gir: wrote GIT-IT-RIGHT.md"), "init reports writing GIT-IT-RIGHT.md");
+    assert!(repo.dir.join("GIT-IT-RIGHT.md").is_file(), "GIT-IT-RIGHT.md is at the repository root");
+}
+
+#[test]
+fn git_it_right_md_is_static_and_covers_onboarding() {
+    let default = Repo::new();
+    assert!(default.gir(&["init"]).status.success());
+    let custom = Repo::new();
+    custom.write(".girconfig", "[gir]\n types = feat custom\n");
+    custom.gir(&["init"]);
+    let text = content(&default, "GIT-IT-RIGHT.md");
+    assert_eq!(content(&custom, "GIT-IT-RIGHT.md"), text, "GIT-IT-RIGHT.md does not depend on .girconfig");
+    for item in ["Conventional Commits", "gir init", "gir explain", "cliff.toml", "git-cliff", "gir lint --range"] {
+        assert!(text.contains(item), "GIT-IT-RIGHT.md mentions {item}");
+    }
+}
+
+#[test]
+fn adopted_init_skips_missing_optional_files() {
+    let repo = Repo::new();
+    adopt(&repo);
+    let _ = fs::remove_file(repo.dir.join("cliff.toml"));
+    let _ = fs::remove_file(repo.dir.join("GIT-IT-RIGHT.md"));
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    for path in ["cliff.toml", "GIT-IT-RIGHT.md"] {
+        assert!(!repo.dir.join(path).exists(), "adopted init leaves the removed {path} absent");
+        assert!(!stderr(&out).contains(path), "adopted init says nothing about {path}");
+    }
+}
+
+#[test]
+fn adopted_init_restores_missing_required_files() {
+    let repo = Repo::new();
+    adopt(&repo);
+    repo.git(&["rm", "-q", "--cached", ".githooks/pre-push"]);
+    fs::remove_file(repo.dir.join(".githooks/pre-push")).unwrap();
+    repo.git(&["config", "--local", "--unset", "core.hooksPath"]);
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stderr(&out).contains("gir: wrote .githooks/pre-push"), "adopted init restores the missing hook");
+    assert!(index(&repo).lines().any(|line| line.starts_with("100755 ") && line.ends_with(".githooks/pre-push")), "restored hook is staged executable");
+    assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "adopted init sets the hook path");
+}
+
+#[test]
+fn optional_flag_writes_missing_optional_files_and_keeps_edits() {
+    let repo = Repo::new();
+    adopt(&repo);
+    let _ = fs::remove_file(repo.dir.join("GIT-IT-RIGHT.md"));
+    repo.write("cliff.toml", "custom = true\n");
+    repo.write(".girconfig", "[gir]\n types = feat custom\n");
+    let out = repo.gir(&["init", "--optional"]);
+    assert_eq!(out.status.code(), Some(1), "kept edits still give conflict status: {}", stderr(&out));
+    assert!(stderr(&out).contains("gir: wrote GIT-IT-RIGHT.md"), "--optional restores the missing file");
+    assert_eq!(content(&repo, "cliff.toml"), "custom = true\n", "--optional keeps an edited optional file");
+    assert_eq!(content(&repo, ".girconfig"), "[gir]\n types = feat custom\n", "--optional keeps an edited config");
+    for path in ["cliff.toml", ".girconfig"] {
+        assert!(stderr(&out).contains(&format!("gir: kept {path}")), "--optional reports keeping {path}");
+    }
+}
+
+#[test]
+fn force_writes_missing_optional_files_in_an_adopted_repository() {
+    let repo = Repo::new();
+    adopt(&repo);
+    let _ = fs::remove_file(repo.dir.join("cliff.toml"));
+    let _ = fs::remove_file(repo.dir.join("GIT-IT-RIGHT.md"));
+    let out = repo.gir(&["init", "--force"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    for path in ["cliff.toml", "GIT-IT-RIGHT.md"] {
+        assert!(repo.dir.join(path).is_file(), "--force restores {path}");
+    }
+}

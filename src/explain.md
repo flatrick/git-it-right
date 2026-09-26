@@ -118,6 +118,7 @@ Reword the commit: `git commit --amend` for the last commit, or `git rebase -i <
 ## hooks
 `gir init` installs `.githooks/commit-msg` and `.githooks/pre-push` and sets `core.hooksPath = .githooks`.
 Each clone needs `gir init` (or `git config core.hooksPath .githooks`) once, because git does not trust hook paths from a clone.
+Once `.girconfig` is tracked, `gir init` does not recreate a deleted `cliff.toml` or `GIT-IT-RIGHT.md`; `gir init --optional` does, without overwriting edited files.
 `git commit --no-verify` skips the hooks; `pre-push` and CI (`gir lint --range origin/main..HEAD`) catch those commits.
 
 ## doctor

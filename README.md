@@ -26,7 +26,7 @@ Rebuild with the same `cargo install` command after pulling changes; the hooks a
 ## Set up a repository
 
 ```sh
-gir init      # hooks, .girconfig, cliff.toml, core.hooksPath
+gir init      # hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md, core.hooksPath
 gir doctor    # report what else is missing
 gir doctor --fix
 ```
@@ -38,10 +38,15 @@ gir doctor --fix
 | `.githooks/commit-msg` | Lints and fixes each commit message. |
 | `.githooks/pre-push` | Blocks unsquashed `fixup!` commits and messages that skipped the hook. |
 | `.girconfig` | Project settings (types, scopes, limits). |
-| `cliff.toml` | [git-cliff](https://git-cliff.org) changelog config that matches your types. |
+| `cliff.toml` | Optional. [git-cliff](https://git-cliff.org) changelog config that matches your types. |
+| `GIT-IT-RIGHT.md` | Optional. Explains gir to new contributors and maintainers. |
 
 Commit these files.
 `gir init` stages the hooks as executable and sets `core.hooksPath=.githooks` for your clone.
+
+gir works without the optional files; delete one and commit the deletion if you do not want it.
+Once `.girconfig` is tracked, `gir init` does not add a missing optional file back.
+`gir init --optional` restores missing optional files without touching files you changed; `--force` restores them and overwrites edited files.
 
 Git does not activate hooks from a fresh clone, so everyone who clones the repository runs `gir init` once (or `git config core.hooksPath .githooks`).
 If `gir` is not installed, the hooks print a warning and let the commit through; set `gir.hookMissing = fail` in `.girconfig` to block instead.
@@ -116,7 +121,7 @@ git rebase --autosquash main     # folds the fixup into its target
 
 | Command | What it does |
 |---|---|
-| `gir init [--force]` | Install hooks and config. Re-running changes nothing; `--force` overwrites edited files. |
+| `gir init [--force] [--optional]` | Install hooks and config. Re-running changes nothing; `--optional` restores removed optional files; `--force` overwrites edited files. |
 | `gir lint [<file> \| -] [--fix] [--json]` | Lint a message from a file or stdin. `--fix` rewrites the file (or prints the fixed message for stdin). |
 | `gir lint --range <A..B> [--json]` | Lint existing commits, for example in CI. Also rejects unsquashed fixups. |
 | `gir fixup [<commit>] [--dry-run]` | Create a `fixup!` commit for the commit the staged change belongs to. |

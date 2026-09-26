@@ -5,8 +5,11 @@ use crate::config::{self, Config};
 use crate::git;
 
 /// Converges the repo to the gir setup; re-running changes nothing that is already right.
-pub fn init(force: bool) -> Result<i32, String> {
+/// In a repository that already tracks `.girconfig`, a missing optional file was removed on purpose,
+/// so only `--force` or `--optional` brings it back.
+pub fn init(force: bool, optional: bool) -> Result<i32, String> {
     let root = git::enter_toplevel()?;
+    let adopted = !git::run(&["ls-files", "--", config::FILE])?.is_empty();
     let mut conflicts = 0;
 
     let mut hook_paths = Vec::new();
@@ -21,7 +24,11 @@ pub fn init(force: bool) -> Result<i32, String> {
     }
     conflicts += i32::from(write(&root, config::FILE, &config::default_file(), force)? == WriteOutcome::Kept);
     let cfg = Config::load_from(&root.join(config::FILE))?;
-    conflicts += i32::from(write(&root, "cliff.toml", &templates::cliff_toml(&cfg), force)? == WriteOutcome::Kept);
+    for (rel, content) in [("cliff.toml", templates::cliff_toml(&cfg)), ("GIT-IT-RIGHT.md", templates::GIT_IT_RIGHT_MD.to_string())] {
+        if !adopted || force || optional || root.join(rel).exists() {
+            conflicts += i32::from(write(&root, rel, &content, force)? == WriteOutcome::Kept);
+        }
+    }
 
     if !hook_paths.is_empty() {
         let mut add = vec!["add", "--chmod=+x", "--"];
