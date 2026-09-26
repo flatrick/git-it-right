@@ -66,6 +66,8 @@ is available through its archived bundle, not through this index.
 
 - [b001-b002-windows-verification](evidence/b001-b002-windows-verification.md) -
   B-001 and B-002 are fixed on Windows; verified.
+- [b001-b002-linux-reverification](evidence/b001-b002-linux-reverification.md) -
+  the fix-b001-b002 Linux Claims repeated with committed output; verified.
 - [gir-v1-windows-verification](evidence/gir-v1-windows-verification.md) -
   gir's tests and clippy pass on Windows; verified. macOS is assumed, not
   verified.
