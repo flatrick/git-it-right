@@ -61,9 +61,11 @@ the pre-fix `839a991` from `git archive` the same way.
 -   Context: as above. An earlier run, `b002-20260926-1412.log`, is void:
     `Set-Content -NoNewline` failed in that shell and `.gitattributes` was
     never created.
--   Limitations: `tests/doctor.rs` tests for an unreadable file are
-    `#[cfg(unix)]`, so no automated Windows regression covers B-002; only
-    `doctor_reports_gitattributes_directory_as_unreadable` runs there.
+-   Limitations: one machine, run by hand. Since `67f5be6`, the same `(R)`
+    and `(RD)` cases run on Windows in `cargo test` as
+    `doctor_reports_read_denied_gitattributes_and_does_not_fix_it` and
+    `doctor_fix_keeps_read_data_denied_gitattributes`; both fail against
+    `3d95b90`'s parent.
 
 ## Evidence considered
 
@@ -91,5 +93,5 @@ and leaves it unchanged under `(R)` and `(RD)`.
 
 ## Remaining uncertainty
 
-B-002 has no automated regression on Windows, so a later change could
-regress it there unseen. Not blocking.
+`NONE` blocking. The Windows regression tests added in `67f5be6` have
+passed locally but not yet on the `windows-latest` CI runner.
