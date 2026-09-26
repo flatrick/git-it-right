@@ -415,3 +415,48 @@ fn doctor_fix_keeps_write_only_gitattributes() {
     assert!(!fixed.contains("fixed .gitattributes"), "{fixed}");
     assert_eq!(content_with_mode(&repo, ".gitattributes"), "# mine\n");
 }
+
+#[cfg(windows)]
+fn icacls(repo: &Repo, rel: &str, args: &[&str]) {
+    let out = std::process::Command::new("icacls").arg(repo.dir.join(rel)).args(args).output().unwrap();
+    assert!(out.status.success(), "icacls {args:?}: {}", stdout(&out));
+}
+
+#[cfg(windows)]
+fn deny(repo: &Repo, rel: &str, right: &str) {
+    let user = std::env::var("USERNAME").unwrap();
+    icacls(repo, rel, &["/deny", &format!("{user}:({right})")]);
+    assert!(std::fs::read(repo.dir.join(rel)).is_err(), "denying {right} did not deny reading {rel}");
+}
+
+#[cfg(windows)]
+fn content_after_reset(repo: &Repo, rel: &str) -> String {
+    icacls(repo, rel, &["/reset"]);
+    std::fs::read_to_string(repo.dir.join(rel)).unwrap()
+}
+
+#[cfg(windows)]
+#[test]
+fn doctor_reports_read_denied_gitattributes_and_does_not_fix_it() {
+    let repo = Repo::new();
+    repo.write(".gitattributes", "# mine\n");
+    deny(&repo, ".gitattributes", "R");
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report.contains("warn  .gitattributes: cannot read: "), "{report}");
+    assert!(!report.contains(".gitattributes: missing"), "{report}");
+    let fixed = repo.gir(&["doctor", "--fix"]);
+    assert_eq!(stderr(&fixed), "");
+    assert!(stdout(&fixed).contains("warn  .gitattributes: cannot read: "), "{}", stdout(&fixed));
+    assert_eq!(content_after_reset(&repo, ".gitattributes"), "# mine\n");
+}
+
+#[cfg(windows)]
+#[test]
+fn doctor_fix_keeps_read_data_denied_gitattributes() {
+    let repo = Repo::new();
+    repo.write(".gitattributes", "# mine\n");
+    deny(&repo, ".gitattributes", "RD");
+    let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
+    assert!(!fixed.contains("fixed .gitattributes"), "{fixed}");
+    assert_eq!(content_after_reset(&repo, ".gitattributes"), "# mine\n");
+}
