@@ -136,12 +136,18 @@ class Context:
             parts = doc.path.relative_to(self.config.root).parts
             if parts[0] != ".archive":
                 result.append(doc)
-            elif self.config.include_archive and len(parts) >= 4 and parts[1] == "tasks" and parts[2] not in self.legacy:
+            elif self.config.include_archive and archived_checked(parts, self.legacy):
                 result.append(doc)
         return tuple(result)
 
     def document(self, path: Path) -> Optional[Document]:
         return next((d for d in self.documents if d.path == path), None)
+
+
+def archived_checked(parts: tuple[str, ...], legacy: set[str] | frozenset[str]) -> bool:
+    if parts[:2] == (".archive", "open-claims"):
+        return True
+    return len(parts) >= 4 and parts[:2] == (".archive", "tasks") and parts[2] not in legacy
 
 
 def literal(text: str) -> str:
@@ -233,7 +239,7 @@ def load_context(config: Config) -> Context:
         loaded = {doc.path for doc in documents}
         for path in paths:
             parts = path.relative_to(config.root).parts
-            if path in loaded or len(parts) < 4 or parts[:2] != (".archive", "tasks") or parts[2] in legacy or not path.is_file():
+            if path in loaded or not archived_checked(parts, legacy) or not path.is_file():
                 continue
             try:
                 documents.append(parse_document(path, path.read_text(encoding="utf-8")))
