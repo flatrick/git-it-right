@@ -64,3 +64,89 @@ Windows is not yet re-checked after the fix.
 If another process creates the file between the check and the write, `--fix` truncates it and replaces it with the template.
 It should create the file only if it still does not exist (`OpenOptions::create_new`) and report the file as present otherwise.
 Suspected from a Codex review of the B-002 fix; not reproduced.
+
+### B-004 `gir init` overwrites a file it cannot read, without `--force`
+
+- OS: windows=untested linux=seen macos=untested
+- Area: init
+- Status: open
+- Reproduced: yes
+- Found: 2026-09-26
+
+`src/cmd/init.rs` `write` falls through to `std::fs::write` on any read error, not only `NotFound`.
+With `.girconfig` containing `subjectMax = 50` at mode `200`, `gir init` prints `gir: wrote .girconfig`, replaces the content with the template, then fails with `gir: .girconfig: warning: unable to access ... Permission denied`, exit `2`.
+`cliff.toml` and `.githooks/*` take the same path.
+It should report the read error and leave the file alone, as `gir doctor` does since B-002.
+
+### B-005 `gir fixup` reads a removed `-- ` line as a file header
+
+- OS: windows=untested linux=seen macos=untested
+- Area: fixup
+- Status: open
+- Reproduced: yes
+- Found: 2026-09-26
+
+`src/cmd/fixup.rs` `parse_hunks` takes any `--- ` line as a file header.
+With `-U0`, removing the line `-- note` (an SQL, Lua or Haskell comment) shows as `--- note` inside a hunk, so the later hunks of that file are blamed against a file named `note`.
+Repro: commit `q.sql` with a `-- note` line and 8 lines in all, then on a branch stage a change that removes `-- note` and edits the last line; `gir fixup --dry-run` prints `gir: cannot tell which commit note:8 belongs to`, exit `2`.
+Only a `--- ` line between `diff --git` and the first `@@` should be a header.
+
+### B-006 A `0x1e` byte in a commit message hides it from `gir lint --range` and pre-push
+
+- OS: windows=untested linux=seen macos=untested
+- Area: lint
+- Status: open
+- Reproduced: yes
+- Found: 2026-09-26
+
+`src/cmd/lint.rs` `commits` splits `git log --format=%H%x1f%B%x1e` on `0x1e`, which a message can contain.
+A commit `feat: x` followed directly by a body line gives `rejected [fix-pending]`, exit `1`; the same message with `0x1e` after `feat: x` passes with exit `0`, because only the part before the byte is linted.
+The pre-push hook uses the same function.
+Records should be split on a byte a message cannot contain (`git log -z`), or each body read separately.
+
+### B-007 pre-push to a URL lints every reachable commit
+
+- OS: windows=untested linux=seen macos=untested
+- Area: hooks
+- Status: open
+- Reproduced: yes
+- Found: 2026-09-26
+
+When a push names a URL instead of a remote, git passes the URL as the remote name, and `--remotes=<url>` matches no remote-tracking ref.
+For a new branch, `gir hook pre-push` then lints the whole history: pushing to a bare repository by path rejected `old bad message`, a commit that repository already had, exit `1`; the same push through a named remote exited `0`.
+This follows `spec/hooks.md#req-hooks-pre-push-scope` as written, so the spec needs a decision first, for example asking the remote what it has with `git ls-remote`.
+
+### B-008 `gir fixup` cannot trace quoted or non-UTF-8 paths
+
+- OS: windows=untested linux=untested macos=untested
+- Area: fixup
+- Status: open
+- Reproduced: no
+- Found: 2026-09-26
+
+`src/git.rs` `run` decodes git's output lossily, and `parse_hunks` strips quotes from a path without undoing git's C escapes.
+A staged change to a committed file named `x\xff.txt`, or one containing a tab, would reach `git blame` under a different name, so `gir fixup` would report that it cannot tell which commit the path belongs to.
+Suspected from a Codex review; not reproduced.
+
+### B-009 `gir doctor` can report a case collision between different non-UTF-8 paths
+
+- OS: windows=untested linux=untested macos=untested
+- Area: doctor
+- Status: open
+- Reproduced: no
+- Found: 2026-09-26
+
+`src/cmd/doctor.rs` `index_checks` groups `git ls-files -s` paths after lossy UTF-8 decoding, so `a\x80` and `a\x81` both become `a\u{fffd}` and would be reported as `paths differ only in case`.
+Suspected from a Codex review; not reproduced.
+
+### B-010 The fixup-table test never reads `CHEATSHEET.md`
+
+- OS: windows=untested linux=seen macos=untested
+- Area: explain
+- Status: open
+- Reproduced: yes
+- Found: 2026-09-26
+
+`tests/cli.rs` `cheatsheet_fixup_table_matches_git` says it checks every row of the fixup table in `CHEATSHEET.md` against real git, but it only runs git with hard-coded expectations and never opens the file.
+A false edit to a table row, which `gir explain` shows to users, still passes: swapping row 3 to `content replaced, message untouched` left `cargo test --test cli cheatsheet_fixup` green.
+The test should parse the table rows it claims to check.
