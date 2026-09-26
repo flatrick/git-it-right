@@ -1,0 +1,4 @@
+addf/.archive/tasks/fix-b001-b002/TASK.md:13: TASK_OBLIGATIONS: terminal Task must have Open obligations `NONE`
+addf/.archive/tasks/fix-b001-b002/TASK.md:23: TASK_SPEC: Specification impact requires Proposed delta
+addf/.archive/tasks/fix-b001-b002/TASK.md:115: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion
+addf/.archive/tasks/fix-b001-b002/TASK.md:126: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion

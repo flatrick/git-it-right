@@ -1,0 +1,6 @@
+addf-mutant/.archive/open-claims/b001-b002-windows.md:14: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion
+addf-mutant/.archive/open-claims/b001-b002-windows.md:14: REF_ANCHOR: anchor does not exist: framework:evidence/b001-b002-windows-verification.md#nope
+addf-mutant/.archive/tasks/fix-b001-b002/TASK.md:13: TASK_OBLIGATIONS: terminal Task must have Open obligations `NONE`
+addf-mutant/.archive/tasks/fix-b001-b002/TASK.md:23: TASK_SPEC: Specification impact requires Proposed delta
+addf-mutant/.archive/tasks/fix-b001-b002/TASK.md:115: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion
+addf-mutant/.archive/tasks/fix-b001-b002/TASK.md:126: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion

@@ -1,0 +1,6 @@
+run 1: pipestatus=141 stderr_bytes=0
+run 2: pipestatus=141 stderr_bytes=0
+run 3: pipestatus=141 stderr_bytes=0
+run 4: pipestatus=141 stderr_bytes=0
+run 5: pipestatus=141 stderr_bytes=0
+control exit=0 stderr_bytes=0

@@ -66,11 +66,11 @@ pub fn doctor(fix: bool) -> Result<i32, String> {
         if c.fix.is_some() && !fix {
             fixable += 1;
         }
-        println!("{status:<5} {}: {}", c.id, c.msg);
+        crate::outln!("{status:<5} {}: {}", c.id, c.msg);
     }
     let ok = checks.iter().filter(|c| c.level == Level::Ok).count();
     let fix_hint = if fixable > 0 { format!(", {fixable} fixable with: gir doctor --fix") } else { String::new() };
-    println!("gir doctor: {ok} ok, {remaining} warnings{fix_hint}   more: gir explain doctor");
+    crate::outln!("gir doctor: {ok} ok, {remaining} warnings{fix_hint}   more: gir explain doctor");
     Ok(i32::from(remaining > 0))
 }
 
@@ -111,6 +111,9 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
 
 fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     match std::fs::read(root.join(".gitattributes")).map(|b| String::from_utf8_lossy(&b).into_owned()) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+            out.push(check(Level::Warn, ".gitattributes", format!("cannot read: {e}"), None));
+        }
         Err(_) => {
             let crlf = git::get_config("core.autocrlf").filter(|v| v != "false");
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();

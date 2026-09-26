@@ -1,0 +1,173 @@
+prefix build exit=0
+fixed build exit=0
+fixed=72457d0c91f0feaeac244d630074a7c2a54882b0 prefix=839a99163c2a4c7be3fc11cbe8b9df0ee94faa28
+=== B-001 fixed
+gir --version run 1: exit=141 stderr_bytes=0
+gir --version run 2: exit=141 stderr_bytes=0
+gir --version run 3: exit=141 stderr_bytes=0
+gir --help run 1: exit=141 stderr_bytes=0
+gir --help run 2: exit=141 stderr_bytes=0
+gir --help run 3: exit=141 stderr_bytes=0
+gir explain run 1: exit=141 stderr_bytes=0
+gir explain run 2: exit=141 stderr_bytes=0
+gir explain run 3: exit=141 stderr_bytes=0
+gir explain doctor run 1: exit=141 stderr_bytes=0
+gir explain doctor run 2: exit=141 stderr_bytes=0
+gir explain doctor run 3: exit=141 stderr_bytes=0
+gir doctor run 1: exit=141 stderr_bytes=0
+gir doctor run 2: exit=141 stderr_bytes=0
+gir doctor run 3: exit=141 stderr_bytes=0
+gir lint --json - run 1: exit=141 stderr_bytes=0
+gir lint --json - run 2: exit=141 stderr_bytes=0
+gir lint --json - run 3: exit=141 stderr_bytes=0
+gir lint --fix - run 1: exit=141 stderr_bytes=0
+gir lint --fix - run 2: exit=141 stderr_bytes=0
+gir lint --fix - run 3: exit=141 stderr_bytes=0
+gir fixup --dry-run run 1: exit=141 stderr_bytes=0
+gir fixup --dry-run run 2: exit=141 stderr_bytes=0
+gir fixup --dry-run run 3: exit=141 stderr_bytes=0
+=== B-002 fixed chmod 000 (readable: no)
+warn  .gitattributes: cannot read: Permission denied (os error 13)
+doctor exit=1
+warn  .gitattributes: cannot read: Permission denied (os error 13)
+fix exit=1
+before=49cf24c707d61fd3 after=49cf24c707d61fd3 unchanged=yes
+=== B-002 fixed chmod 200 (readable: no)
+warn  .gitattributes: cannot read: Permission denied (os error 13)
+doctor exit=1
+warn  .gitattributes: cannot read: Permission denied (os error 13)
+fix exit=1
+before=49cf24c707d61fd3 after=49cf24c707d61fd3 unchanged=yes
+=== B-001 prefix
+gir --version run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1195) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir --version run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1203) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir --version run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1211) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir --help run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1219) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir --help run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1227) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir --help run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1235) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1243) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1251) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1259) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain doctor run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1267) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain doctor run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1276) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir explain doctor run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1285) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir doctor run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1294) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir doctor run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1324) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir doctor run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1354) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --json - run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1384) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --json - run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1395) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --json - run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1406) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --fix - run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1417) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --fix - run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1428) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir lint --fix - run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1439) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir fixup --dry-run run 1: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1450) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir fixup --dry-run run 2: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1469) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+gir fixup --dry-run run 3: exit=101 stderr_bytes=249
+  stderr: 
+  stderr: thread 'main' (1488) panicked at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std/src/io/stdio.rs:1166:9:
+  stderr: failed printing to stdout: Broken pipe (os error 32)
+  stderr: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+=== B-002 prefix chmod 000 (readable: no)
+warn  .gitattributes: missing and core.autocrlf=input, so line endings depend on each clone
+doctor exit=1
+gir: cannot write .gitattributes: Permission denied (os error 13)
+fix exit=2
+before=49cf24c707d61fd3 after=49cf24c707d61fd3 unchanged=yes
+=== B-002 prefix chmod 200 (readable: no)
+warn  .gitattributes: missing and core.autocrlf=input, so line endings depend on each clone
+doctor exit=1
+fixed .gitattributes: missing and core.autocrlf=input, so line endings depend on each clone
+fix exit=1
+before=49cf24c707d61fd3 after=d94a9286cc06a0be unchanged=no

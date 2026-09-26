@@ -320,6 +320,19 @@ class CheckCapsuleTest(unittest.TestCase):
         self.task(self.terminal(), archived=True)
         self.finding("addf/.archive/task-contract-v1.txt:1: BASELINE_STALE: entry does not name an archived v1 Task: example", "--include-archive")
 
+    def test_include_archive_checks_retired_open_claims(self):
+        claim = "# Open Claim: works\n## Claim\n<a id=\"works\"></a>\n- Claim: The checker works.\n- State: `VERIFIED`\n- Scope: This repository.\n- Consequence if false: Broken checks.\n- Basis: `framework:evidence/works.md#conclusion`\n"
+        self.write(".archive/open-claims/works.md", claim)
+        self.write("evidence/works.md", STANDALONE.replace("[works](../TASK.md#works).", "**Reference:** `history:open-claims/works.md#works`"))
+        self.write("evidence/other.md", STANDALONE.replace("[works](../TASK.md#works).", "**Reference:** `history:open-claims/other.md#other`"))
+        self.write(".archive/open-claims/other.md", claim.replace("\"works\"", "\"other\"").replace("works.", "other."))
+        self.clean("--include-archive")
+        self.write(".archive/open-claims/works.md", claim.replace("#conclusion", "#missing"))
+        self.clean()
+        self.finding("addf/.archive/open-claims/works.md:8: REF_ANCHOR: anchor does not exist: framework:evidence/works.md#missing", "--include-archive")
+        self.write(".archive/open-claims/works.md", claim.replace("evidence/works.md", "evidence/other.md"))
+        self.finding("addf/.archive/open-claims/works.md:8: CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion", "--include-archive")
+
     def test_archive_v2_defects_are_opt_in(self):
         self.task(self.terminal(), archived=True)
         self.write(".archive/tasks/example/notes.md", "[broken](missing.md)\n")

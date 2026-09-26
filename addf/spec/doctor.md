@@ -56,13 +56,16 @@
 ## Repository files
 
 <a id="req-doctor-gitattributes-missing"></a>
-**gitattributes-missing.** When `.gitattributes` cannot be read, `gir doctor` SHALL print `warn  .gitattributes: missing`; `--fix` SHALL create `.gitattributes`.
+**gitattributes-missing.** When `.gitattributes` does not exist, `gir doctor` SHALL print `warn  .gitattributes: missing`; `--fix` SHALL create `.gitattributes`.
+
+<a id="req-doctor-gitattributes-unreadable"></a>
+**gitattributes-unreadable.** When `.gitattributes` exists but cannot be read, `gir doctor` SHALL print `warn  .gitattributes: cannot read: ` followed by the OS error; `--fix` SHALL NOT write the file.
 
 <a id="req-doctor-gitattributes-content"></a>
 **gitattributes-content.** The `.gitattributes` created by `gir doctor --fix` SHALL contain `* text=auto eol=lf`, CRLF rules for `*.cmd`, `*.bat`, and `*.sln`, and `binary` rules for `*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.ico`, `*.webp`, `*.pdf`, `*.zip`, `*.gz`, `*.7z`, `*.woff`, `*.woff2`, `*.ttf`, `*.exe`, `*.dll`, `*.so`, and `*.dylib`.
 
 <a id="req-doctor-gitattributes-autocrlf"></a>
-**gitattributes-autocrlf.** When `.gitattributes` cannot be read and `core.autocrlf` is set to a value other than `false`, `gir doctor` SHALL append `and core.autocrlf=VALUE, so line endings depend on each clone` to its missing-file warning.
+**gitattributes-autocrlf.** When `.gitattributes` does not exist and `core.autocrlf` is set to a value other than `false`, `gir doctor` SHALL append `and core.autocrlf=VALUE, so line endings depend on each clone` to its missing-file warning.
 
 <a id="req-doctor-gitattributes-rule"></a>
 **gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.

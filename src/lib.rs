@@ -5,3 +5,4 @@ pub mod explain;
 pub mod git;
 pub mod message;
 pub mod report;
+pub mod stdout;
