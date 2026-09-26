@@ -1,0 +1,117 @@
+=== deny (R) / fixed ===
+exists=True before=13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222
+read check: denied: MethodInvocationException
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: cannot read: Åtkomst nekad. (os error 5)
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 8 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: cannot read: Åtkomst nekad. (os error 5)
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 2 warnings   more: gir explain doctor
+exit=1
+after =13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222 unchanged=True
+=== deny (R) / prefix ===
+exists=True before=13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222
+read check: denied: MethodInvocationException
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+gir: cannot write .gitattributes: Åtkomst nekad. (os error 5)
+exit=2
+after =13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222 unchanged=True
+=== deny (RD) / fixed ===
+exists=True before=13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222
+read check: denied: MethodInvocationException
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: cannot read: Åtkomst nekad. (os error 5)
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 8 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: cannot read: Åtkomst nekad. (os error 5)
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 2 warnings   more: gir explain doctor
+exit=1
+after =13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222 unchanged=True
+=== deny (RD) / prefix ===
+exists=True before=13CB7F5E12DD469DC5C88AFCF0CD035ABE6CD1FC2F30AFE224991E66B4262222
+read check: denied: MethodInvocationException
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+fixed .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 1 warnings   more: gir explain doctor
+exit=1
+after =D94A9286CC06A0BEE260284C0DED209B27EFB3B01F89259C3D28513B4ECF3602 unchanged=False

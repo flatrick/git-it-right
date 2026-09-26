@@ -87,7 +87,12 @@ Gaps in addf that these items point to, recorded for a later decision:
 
 `NONE`. Friction only. The records named in items 1, 3, 4 and 6 were
 uncorrected when this entry was written and were corrected in the next
-commit.
+commit. Item 5 was corrected in the commit after that, which commits the
+supporting logs under `evidence/logs-20260926/`. Doing so showed a further
+gap: several exit codes cited in records and in PR #2 had been printed to
+the terminal and never written to any log, so the logs support them only
+indirectly. That commit adds a gate log, run at `b8d1b21`, with each exit
+code written in.
 
 ## Why
 

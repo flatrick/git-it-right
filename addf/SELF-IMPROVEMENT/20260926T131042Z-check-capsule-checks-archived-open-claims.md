@@ -22,6 +22,11 @@ is unchanged. The change is local to this repository. At
 `.archive/tasks/` (its line 236) on both `main` (head `87f671d`) and
 `fix/check-capsule-utf8-output`, fetched from each branch with `gh api
 repos/flatrick/agent-driven-development-template/contents/addf/scripts/check-capsule`.
+The fetched files hash to git blobs `faac915` (`main`) and `d78f2f3`
+(`fix/check-capsule-utf8-output`), and line 236 of each reads `if path in
+loaded or len(parts) < 4 or parts[:2] != (".archive", "tasks") or parts[2]
+in legacy or not path.is_file():`. `d78f2f3` is also this repository's
+checker before this change.
 
 ## Files touched
 

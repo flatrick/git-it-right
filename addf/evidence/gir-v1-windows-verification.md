@@ -37,13 +37,14 @@ and for `doctor_repairs_unset_windows_longpaths`.
 -   Fact: clippy `exit=0`; cargo test `exit=0`; 14 `test result: ok` lines,
     each `0 failed; 0 ignored`; `test doctor_repairs_unset_windows_longpaths
     ... ok`.
--   Source and method: main checkout
-    `.scratch/fix-b001-b002/clippy-20260926-1410.log` and
-    `test-20260926-1410.log` (local, not committed).
+-   Source and method: [clippy](logs-20260926/clippy-20260926-1410.log) and
+    [cargo test](logs-20260926/test-20260926-1410.log) output.
 -   Context: Windows 11 Home 10.0.26200, rustc and cargo 1.94.0, Git for
     Windows 2.55.0.windows.5.
 -   Limitations: one machine, one run. The `#[cfg(unix)]` tests in
-    `tests/doctor.rs` do not run on Windows.
+    `tests/doctor.rs` do not run on Windows. The two exit codes were printed
+    to the terminal, not into the logs; the logs show clippy finishing with
+    no diagnostics and every test binary reporting `ok`.
 
 ## Evidence considered
 

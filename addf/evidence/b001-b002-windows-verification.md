@@ -37,14 +37,15 @@ the pre-fix `839a991` from `git archive` the same way.
     reader `exit=0 stderr_bytes=0`. Control, 3 of 3 runs `pipestatus=101`
     with `failed printing to stdout: Denna pipe håller på att stängas. (os
     error 232)`.
--   Source and method: main checkout `.scratch/fix-b001-b002/b001-20260926-1411.log`
-    and `b001-prefix-20260926-1411.log` (local, not committed).
+-   Source and method: [fixed build](logs-20260926/b001-20260926-1411.log),
+    [control](logs-20260926/b001-prefix-20260926-1411.log), and the
+    [control build](logs-20260926/build-prefix-20260926-1411.log).
 -   Context: Windows 11 Home 10.0.26200, Swedish locale, Git for Windows
     2.55.0.windows.5, rustc 1.94.0, 2026-09-26.
 -   Limitations: only `gir explain` was run by hand. The other seven
     invocations are covered on Windows by `tests/args.rs`
     `closed_stdout_exits_141_without_output`, which passed in the same
-    session's `cargo test`.
+    session's [`cargo test`](logs-20260926/test-20260926-1410.log).
 
 ### `b002`
 
@@ -55,18 +56,18 @@ the pre-fix `839a991` from `git archive` the same way.
     exits `2` with `cannot write .gitattributes`, hash unchanged. Control
     `(RD)`: `missing`, `--fix` prints `fixed .gitattributes` and the hash
     changes to the template's `D94A9286…ECF3602`.
--   Source and method: main checkout
-    `.scratch/fix-b001-b002/b002-rerun-20260926-1412.log` (local, not
-    committed).
--   Context: as above. An earlier run, `b002-20260926-1412.log`, is void:
+-   Source and method: [both builds, both deny modes](logs-20260926/b002-rerun-20260926-1412.log).
+-   Context: as above. An earlier run,
+    [`b002-20260926-1412.log`](logs-20260926/b002-20260926-1412.log), is void:
     `Set-Content -NoNewline` reported that no parameter `NoNewline` exists,
     and `.gitattributes` was never created. The cause is unknown; the same
     parameter worked later in the session.
 -   Limitations: one machine, run by hand. Since `67f5be6`, the same `(R)`
     and `(RD)` cases run on Windows in `cargo test` as
     `doctor_reports_read_denied_gitattributes_and_does_not_fix_it` and
-    `doctor_fix_keeps_read_data_denied_gitattributes`; both fail against
-    `3d95b90`'s parent.
+    `doctor_fix_keeps_read_data_denied_gitattributes`; both
+    [fail against `3d95b90`'s parent](logs-20260926/test-win-acl-prefix-20260926-1458.log)
+    and [pass with the fix](logs-20260926/test-win-acl-20260926-1459.log).
 
 ## Evidence considered
 

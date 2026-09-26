@@ -1,0 +1,13 @@
+   Compiling getrandom v0.4.3
+    Checking unicase v2.9.0
+    Checking winnow v1.0.4
+    Checking windows-link v0.2.1
+    Checking cfg-if v1.0.5
+    Checking lexopt v0.3.2
+    Checking fastrand v2.5.0
+    Checking once_cell v1.21.4
+    Checking windows-sys v0.61.2
+    Checking tempfile v3.27.0
+    Checking git-conventional v1.1.0
+    Checking gir v0.0.1 (C:\src\github\flatrick\git-it-right\.worktrees\fix\b001-b002)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.79s

@@ -1,0 +1,168 @@
+Set-Content: 
+Line |
+   6 |    Set-Content -NoNewline .gitattributes "* text=auto`n*.sh text eol=l …
+     |                ~~~~~~~~~~
+     | A parameter cannot be found that matches parameter name 'NoNewline'.
+Get-FileHash: 
+Line |
+   7 |    $before=(Get-FileHash .gitattributes).Hash
+     |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Cannot find path 'C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\b002-R-fixed\.gitattributes' because it does not exist.
+.gitattributes: Det g�r inte att hitta filen.
+=== deny (R) / fixed ===
+read check: denied
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+fixed .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 1 warnings   more: gir explain doctor
+exit=1
+before=
+after =D94A9286CC06A0BEE260284C0DED209B27EFB3B01F89259C3D28513B4ECF3602
+unchanged=False
+Set-Content: 
+Line |
+   6 |    Set-Content -NoNewline .gitattributes "* text=auto`n*.sh text eol=l …
+     |                ~~~~~~~~~~
+     | A parameter cannot be found that matches parameter name 'NoNewline'.
+Get-FileHash: 
+Line |
+   7 |    $before=(Get-FileHash .gitattributes).Hash
+     |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Cannot find path 'C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\b002-R-prefix\.gitattributes' because it does not exist.
+.gitattributes: Det g�r inte att hitta filen.
+=== deny (R) / prefix ===
+read check: denied
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+fixed .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 1 warnings   more: gir explain doctor
+exit=1
+before=
+after =D94A9286CC06A0BEE260284C0DED209B27EFB3B01F89259C3D28513B4ECF3602
+unchanged=False
+Set-Content: 
+Line |
+   6 |    Set-Content -NoNewline .gitattributes "* text=auto`n*.sh text eol=l …
+     |                ~~~~~~~~~~
+     | A parameter cannot be found that matches parameter name 'NoNewline'.
+Get-FileHash: 
+Line |
+   7 |    $before=(Get-FileHash .gitattributes).Hash
+     |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Cannot find path 'C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\b002-RD-fixed\.gitattributes' because it does not exist.
+.gitattributes: Det g�r inte att hitta filen.
+=== deny (RD) / fixed ===
+read check: denied
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+fixed .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 1 warnings   more: gir explain doctor
+exit=1
+before=
+after =D94A9286CC06A0BEE260284C0DED209B27EFB3B01F89259C3D28513B4ECF3602
+unchanged=False
+Set-Content: 
+Line |
+   6 |    Set-Content -NoNewline .gitattributes "* text=auto`n*.sh text eol=l …
+     |                ~~~~~~~~~~
+     | A parameter cannot be found that matches parameter name 'NoNewline'.
+Get-FileHash: 
+Line |
+   7 |    $before=(Get-FileHash .gitattributes).Hash
+     |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Cannot find path 'C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\b002-RD-prefix\.gitattributes' because it does not exist.
+.gitattributes: Det g�r inte att hitta filen.
+=== deny (RD) / prefix ===
+read check: denied
+--- gir doctor
+warn  hooks: no .githooks/; run: gir init
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 9 warnings, 9 fixable with: gir doctor --fix   more: gir explain doctor
+exit=1
+--- gir doctor --fix
+warn  hooks: no .githooks/; run: gir init
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+fixed .gitattributes: missing and core.autocrlf=true, so line endings depend on each clone
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 4 ok, 1 warnings   more: gir explain doctor
+exit=1
+before=
+after =D94A9286CC06A0BEE260284C0DED209B27EFB3B01F89259C3D28513B4ECF3602
+unchanged=False

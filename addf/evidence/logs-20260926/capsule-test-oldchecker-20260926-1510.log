@@ -1,0 +1,18 @@
+F
+======================================================================
+FAIL: test_include_archive_checks_retired_open_claims (__main__.CheckCapsuleTest.test_include_archive_checks_retired_open_claims)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\old-checker2\addf\scripts\tests\test_check_capsule.py", line 332, in test_include_archive_checks_retired_open_claims
+    self.finding("addf/.archive/open-claims/works.md:8: REF_ANCHOR: anchor does not exist: framework:evidence/works.md#missing", "--include-archive")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\src\github\flatrick\git-it-right\.scratch\fix-b001-b002\old-checker2\addf\scripts\tests\test_check_capsule.py", line 93, in finding
+    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1 : capsule is consistent
+
+
+----------------------------------------------------------------------
+Ran 1 test in 1.577s
+
+FAILED (failures=1)
