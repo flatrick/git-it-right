@@ -2,6 +2,7 @@
 .scratch/
 .claude/settings.local.json
 .claude/worktrees/
+.worktrees/
 .DS_Store
 Thumbs.db
 .env
