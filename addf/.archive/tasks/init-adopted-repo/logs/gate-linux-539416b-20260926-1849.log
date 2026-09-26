@@ -1,0 +1,283 @@
+context: Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 uid=1000 rustc 1.98.0 (88d9e12ae 2026-08-18) git version 2.55.0 2026-09-26T18:49:34+02:00
+checked out 539416b
+   Compiling libc v0.2.189
+    Checking unicase v2.9.0
+   Compiling rustix v1.1.5
+   Compiling getrandom v0.4.3
+    Checking winnow v1.0.4
+    Checking bitflags v2.13.2
+    Checking lexopt v0.3.2
+    Checking cfg-if v1.0.5
+    Checking linux-raw-sys v0.12.1
+    Checking once_cell v1.21.4
+    Checking fastrand v2.5.0
+    Checking git-conventional v1.1.0
+    Checking gir v0.0.2 (/home/flatrick/gir-verify/init-adopted-repo)
+    Checking tempfile v3.27.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.14s
+clippy exit=0
+   Compiling winnow v1.0.4
+   Compiling unicase v2.9.0
+   Compiling libc v0.2.189
+   Compiling linux-raw-sys v0.12.1
+   Compiling cfg-if v1.0.5
+   Compiling lexopt v0.3.2
+   Compiling bitflags v2.13.2
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling rustix v1.1.5
+   Compiling getrandom v0.4.3
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.2 (/home/flatrick/gir-verify/init-adopted-repo)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.37s
+     Running unittests src/lib.rs (target/debug/deps/gir-43c24ddc3b1ccf79)
+
+running 28 tests
+test cc::header::tests::lexes_well_formed_and_sloppy_headers ... ok
+test cc::header::tests::rejects_non_headers ... ok
+test cc::structure::tests::detects_autosquash_prefixes ... ok
+test cc::header::tests::render_is_canonical ... ok
+test cc::structure::tests::detects_missing_blank_line ... ok
+test cc::tests::breaking_change_hyphen_form_is_left_alone ... ok
+test cc::tests::breaking_footer_rewrite_applies_only_to_last_paragraph ... ok
+test cc::tests::desc_case_lower_is_opt_in ... ok
+test cc::tests::description_left_empty_by_period_fix_is_desc_empty ... ok
+test cc::tests::empty_message_is_rejected_after_normalization ... ok
+test cc::tests::every_emitted_rule_is_listed ... ok
+test cc::tests::invalid_conventional_scope_is_rejected_as_spec ... ok
+test cc::tests::fixes_are_idempotent ... ok
+test cc::tests::missing_type_does_not_add_body_separator_fix ... ok
+test cc::tests::scope_rules_follow_config ... ok
+test cc::tests::safe_fixes_are_applied_and_reported ... ok
+test cc::tests::special_subjects ... ok
+test cmd::doctor::tests::windows_reserved_names ... ok
+test cc::tests::spec_examples_pass_untouched ... ok
+test cc::tests::unfixable_messages_are_rejected_with_a_hint ... ok
+test cmd::fixup::tests::new_files_need_an_explicit_target ... ok
+test cmd::fixup::tests::parses_modifications_and_insertions ... ok
+test explain::tests::topics_are_unique ... ok
+test message::tests::honours_custom_comment_char_and_crlf ... ok
+test explain::tests::cheatsheet_examples_pass_the_linter_untouched ... ok
+test message::tests::strips_comments_and_everything_after_scissors ... ok
+test report::tests::json_escapes ... ok
+test explain::tests::every_rule_and_type_has_a_page ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/gir-c03878f56773b550)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/args.rs (target/debug/deps/args-c642ecaec881dee5)
+
+running 12 tests
+test unknown_short_option_before_help_exits_two ... ok
+test usage_lists_commands_with_their_arguments_and_flags ... ok
+test version_flags_print_crate_version ... ok
+test version_and_help_ignore_trailing_arguments ... ok
+test unaccepted_long_flags_report_the_command_and_exit_two ... ok
+test command_errors_print_gir_prefix_and_exit_two ... ok
+test unknown_short_flags_and_bad_arguments_exit_two ... ok
+test hook_takes_its_documented_arguments ... ok
+test range_is_rejected_outside_lint_and_accepted_by_lint ... ok
+test help_flags_print_usage_for_every_subcommand ... ok
+test closed_stdout_exits_141_without_output ... ok
+test repository_commands_work_from_a_subdirectory ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/cli.rs (target/debug/deps/cli-c0ca8aa01e206a79)
+
+running 10 tests
+test commit_msg_hook_keeps_comments_and_verbose_diff_out_of_the_way ... ok
+test lint_range_reports_json_per_commit ... ok
+test init_is_idempotent_and_keeps_user_edits ... ok
+test commit_msg_hook_fixes_and_rejects_through_real_git_commit ... ok
+test fixup_finds_the_target_from_staged_lines_and_autosquash_folds_it ... ok
+test explain_every_listed_topic ... ok
+test cheatsheet_fixup_table_matches_git ... ok
+test pre_push_rejects_unsquashed_fixups_and_no_verify_commits ... ok
+test fixup_refuses_ambiguous_and_base_branch_targets ... ok
+test doctor_fix_converges ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running tests/config.rs (target/debug/deps/config-631935900c0b7ace)
+
+running 13 tests
+test config_key_names_are_case_insensitive ... ok
+test config_comes_from_repo_root_and_only_gir_keys ... ok
+test default_aliases_and_configured_override_map_to_types ... ok
+test types_default_and_custom_lists_accept_spaces_and_commas ... ok
+test explain_uses_defaults_when_config_is_invalid ... ok
+test hook_missing_is_accepted_without_changing_config_behavior ... ok
+test missing_config_and_non_repo_use_defaults ... ok
+test unknown_gir_key_reports_error_while_other_sections_are_ignored ... ok
+test boolean_keys_accept_all_documented_spellings ... ok
+test malformed_config_fails_and_config_without_gir_keys_uses_defaults ... ok
+test subject_max_defaults_to_72_and_counts_characters ... ok
+test invalid_values_report_key_value_expected_form_and_exit_two ... ok
+test merge_and_revert_are_allowed_by_default_and_can_be_disabled ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/doctor.rs (target/debug/deps/doctor-1d705cc69334b0ed)
+
+running 27 tests
+test doctor_outside_git_repository_reports_error ... ok
+test doctor_does_not_warn_for_exact_tracked_ignore_probe ... ok
+test doctor_counts_clean_index_as_ok_without_index_warnings ... ok
+test doctor_fix_keeps_write_only_gitattributes ... ok
+test doctor_appends_ignore_rules_without_losing_invalid_utf8_bytes ... ok
+test doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision ... ok
+test doctor_missing_hooks_are_not_created_by_fix ... ok
+test doctor_preserves_nonempty_existing_recommendations ... ok
+test doctor_checks_stack_and_local_directory_ignore_patterns_when_present ... ok
+test doctor_does_not_replace_readable_gitattributes_without_auto_rule ... ok
+test doctor_appends_missing_ignore_rules_after_newline ... ok
+test doctor_reports_autocrlf_when_gitattributes_is_missing ... ok
+test doctor_info_checks_do_not_cause_failure ... ok
+test doctor_repairs_inactive_hooks_path_locally ... ok
+test doctor_reports_invalid_utf8_gitattributes_without_replacing_it ... ok
+test doctor_recommends_and_sets_each_unset_git_setting ... ok
+test doctor_reports_case_collisions_without_renaming_index_entries ... ok
+test doctor_reports_check_lines_and_summary_counts ... ok
+test doctor_reports_missing_git_cliff_on_path ... ok
+test doctor_reports_gitattributes_directory_as_unreadable ... ok
+test doctor_writes_complete_gitattributes_and_editorconfig ... ok
+test doctor_reports_invalid_girconfig_without_editing_it ... ok
+test doctor_reports_windows_unsafe_index_names_without_renaming ... ok
+test doctor_reports_unreadable_gitattributes_and_does_not_fix_it ... ok
+test doctor_respects_pull_rebase_without_setting_pull_ff ... ok
+test doctor_suggests_missing_identity_and_default_branch_without_setting_them ... ok
+test doctor_checks_each_stack_pattern_for_its_marker ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/explain.rs (target/debug/deps/explain-0d69c279326100c9)
+
+running 9 tests
+test explain_lists_topics_on_one_line ... ok
+test unknown_topic_reports_name_and_available_topics ... ok
+test topic_names_are_case_sensitive ... ok
+test types_page_uses_cheatsheet_summaries_and_group_fallback ... ok
+test types_page_prints_alias_mappings_and_footer ... ok
+test types_page_uses_configured_order_and_defaults_without_usable_config ... ok
+test config_page_shows_the_init_aliases ... ok
+test explain_does_not_change_repository_files_or_git_config ... ok
+test topic_pages_contain_only_their_section_and_one_final_newline ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/fixup.rs (target/debug/deps/fixup-7ebc7576aff5bffb)
+
+running 22 tests
+test automatic_target_reports_unattributed_lines ... ok
+test automatic_target_refuses_a_new_file ... ok
+test automatic_target_has_no_base_limit_when_no_base_exists ... ok
+test automatic_target_refuses_a_new_binary_file ... ok
+test automatic_target_refuses_a_staged_file_without_line_changes ... ok
+test commit_failure_reports_git_command_and_target ... ok
+test base_lookup_prefers_origin_head_over_main_and_limits_automatic_target ... ok
+test base_lookup_falls_back_to_upstream ... ok
+test base_lookup_falls_back_to_master ... ok
+test explicit_target_ignores_line_origin_and_accepts_new_files ... ok
+test explicit_target_must_be_after_base ... ok
+test requires_staged_changes_even_with_explicit_target ... ok
+test accepts_optional_target_and_dry_run_in_either_order ... ok
+test insertion_between_base_and_topic_lines_targets_topic ... ok
+test rejects_invalid_explicit_commit ... ok
+test mixed_base_and_topic_replacement_is_refused ... ok
+test insertion_uses_adjacent_head_lines ... ok
+test explicit_target_must_be_in_current_branch_history ... ok
+test success_without_base_prints_base_placeholder ... ok
+test multiple_targets_suggest_installed_git_absorb ... ok
+test successful_fixup_prints_target_and_base_and_preserves_config ... ok
+test automatic_target_reports_multiple_targets_and_split_hint ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/hooks.rs (target/debug/deps/hooks-3694062ed490627e)
+
+running 7 tests
+test pre_push_skips_branch_deletions ... ok
+test commit_msg_accepts_all_autosquash_prefixes_unchanged ... ok
+test pre_push_skips_malformed_lines_and_lints_following_valid_line ... ok
+test pre_push_rejects_commits_that_skipped_safe_fixes ... ok
+test pre_push_lints_only_commits_missing_from_remote ... ok
+test installed_hooks_warn_when_gir_is_missing ... ok
+test installed_hooks_block_when_gir_is_missing_and_configured_to_fail ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests/init.rs (target/debug/deps/init-49c2a6e775c254a2)
+
+running 23 tests
+test git_staging_failure_is_reported ... ok
+test git_hook_path_failure_is_reported ... ok
+test init_creates_files_and_reports_each_write ... ok
+test init_generates_cliff_format_and_default_parsers ... ok
+test init_keeps_differing_files_and_processes_the_rest ... ok
+test init_requires_a_repository ... ok
+test adopted_init_skips_missing_optional_files ... ok
+test force_replaces_differing_files ... ok
+test clean_rerun_does_not_restage_or_repeat_hook_path_message ... ok
+test identical_crlf_files_are_left_unchanged ... ok
+test init_kept_file_prints_next_step_last ... ok
+test force_writes_missing_optional_files_in_an_adopted_repository ... ok
+test git_it_right_md_is_static_and_covers_onboarding ... ok
+test init_keeps_invalid_utf8_cliff_toml_without_force ... ok
+test adopted_init_restores_missing_required_files ... ok
+test init_writes_git_it_right_md_in_a_fresh_repository ... ok
+test init_writes_files_at_the_repository_root_from_a_subdirectory ... ok
+test init_uses_kept_config_for_cliff_parsers ... ok
+test init_stages_written_hooks_as_executable ... ok
+test init_reports_only_the_hook_it_stages ... ok
+test invalid_config_stops_before_cliff_and_git_setup ... ok
+test init_restages_only_hooks_with_missing_or_wrong_index_modes ... ok
+test optional_flag_writes_missing_optional_files_and_keeps_edits ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/lint.rs (target/debug/deps/lint-7e050d894889a6b8)
+
+running 9 tests
+test lint_file_rejects_without_changing_file ... ok
+test lint_file_fix_rewrites_message_and_preserves_comments ... ok
+test lint_range_refuses_fix ... ok
+test lint_reads_stdin_with_or_without_dash_and_prints_fixed_message ... ok
+test lint_range_accepts_any_revision_git_log_takes ... ok
+test lint_uses_last_range_value ... ok
+test lint_range_rejects_every_pending_safe_fix_and_shows_fixed_subject ... ok
+test autosquash_subjects_pass_file_and_stdin_without_checks ... ok
+test lint_range_rejects_each_unsquashed_autosquash_subject ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/logs.rs (target/debug/deps/logs-b50be9212521835a)
+
+running 4 tests
+test bugs_validator_requires_its_own_prefix_and_reproduced ... ok
+test validator_catches_each_mistake ... ok
+test bugs_log_follows_the_format ... ok
+test friction_log_follows_the_format ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/perf.rs (target/debug/deps/perf-82bccd05d6ab1c48)
+
+running 1 test
+test commit_msg_hook_stays_within_budget ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+   Doc-tests gir
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+test exit=0

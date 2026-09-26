@@ -1,0 +1,39 @@
+--- status before
+ M README.md
+ M addf/INDEX.md
+ M addf/tasks/init-adopted-repo/TASK.md
+ M src/cmd/init.rs
+ M src/cmd/templates.rs
+ M src/explain.md
+ M src/main.rs
+ M tests/args.rs
+ M tests/init.rs
+--- gir init
+gir: set core.hooksPath=.githooks (this clone)
+gir: next: gir doctor
+exit=0
+--- status after init
+ M README.md
+ M addf/INDEX.md
+ M addf/tasks/init-adopted-repo/TASK.md
+ M src/cmd/init.rs
+ M src/cmd/templates.rs
+ M src/explain.md
+ M src/main.rs
+ M tests/args.rs
+ M tests/init.rs
+--- gir init --optional
+gir: wrote GIT-IT-RIGHT.md
+gir: next: gir doctor
+exit=0
+--- status after --optional
+ M README.md
+ M addf/INDEX.md
+ M addf/tasks/init-adopted-repo/TASK.md
+ M src/cmd/init.rs
+ M src/cmd/templates.rs
+ M src/explain.md
+ M src/main.rs
+ M tests/args.rs
+ M tests/init.rs
+?? GIT-IT-RIGHT.md

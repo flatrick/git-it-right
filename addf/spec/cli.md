@@ -19,7 +19,7 @@
 
 <a id="req-cli-unknown-long-option"></a>
 **unknown-long-option.** A long flag the subcommand does not accept SHALL print `gir: unknown option --FLAG for` followed by the subcommand on stderr and exit `2`.
-The accepted flags are `init --force`, `lint --fix --json --range`, `fixup --dry-run` and `doctor --fix`.
+The accepted flags are `init --force --optional`, `lint --fix --json --range`, `fixup --dry-run` and `doctor --fix`.
 
 <a id="req-cli-range-lint-only"></a>
 **range-lint-only.** `--range` SHALL be accepted only by `gir lint`; any other subcommand given `--range` SHALL fail as an unknown option with exit `2`.

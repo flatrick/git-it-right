@@ -9,6 +9,9 @@
 <a id="req-init-accept-force"></a>
 **accept-force.** `gir init` SHALL accept the optional `--force` flag.
 
+<a id="req-init-accept-optional"></a>
+**accept-optional.** `gir init` SHALL accept the optional `--optional` flag.
+
 <a id="req-init-require-repository"></a>
 **require-repository.** Outside a Git repository, `gir init` SHALL exit `2` and print `gir: not inside a git repository` to stderr.
 
@@ -23,6 +26,23 @@
 
 ## Generated files
 
+<a id="req-init-file-kinds"></a>
+**file-kinds.** The required files are `.githooks/commit-msg`, `.githooks/pre-push` and `.girconfig`.
+The optional files are `cliff.toml` and `GIT-IT-RIGHT.md`.
+
+<a id="req-init-adopted"></a>
+**adopted.** A repository is adopted when `.girconfig` is in its index.
+
+<a id="req-init-required-files"></a>
+**required-files.** `gir init` SHALL create each missing required file, in any repository.
+
+<a id="req-init-optional-files"></a>
+**optional-files.** `gir init` SHALL create a missing optional file only when the repository is not adopted, or `--optional` or `--force` is given.
+Otherwise it SHALL leave the file absent and print nothing about it.
+
+<a id="req-init-optional-no-overwrite"></a>
+**optional-no-overwrite.** `--optional` SHALL NOT change how existing files are treated; the existing-file requirements below apply.
+
 <a id="req-init-hook-files"></a>
 **hook-files.** `gir init` SHALL create `.githooks/commit-msg` and `.githooks/pre-push` with a `#!/bin/sh` header and executable permissions on Unix.
 
@@ -30,7 +50,11 @@
 **config-file.** `gir init` SHALL create `.girconfig` with `[gir]` entries `types = feat fix docs style refactor perf test build ci chore revert` and `subjectMax = 72`, a `[gir "alias"]` section with `feature = feat` and `bugfix = fix`, and commented examples for `scopes`, `scopeRequired`, `descCase`, and `hookMissing`.
 
 <a id="req-init-cliff-file"></a>
-**cliff-file.** `gir init` SHALL create `cliff.toml` with `[changelog]` and `[git]` sections, `conventional_commits = true`, `filter_unconventional = true`, `protect_breaking_commits = true`, and `sort_commits = "oldest"`.
+**cliff-file.** When [optional-files](#req-init-optional-files) permits, `gir init` SHALL create `cliff.toml` with `[changelog]` and `[git]` sections, `conventional_commits = true`, `filter_unconventional = true`, `protect_breaking_commits = true`, and `sort_commits = "oldest"`.
+
+<a id="req-init-git-it-right-file"></a>
+**git-it-right-file.** When [optional-files](#req-init-optional-files) permits, `gir init` SHALL create `GIT-IT-RIGHT.md` with the same content regardless of `.girconfig`.
+It SHALL explain what gir is and why the repository uses it; the per-clone contributor setup (install gir, run `gir init`); `gir explain types` and `gir explain <rule>`; checking a contributor's branch with `gir lint --range` without CI and in CI; that `cliff.toml` is an optional git-cliff configuration with its two commands; and that both optional files may be deleted and are restored by `gir init --optional`.
 
 <a id="req-init-cliff-format"></a>
 **cliff-format.** Generated `cliff.toml` SHALL format versioned and unreleased headings, group commits, show scopes and breaking markers, and set `trim = true`.

@@ -1,0 +1,82 @@
+   Compiling unicase v2.9.0
+   Compiling winnow v1.0.4
+   Compiling getrandom v0.4.3
+   Compiling windows-link v0.2.1
+   Compiling lexopt v0.3.2
+   Compiling cfg-if v1.0.5
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling windows-sys v0.61.2
+   Compiling tempfile v3.27.0
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.2 (C:\src\github\flatrick\git-it-right\.worktrees\init-activate-only)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.21s
+     Running tests\init.rs (target\debug\deps\init-f51e9f09b847f0df.exe)
+
+running 23 tests
+test git_staging_failure_is_reported ... ok
+test git_hook_path_failure_is_reported ... ok
+test init_keeps_differing_files_and_processes_the_rest ... ok
+test init_generates_cliff_format_and_default_parsers ... ok
+test init_creates_files_and_reports_each_write ... ok
+test init_requires_a_repository ... ok
+test identical_crlf_files_are_left_unchanged ... ok
+test force_writes_missing_optional_files_in_an_adopted_repository ... FAILED
+test force_replaces_differing_files ... ok
+test adopted_init_skips_missing_optional_files ... FAILED
+test clean_rerun_does_not_restage_or_repeat_hook_path_message ... ok
+test init_kept_file_prints_next_step_last ... ok
+test init_keeps_invalid_utf8_cliff_toml_without_force ... ok
+test git_it_right_md_is_static_and_covers_onboarding ... FAILED
+test adopted_init_restores_missing_required_files ... ok
+test init_uses_kept_config_for_cliff_parsers ... ok
+test init_stages_written_hooks_as_executable ... ok
+test init_writes_files_at_the_repository_root_from_a_subdirectory ... ok
+test init_writes_git_it_right_md_in_a_fresh_repository ... FAILED
+test optional_flag_writes_missing_optional_files_and_keeps_edits ... FAILED
+test init_reports_only_the_hook_it_stages ... ok
+test init_restages_only_hooks_with_missing_or_wrong_index_modes ... ok
+test invalid_config_stops_before_cliff_and_git_setup ... ok
+
+failures:
+
+---- force_writes_missing_optional_files_in_an_adopted_repository stdout ----
+
+thread 'force_writes_missing_optional_files_in_an_adopted_repository' (145980) panicked at tests\init.rs:325:9:
+--force restores GIT-IT-RIGHT.md
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- adopted_init_skips_missing_optional_files stdout ----
+
+thread 'adopted_init_skips_missing_optional_files' (137824) panicked at tests\init.rs:280:9:
+adopted init leaves the removed cliff.toml absent
+
+---- git_it_right_md_is_static_and_covers_onboarding stdout ----
+
+thread 'git_it_right_md_is_static_and_covers_onboarding' (237520) panicked at tests\init.rs:7:45:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "Det går inte att hitta filen." }
+
+---- init_writes_git_it_right_md_in_a_fresh_repository stdout ----
+
+thread 'init_writes_git_it_right_md_in_a_fresh_repository' (148392) panicked at tests\init.rs:253:5:
+init reports writing GIT-IT-RIGHT.md
+
+---- optional_flag_writes_missing_optional_files_and_keeps_edits stdout ----
+
+thread 'optional_flag_writes_missing_optional_files_and_keeps_edits' (290288) panicked at tests\init.rs:307:5:
+assertion `left == right` failed: kept edits still give conflict status: gir: unknown option --optional for `gir init` (see: gir --help)
+
+  left: Some(2)
+ right: Some(1)
+
+
+failures:
+    adopted_init_skips_missing_optional_files
+    force_writes_missing_optional_files_in_an_adopted_repository
+    git_it_right_md_is_static_and_covers_onboarding
+    init_writes_git_it_right_md_in_a_fresh_repository
+    optional_flag_writes_missing_optional_files_and_keeps_edits
+
+test result: FAILED. 18 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.45s
+
+error: test failed, to rerun pass `--test init`

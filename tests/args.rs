@@ -56,7 +56,7 @@ fn usage_lists_commands_with_their_arguments_and_flags() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     let usage = String::from_utf8_lossy(&out.stdout);
     for line in [
-        "gir init [--force]",
+        "gir init [--force] [--optional]",
         "gir lint [<file>|-] [--fix] [--json]",
         "gir lint --range <A..B> [--json]",
         "gir fixup [<commit>] [--dry-run]",

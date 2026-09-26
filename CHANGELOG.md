@@ -1,4 +1,16 @@
 # Changelog
+## v0.0.3 - 2026-09-26
+
+### Documentation
+
+- Add RELEASE-GUIDE.md for cutting a release
+- **addf:** Open init-adopted-repo task in DEFINE
+- Add GIT-IT-RIGHT.md from gir init --optional
+- **addf:** Complete init-adopted-repo and publish its spec delta
+
+### Features
+
+- **init:** Generate GIT-IT-RIGHT.md and respect removed optional files
 ## v0.0.2 - 2026-09-26
 
 ### Bug Fixes
