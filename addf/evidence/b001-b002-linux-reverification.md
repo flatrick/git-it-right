@@ -51,7 +51,7 @@ out `72457d0`. Build the pre-fix `839a991` in a second worktree as a control.
 -   Source and method: [gate log](logs-20260926/linux/gate-linux-72457d0-20260926-1600.log).
 -   Context: Linux 6.18.33.2-microsoft-standard-WSL2 x86_64, uid `1000`,
     rustc 1.98.0, git 2.55.0, 2026-09-26.
--   Limitations: WSL2, not a native Linux install.
+-   Limitations: one machine, one run.
 
 ### `linux-repro`
 
@@ -95,4 +95,5 @@ output committed.
 
 ## Remaining uncertainty
 
-Only WSL2 was used. The archived Task's own Linux runs remain summaries.
+`NONE` blocking. The archived Task's own Linux runs remain summaries; this
+Verification supplies the committed output.
