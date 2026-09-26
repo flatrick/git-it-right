@@ -17,8 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [fix-b001-b002](tasks/fix-b001-b002/TASK.md) - B-001 and B-002 are
-  fixed; State `IMPLEMENT`.
+`NONE`. No Task is currently active.
 
 ## Ledger
 
@@ -64,6 +63,8 @@ is available through its archived bundle, not through this index.
 - [gir-v1-windows-macos](open-claims/gir-v1-windows-macos.md) - gir v1's
   tests and clippy pass on Windows and macOS; unverified, awaiting the
   operator's Windows run.
+- [b001-b002-windows](open-claims/b001-b002-windows.md) - B-001 and
+  B-002 are fixed on Windows; unverified, awaiting the operator's Windows run.
 
 ## Reusable Evidence
 

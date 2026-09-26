@@ -39,8 +39,12 @@ The accepted flags are `init --force`, `lint --fix --json --range`, `fixup --dry
 ## Exit codes
 
 <a id="req-cli-runtime-error"></a>
-**runtime-error.** Any error that stops a command (an unreadable file, an invalid `.girconfig`, a failing git call) SHALL print one message prefixed `gir: ` on stderr and exit `2`.
+**runtime-error.** Any error that stops a command (an unreadable file, an invalid `.girconfig`, a failing git call), other than a closed stdout, SHALL print one message prefixed `gir: ` on stderr and exit `2`.
 Output from a git command that gir runs with inherited stdio (the `git commit` of `gir fixup`) SHALL appear before that message.
+
+<a id="req-cli-closed-stdout"></a>
+**closed-stdout.** When gir's own write to stdout fails because the reader has closed it, gir SHALL stop, print nothing on stderr, and exit `141`.
+Output of a git command that gir runs with inherited stdio is not gir's own write; its failure follows runtime-error.
 
 <a id="req-cli-repository-root"></a>
 **repository-root.** `gir init`, `gir doctor` and `gir fixup` SHALL behave the same when run from any directory inside the repository as from its root.
