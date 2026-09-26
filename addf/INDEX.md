@@ -17,7 +17,8 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [init-adopted-repo](tasks/init-adopted-repo/TASK.md) - `gir init` respects
+  removed optional files and generates `GIT-IT-RIGHT.md`. State: `DEFINE`.
 
 ## Ledger
 
