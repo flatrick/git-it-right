@@ -68,5 +68,6 @@ The test suite and clippy pass on Windows at `42b84ad`, including
 The claim was narrowed to exclude macOS. It is not verified: on
 2026-09-26 the operator decided not to verify on macOS and to rely on
 POSIX adherence shared with Linux. That is an accepted assumption, not
-evidence. The CI matrix in `.github/workflows/ci.yml` includes
-`macos-latest`, and a passing run there would be evidence.
+evidence. `.github/workflows/ci.yml` lists `macos-latest`, but GitHub
+Actions is disabled for this repository and no run has happened, so no
+macOS evidence exists.

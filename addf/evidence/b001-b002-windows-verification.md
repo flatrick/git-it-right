@@ -59,8 +59,9 @@ the pre-fix `839a991` from `git archive` the same way.
     `.scratch/fix-b001-b002/b002-rerun-20260926-1412.log` (local, not
     committed).
 -   Context: as above. An earlier run, `b002-20260926-1412.log`, is void:
-    `Set-Content -NoNewline` failed in that shell and `.gitattributes` was
-    never created.
+    `Set-Content -NoNewline` reported that no parameter `NoNewline` exists,
+    and `.gitattributes` was never created. The cause is unknown; the same
+    parameter worked later in the session.
 -   Limitations: one machine, run by hand. Since `67f5be6`, the same `(R)`
     and `(RD)` cases run on Windows in `cargo test` as
     `doctor_reports_read_denied_gitattributes_and_does_not_fix_it` and
@@ -94,4 +95,5 @@ and leaves it unchanged under `(R)` and `(RD)`.
 ## Remaining uncertainty
 
 `NONE` blocking. The Windows regression tests added in `67f5be6` have
-passed locally but not yet on the `windows-latest` CI runner.
+passed on one local machine only. GitHub Actions is disabled for this
+repository, so no CI run covers them.

@@ -16,8 +16,12 @@ missing or unrelated Verification and the checker would still pass.
 With `--include-archive`, `check-capsule` now also loads and checks
 `.archive/open-claims/`, so the same reference, placeholder and
 Claim-Basis checks run there as on current open claims. The default run
-is unchanged. The change is local to this repository and has not been
-made upstream in `agent-driven-development-template`.
+is unchanged. The change is local to this repository. At
+`2026-09-26T13:52:25Z`, `addf/scripts/check-capsule` in
+`flatrick/agent-driven-development-template` still loaded only
+`.archive/tasks/` (its line 236) on both `main` (head `87f671d`) and
+`fix/check-capsule-utf8-output`, fetched from each branch with `gh api
+repos/flatrick/agent-driven-development-template/contents/addf/scripts/check-capsule`.
 
 ## Files touched
 

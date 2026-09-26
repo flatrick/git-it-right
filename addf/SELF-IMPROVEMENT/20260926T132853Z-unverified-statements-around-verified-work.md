@@ -12,7 +12,8 @@ discarded a void run, checked that archive findings already existed at
 macOS `VERIFIED` on the operator's assumption. The operator reviewed the
 session and found that statements around those Claims did not get the same
 treatment. The agent agreed. Each item below names the statement, where it
-is, and the check that would have settled it.
+is, and the check that would have settled it. Paths and line numbers refer
+to commit `012f126`; later commits corrected those records.
 
 1.  **CI was assumed to run.** In chat the agent said a push to PR #2
     "triggers CI". Two committed records rest on the same assumption:
@@ -84,8 +85,9 @@ Gaps in addf that these items point to, recorded for a later decision:
 
 ## What changed
 
-`NONE`. Friction only. The records named in items 1, 3, 4 and 6 are
-uncorrected when this entry is written.
+`NONE`. Friction only. The records named in items 1, 3, 4 and 6 were
+uncorrected when this entry was written and were corrected in the next
+commit.
 
 ## Why
 

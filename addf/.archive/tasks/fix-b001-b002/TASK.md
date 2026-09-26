@@ -222,6 +222,8 @@ turn green.
   pipe (os error 32)` and exit `101`.
 - Conclusion: `VERIFIED` on Linux.
 - Limitations: Linux only; Windows was reproduced separately in `BUGS.md`.
+  Written on 2026-09-26, after archival, from the Investigate record;
+  nothing was re-run.
 
 <a id="verification-b002-reproduces"></a>
 ### Verification: `b002-reproduces`
@@ -235,6 +237,8 @@ turn green.
   `fixed .gitattributes` and replace the content with the template.
 - Conclusion: `VERIFIED` on Linux, non-root.
 - Limitations: Linux only; Windows was reproduced separately in `BUGS.md`.
+  Written on 2026-09-26, after archival, from the Investigate record;
+  nothing was re-run.
 
 <a id="verification-closed-stdout-quiet"></a>
 ### Verification: `closed-stdout-quiet`
