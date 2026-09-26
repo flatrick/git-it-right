@@ -10,8 +10,7 @@
 
 **Resume at:** `NONE`
 
-**Open obligations:** Windows behavior of both fixes, carried forward to
-`framework:open-claims/b001-b002-windows.md`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -25,7 +24,7 @@
 - Current contract: `framework:spec/cli.md#req-cli-runtime-error`,
   `framework:spec/doctor.md#req-doctor-gitattributes-missing`,
   `framework:spec/doctor.md#req-doctor-gitattributes-autocrlf`
-- Proposed delta:
+- Proposed delta: three changes to the `cli` and `doctor` modules.
   - cli: add `req-cli-closed-stdout`. When the reader closes stdout before gir
     finishes writing, gir SHALL print nothing more and exit `141`.
   - doctor: `req-doctor-gitattributes-missing` and
@@ -112,7 +111,7 @@ reports an unreadable `.gitattributes` as unreadable and never overwrites it.
 -   State: `VERIFIED`
 -   Scope: Linux, `839a991`, debug build, 3 of 3 runs.
 -   Consequence if false: nothing to fix on Linux.
--   Basis: [Investigate](#investigate).
+-   Basis: [Verification](#verification-b001-reproduces).
 
 <a id="b002-reproduces"></a>
 #### `b002-reproduces`
@@ -123,7 +122,7 @@ reports an unreadable `.gitattributes` as unreadable and never overwrites it.
 -   State: `VERIFIED`
 -   Scope: Linux, `839a991`, non-root user.
 -   Consequence if false: nothing to fix on Linux.
--   Basis: [Investigate](#investigate).
+-   Basis: [Verification](#verification-b002-reproduces).
 
 ## Understand
 
@@ -211,6 +210,31 @@ turn green.
     `--fix` (pre-existing, unreproduced, filed as B-003).
 
 ## Verify
+
+<a id="verification-b001-reproduces"></a>
+### Verification: `b001-reproduces`
+
+- Claim: [b001-reproduces](#b001-reproduces)
+- Method: `(sleep 0.3; gir explain) | true` on a debug build of `839a991`,
+  3 runs, recording stderr and the exit code, as shown in
+  [Investigate](#investigate).
+- Evidence considered: all 3 runs print `failed printing to stdout: Broken
+  pipe (os error 32)` and exit `101`.
+- Conclusion: `VERIFIED` on Linux.
+- Limitations: Linux only; Windows was reproduced separately in `BUGS.md`.
+
+<a id="verification-b002-reproduces"></a>
+### Verification: `b002-reproduces`
+
+- Claim: [b002-reproduces](#b002-reproduces)
+- Method: `chmod 000` and then `chmod 200` on `.gitattributes`, running
+  `gir doctor` and `gir doctor --fix` on `839a991` as a non-root user, as
+  shown in [Investigate](#investigate).
+- Evidence considered: mode `000` reports `missing` and `--fix` exits `2`
+  with `Permission denied (os error 13)`; mode `200` makes `--fix` report
+  `fixed .gitattributes` and replace the content with the template.
+- Conclusion: `VERIFIED` on Linux, non-root.
+- Limitations: Linux only; Windows was reproduced separately in `BUGS.md`.
 
 <a id="verification-closed-stdout-quiet"></a>
 ### Verification: `closed-stdout-quiet`
@@ -303,7 +327,8 @@ published, and Windows verification is carried forward as an open claim.
 
 All three success Claims are `VERIFIED` via their Verifications above.
 `windows-behavior` stays `UNVERIFIED`, is agreed in DEFINE as deferred, and
-is carried forward to `framework:open-claims/b001-b002-windows.md`.
+is carried forward to `history:open-claims/b001-b002-windows.md`, since
+settled and retired.
 
 ## Stop record
 
