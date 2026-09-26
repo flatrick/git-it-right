@@ -1,4 +1,42 @@
 # Changelog
+## v0.0.2 - 2026-09-26
+
+### Bug Fixes
+
+- **doctor:** Report an unreadable .gitattributes instead of calling it missing
+- **cli:** Exit 141 quietly when stdout is closed early
+- **addf:** Check retired open claims with --include-archive
+
+### CI
+
+- Check the addf archive
+
+### Documentation
+
+- Close task fix-b001-b002 and publish its spec delta
+- File B-004 to B-010 from the Rust review
+- Reproduce B-008 and B-009
+- Record the B-007 decision to ask the remote with ls-remote
+- Narrow the open B-007 question to the second connection
+- Verify B-001, B-002 and the test suite on Windows
+- **addf:** Fix the archived fix-b001-b002 record for --include-archive
+- **addf:** Note the Windows B-002 tests in its Verification
+- **addf:** Log unverified statements made around verified work
+- **addf:** Correct unverified statements in the Windows records
+- **addf:** Commit the logs behind the Windows verifications
+- **addf:** Re-verify the Linux claims with committed output
+- **addf:** Drop the WSL2 caveat from the Linux re-verification
+
+### Miscellaneous
+
+- Open task fix-b001-b002
+
+### Testing
+
+- Add failing regressions for B-001 and B-002
+- Report when the unreadable-file regressions are skipped as root
+- Cover B-002 with a .gitattributes directory
+- Cover B-002 on Windows with icacls read denies
 ## v0.0.1 - 2026-09-25
 
 ### Bug Fixes
