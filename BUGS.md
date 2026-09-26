@@ -116,7 +116,8 @@ When a push names a URL instead of a remote, git passes the URL as the remote na
 For a new branch, `gir hook pre-push` then lints the whole history: pushing to a bare repository by path rejected `old bad message`, a commit that repository already had, exit `1`; the same push through a named remote exited `0`.
 This follows `spec/hooks.md#req-hooks-pre-push-scope` as written, so the fix changes the spec.
 Decided (operator, 2026-09-26): ask the remote. For a new branch, or when `remote-sha..local-sha` fails, run `git ls-remote REMOTE` (a name or a URL) and lint `local-sha --not` every returned SHA that exists locally, for named remotes as well as URLs, replacing the remote-tracking-ref lookup.
-Still open for the fixing Task's DEFINE: what the hook does when `git ls-remote` fails, for example offline.
+Git connects and reads the remote's refs before it runs pre-push, so an unreachable remote fails `git push` (exit `128`) before the hook runs; checked with git 2.55.0.
+Still open for the fixing Task's DEFINE: `git ls-remote` is a second connection, so it can ask for credentials again (an SSH passphrase, or HTTPS without a credential helper) or fail if the remote goes away in between; decide what the hook does then.
 
 ### B-008 `gir fixup` cannot trace paths with a space, quote, backslash, tab or non-UTF-8 byte
 
