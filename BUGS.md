@@ -114,7 +114,9 @@ Records should be split on a byte a message cannot contain (`git log -z`), or ea
 
 When a push names a URL instead of a remote, git passes the URL as the remote name, and `--remotes=<url>` matches no remote-tracking ref.
 For a new branch, `gir hook pre-push` then lints the whole history: pushing to a bare repository by path rejected `old bad message`, a commit that repository already had, exit `1`; the same push through a named remote exited `0`.
-This follows `spec/hooks.md#req-hooks-pre-push-scope` as written, so the spec needs a decision first, for example asking the remote what it has with `git ls-remote`.
+This follows `spec/hooks.md#req-hooks-pre-push-scope` as written, so the fix changes the spec.
+Decided (operator, 2026-09-26): ask the remote. For a new branch, or when `remote-sha..local-sha` fails, run `git ls-remote REMOTE` (a name or a URL) and lint `local-sha --not` every returned SHA that exists locally, for named remotes as well as URLs, replacing the remote-tracking-ref lookup.
+Still open for the fixing Task's DEFINE: what the hook does when `git ls-remote` fails, for example offline.
 
 ### B-008 `gir fixup` cannot trace paths with a space, quote, backslash, tab or non-UTF-8 byte
 
