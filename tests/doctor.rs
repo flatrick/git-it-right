@@ -354,6 +354,18 @@ fn doctor_reports_invalid_utf8_gitattributes_without_replacing_it() {
     assert_eq!(std::fs::read(repo.dir.join(".gitattributes")).unwrap(), original);
 }
 
+#[test]
+fn doctor_reports_gitattributes_directory_as_unreadable() {
+    let repo = Repo::new();
+    std::fs::create_dir(repo.dir.join(".gitattributes")).unwrap();
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report.contains("warn  .gitattributes: cannot read: "), "{report}");
+    assert!(!report.contains(".gitattributes: missing"), "{report}");
+    let fixed = repo.gir(&["doctor", "--fix"]);
+    assert_eq!(stderr(&fixed), "");
+    assert!(repo.dir.join(".gitattributes").is_dir());
+}
+
 #[cfg(unix)]
 fn with_mode(repo: &Repo, rel: &str, mode: u32) -> bool {
     use std::os::unix::fs::PermissionsExt;
