@@ -240,3 +240,40 @@ fn unknown_short_option_before_help_exits_two() {
     assert_eq!(stderr(&out), "gir: unknown option -Z\n");
     assert!(out.stdout.is_empty());
 }
+
+#[test]
+fn closed_stdout_exits_141_without_output() {
+    use std::io::Write;
+    use std::process::Stdio;
+
+    let repo = Repo::new();
+    repo.commit_file("a.txt", "a\n", "feat: add a");
+    repo.write("a.txt", "b\n");
+    repo.git(&["add", "a.txt"]);
+    let cases: [(&[&str], &str); 8] = [
+        (&["--version"], ""),
+        (&["--help"], ""),
+        (&["explain"], ""),
+        (&["explain", "doctor"], ""),
+        (&["doctor"], ""),
+        (&["lint", "--json", "-"], "feat: x\n"),
+        (&["lint", "--fix", "-"], "Feat: x"),
+        (&["fixup", "--dry-run"], ""),
+    ];
+    for (args, input) in cases {
+        let (reader, writer) = std::io::pipe().unwrap();
+        drop(reader);
+        let mut child = repo
+            .cmd(env!("CARGO_BIN_EXE_gir"))
+            .args(args)
+            .stdin(Stdio::piped())
+            .stdout(writer)
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let _ = child.stdin.take().unwrap().write_all(input.as_bytes());
+        let out = child.wait_with_output().unwrap();
+        assert_eq!(stderr(&out), "", "{args:?}");
+        assert_eq!(out.status.code(), Some(141), "{args:?}");
+    }
+}

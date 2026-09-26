@@ -353,3 +353,49 @@ fn doctor_reports_invalid_utf8_gitattributes_without_replacing_it() {
     assert!(stdout(&out).lines().any(|line| line == "info  .gitattributes: no `* text=auto` line; line endings are not normalised"), "{}", stdout(&out));
     assert_eq!(std::fs::read(repo.dir.join(".gitattributes")).unwrap(), original);
 }
+
+#[cfg(unix)]
+fn with_mode(repo: &Repo, rel: &str, mode: u32) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+    let path = repo.dir.join(rel);
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(mode)).unwrap();
+    std::fs::read(&path).is_err()
+}
+
+#[cfg(unix)]
+fn content_with_mode(repo: &Repo, rel: &str) -> String {
+    use std::os::unix::fs::PermissionsExt;
+    let path = repo.dir.join(rel);
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+    std::fs::read_to_string(path).unwrap()
+}
+
+#[cfg(unix)]
+#[test]
+fn doctor_reports_unreadable_gitattributes_and_does_not_fix_it() {
+    let repo = Repo::new();
+    repo.write(".gitattributes", "# mine\n");
+    if !with_mode(&repo, ".gitattributes", 0o000) {
+        return;
+    }
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report.contains("warn  .gitattributes: cannot read: "), "{report}");
+    assert!(!report.contains(".gitattributes: missing"), "{report}");
+    let fixed = repo.gir(&["doctor", "--fix"]);
+    assert_eq!(stderr(&fixed), "");
+    assert!(stdout(&fixed).contains("warn  .gitattributes: cannot read: "), "{}", stdout(&fixed));
+    assert_eq!(content_with_mode(&repo, ".gitattributes"), "# mine\n");
+}
+
+#[cfg(unix)]
+#[test]
+fn doctor_fix_keeps_write_only_gitattributes() {
+    let repo = Repo::new();
+    repo.write(".gitattributes", "# mine\n");
+    if !with_mode(&repo, ".gitattributes", 0o200) {
+        return;
+    }
+    let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
+    assert!(!fixed.contains("fixed .gitattributes"), "{fixed}");
+    assert_eq!(content_with_mode(&repo, ".gitattributes"), "# mine\n");
+}
