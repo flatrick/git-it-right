@@ -359,7 +359,11 @@ fn with_mode(repo: &Repo, rel: &str, mode: u32) -> bool {
     use std::os::unix::fs::PermissionsExt;
     let path = repo.dir.join(rel);
     std::fs::set_permissions(&path, std::fs::Permissions::from_mode(mode)).unwrap();
-    std::fs::read(&path).is_err()
+    let denied = std::fs::read(&path).is_err();
+    if !denied {
+        eprintln!("skipped: mode {mode:o} does not deny reading {rel} (running as root?)");
+    }
+    denied
 }
 
 #[cfg(unix)]
