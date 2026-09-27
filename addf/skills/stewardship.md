@@ -50,7 +50,9 @@ the published `framework:` references, or record `NONE` when the Task has no
 delta. A Stop outcome publishes no proposed delta. In the same checkpoint, set
 State to the selected outcome, append it to State path, set Resume at to `NONE`,
 reconcile obligations, and update the current-artifact index. Do not move a
-bundle while its State still names an active phase.
+bundle while its State still names an active phase. Commit this checkpoint
+as the terminal transition, as Work control's Work and transition requires;
+the archival move may follow in the same commit or the next one.
 
 ## Consider Learning
 

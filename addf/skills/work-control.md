@@ -182,6 +182,27 @@ transitions, not their justification. The index is a derived view, so a
 disagreement between it and the Task is a defect in the index; the Task is
 authoritative.
 
+**SHALL:** In a version-controlled repository, record every State change —
+creating a Task in `DEFINE`, each forward or reassessment transition, and
+the terminal transition — as its own commit, made as soon as the cursor
+update above is written and before any destination-State work. After that
+commit, nothing in the workspace is left uncommitted. Work done in the
+previous State may be committed first in commits of its own, with the types
+its content warrants; the transition commit then holds the cursor update and
+names the Task and the transition in its message, for example
+`docs(addf): fixup-modes-and-picker IMPLEMENT -> VERIFY`. Consecutive
+transitions made in one pass, including skipped States, still get one
+commit each.
+
+**Reason:** A Task's State path records which transitions happened, not
+what the repository looked like at each. Without one commit per transition,
+a reader cannot check out the state a gate was decided on, and a whole
+traversal can collapse into one commit made at the end.
+
+**Scope:** Every Task in a repository under version control, in the
+workspace and line of development chosen under Isolate. A repository
+without version control is exempt.
+
 ## Reassess or stop
 
 | Finding | Destination |
@@ -212,6 +233,8 @@ Stewardship owns its terminal publication.
 ## Exit check
 
 - State equals the final State path entry.
+- In a version-controlled repository, the latest State change is committed
+  and nothing is left uncommitted in the workspace.
 - Resume at is concrete, or `NONE` only in a terminal State.
 - Each obligation names a blocking gate or deferred checkpoint.
 - The next transition is justified and no contradiction is hidden.
