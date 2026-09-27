@@ -13,13 +13,13 @@
 **help.** `gir` with no arguments, `gir -h`, `gir --help`, and `-h` or `--help` after any subcommand SHALL print the usage text on stdout and exit `0`, ignoring any other arguments except an unknown short flag before it, which fails as below.
 
 <a id="req-cli-usage-lists-commands"></a>
-**usage-lists-commands.** The usage text SHALL list `init`, `lint`, `fixup`, `doctor`, `explain` and `hook` with their accepted arguments and flags.
+**usage-lists-commands.** The usage text SHALL list `init`, `lint`, `fixup`, `amend`, `squash`, `reword`, `doctor`, `explain` and `hook` with their accepted arguments and flags.
 
 ## Argument errors
 
 <a id="req-cli-unknown-long-option"></a>
 **unknown-long-option.** A long flag the subcommand does not accept SHALL print `gir: unknown option --FLAG for` followed by the subcommand on stderr and exit `2`.
-The accepted flags are `init --force --optional`, `lint --fix --json --range`, `fixup --dry-run` and `doctor --fix`.
+The accepted flags are `init --force --optional`, `lint --fix --json --range`, `fixup --dry-run --split`, `amend --dry-run --split`, `squash --dry-run --split`, `reword --dry-run` and `doctor --fix`.
 
 <a id="req-cli-range-lint-only"></a>
 **range-lint-only.** `--range` SHALL be accepted only by `gir lint`; any other subcommand given `--range` SHALL fail as an unknown option with exit `2`.
@@ -39,7 +39,7 @@ The accepted flags are `init --force --optional`, `lint --fix --json --range`, `
 ## Exit codes
 
 <a id="req-cli-runtime-error"></a>
-**runtime-error.** Any error that stops a command (an unreadable file, an invalid `.girconfig`, a failing git call), other than a closed stdout, SHALL print one message prefixed `gir: ` on stderr and exit `2`.
+**runtime-error.** Any error that stops a command (an unreadable file, an invalid `.girconfig`, a failing git call), other than a closed stdout or a cancelled prompt ([ask-cancel](fixup.md#req-fixup-ask-cancel)), SHALL print one message prefixed `gir: ` on stderr and exit `2`.
 Output from a git command that gir runs with inherited stdio (the `git commit` of `gir fixup`) SHALL appear before that message.
 
 <a id="req-cli-closed-stdout"></a>
@@ -47,7 +47,7 @@ Output from a git command that gir runs with inherited stdio (the `git commit` o
 Output of a git command that gir runs with inherited stdio is not gir's own write; its failure follows runtime-error.
 
 <a id="req-cli-repository-root"></a>
-**repository-root.** `gir init`, `gir doctor` and `gir fixup` SHALL behave the same when run from any directory inside the repository as from its root.
+**repository-root.** `gir init`, `gir doctor`, `gir fixup`, `gir amend`, `gir reword` and `gir squash` SHALL behave the same when run from any directory inside the repository as from its root.
 
 ## Module invariants
 

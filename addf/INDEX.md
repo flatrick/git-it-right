@@ -60,7 +60,9 @@ is available through its archived bundle, not through this index.
 
 ## Open Claims
 
-`NONE`. No standing Claim is open.
+- [gui-clients-have-no-tty](open-claims/gui-clients-have-no-tty.md) - GUI
+  git clients run gir without a terminal, so they never see its prompt;
+  unverified.
 
 ## Reusable Evidence
 
