@@ -5,7 +5,7 @@ It is one small Rust binary that works the same on Windows, Linux and macOS.
 
 - **Conventional Commits lint.** Messages are checked against [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).
   Safe mistakes are fixed automatically; anything else is rejected with a short, actionable message.
-- **Fixup workflow.** `gir fixup` finds which commit your staged change belongs to and creates a `fixup!` commit for `git rebase --autosquash`.
+- **Fixup workflow.** `gir fixup` finds which commit your staged change belongs to and creates a `fixup!` commit for `git rebase --autosquash`; `gir amend`, `gir reword` and `gir squash` do the same for `amend!` and `squash!`.
 - **Repo hygiene.** `gir doctor` checks `.gitattributes`, `.gitignore`, `.editorconfig`, recommended git settings and file names that break on some platforms.
 
 ## Install
@@ -113,7 +113,8 @@ git rebase --autosquash main     # folds the fixup into its target
 
 - `gir fixup <commit>` names a target on the current branch after the base; `gir fixup --dry-run` only prints the target it found.
 - When gir finds the target itself, it refuses staged lines that belong to several commits, come from the base branch (`origin/HEAD`, `main`, `master` or the upstream), or are in a new file.
-  It tells you which, so you can stage per commit with `git add -p`.
+  It tells you which, so you can stage per commit with `git add -p`, or run `gir fixup --split` for one fixup per commit.
+- In a terminal, gir asks you to pick the commit instead of refusing; GUI clients and scripts get the refusal (`GIR_INTERACTIVE=0` or `1` overrides).
 - `rebase.autoSquash = true` (set by `gir doctor --fix`) makes every `git rebase -i` autosquash too.
 - The `pre-push` hook refuses `fixup!`, `squash!` and `amend!` commits, so they never reach the remote.
 
@@ -124,7 +125,10 @@ git rebase --autosquash main     # folds the fixup into its target
 | `gir init [--force] [--optional]` | Install hooks and config. Re-running changes nothing; `--optional` restores removed optional files; `--force` overwrites edited files. |
 | `gir lint [<file> \| -] [--fix] [--json]` | Lint a message from a file or stdin. `--fix` rewrites the file (or prints the fixed message for stdin). |
 | `gir lint --range <A..B> [--json]` | Lint existing commits, for example in CI. Also rejects unsquashed fixups. |
-| `gir fixup [<commit>] [--dry-run]` | Create a `fixup!` commit for the commit the staged change belongs to. |
+| `gir fixup [<commit>] [--dry-run] [--split]` | Create a `fixup!` commit for the commit the staged change belongs to. |
+| `gir amend [<commit>] [--dry-run] [--split]` | Like `fixup`, and replace the commit's message (`amend!`). |
+| `gir squash [<commit>] [--dry-run] [--split]` | Like `fixup`, and combine the messages (`squash!`). |
+| `gir reword [<commit>] [--dry-run]` | Replace only the commit's message (`amend!`, staged changes ignored). |
 | `gir doctor [--fix]` | Check repo hygiene; `--fix` applies repo-local fixes only and never touches global git config. |
 | `gir explain [<topic>]` | Explain a rule, `types`, `config`, `fixup`, `hooks` or `doctor`. |
 
