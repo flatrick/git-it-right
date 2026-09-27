@@ -118,6 +118,11 @@ git rebase --autosquash main     # folds the fixup into its target
 - `rebase.autoSquash = true` (set by `gir doctor --fix`) makes every `git rebase -i` autosquash too.
 - The `pre-push` hook refuses `fixup!`, `squash!` and `amend!` commits, so they never reach the remote.
 
+## Git clients
+
+gir is tested from terminals.
+If you use a git client such as Visual Studio, VS Code, SourceGit or SourceTree, [CLIENT-TESTING.md](CLIENT-TESTING.md) walks through checking that the hooks, `gir fixup` and its prompt work there, and how to report what breaks.
+
 ## Commands
 
 | Command | What it does |
