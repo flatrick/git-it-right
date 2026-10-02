@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-advice-fails` blocks `UNDERSTAND`.
+**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
 
 ## Owned artifacts
 
@@ -44,55 +44,55 @@
 #### `c1-untraced-no-terminal`
 
 -   Claim: Without a terminal, `gir fixup --split` with a staged file it cannot trace (a new file, a binary file, or a mode-only change) exits `2`, commits nothing, and its message names the file and says to commit or unstage it and run `--split` again, without `pass one: gir fixup <commit>`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the user is told to do something `--split` refuses.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-untraced-no-terminal).
 
 <a id="c2-untraced-terminal"></a>
 #### `c2-untraced-terminal`
 
 -   Claim: At a terminal, `gir fixup --split`, and the several-targets picker's `s`, ask only which commit each untraceable file belongs to; that file's whole staged version goes into the chosen commit's autosquash commit, and every other hunk is split as before.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: `--split` is silently ignored and everything lands in one commit.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-untraced-terminal).
 
 <a id="c3-ambiguous-insertion"></a>
 #### `c3-ambiguous-insertion`
 
 -   Claim: For a staged insertion between lines last changed by two different commits, at a terminal gir asks which of the two it belongs to and then splits; without a terminal it refuses, naming the hunk and both commits, without `git add -p` advice, and commits nothing.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the split is blocked by advice that cannot split one line.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-ambiguous-insertion).
 
 <a id="c4-picker-offers-split"></a>
 #### `c4-picker-offers-split`
 
 -   Claim: The several-targets picker offers `s` only when the split can go ahead.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the user picks `s` and gets a refusal.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-picker-offers-split).
 
 <a id="c5-end-to-end"></a>
 #### `c5-end-to-end`
 
 -   Claim: For `c2-untraced-terminal` and `c3-ambiguous-insertion`, the split followed by `git rebase --autosquash` gives the intended history; the build at this Task's start fails `c1-untraced-no-terminal` to `c4-picker-offers-split`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the questions look right but the folded history is wrong.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c5-end-to-end).
 
 <a id="c6-spec-and-tests"></a>
 #### `c6-spec-and-tests`
 
 -   Claim: The specification delta is published at completion; integration tests cover `c1-untraced-no-terminal` to `c4-picker-offers-split` and fail on the code at this Task's start; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the behavior is unspecified or regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c6-spec-and-tests).
 
 ### Constraints
 
@@ -186,6 +186,62 @@ No probe is needed: `acceptance.py` reproduces every case, and the one assumptio
 - Evidence considered: `logs/acceptance-head-f46e828-20261002-1205.log`: every `c1` case ends with `pass one: gir fixup <commit>`; the terminal `c2` new-file case creates one `fixup!` for everything; both `c3` cases end with `split it with git add -p`.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-c1-untraced-no-terminal"></a>
+### Verification: `c1-untraced-no-terminal`
+
+- Claim: [c1-untraced-no-terminal](#c1-untraced-no-terminal)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: `acceptance.py` `c1` cases for a new file, a binary file and a mode-only change pass in all five runs (`logs/acceptance-fixed-x5-20261002-1209.log`), and failed at the start (`logs/acceptance-head-f46e828-20261002-1205.log`); `split_without_a_terminal_refuses_an_untraceable_file_with_split_advice` passes (`logs/test-final-20261002-1209-run1.log`) and fails before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c2-untraced-terminal"></a>
+### Verification: `c2-untraced-terminal`
+
+- Claim: [c2-untraced-terminal](#c2-untraced-terminal)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: `acceptance.py` `c2` cases pass in all five runs, through `git rebase --autosquash` (`logs/acceptance-fixed-x5-20261002-1209.log`); `split_at_a_terminal_asks_where_an_untraceable_file_goes`, `split_at_a_terminal_places_a_binary_file_whole` and `split_places_a_file_in_a_commit_with_no_hunks_of_its_own` pass three times (`logs/test-final-20261002-1209-run1.log`, `logs/test-final-20261002-1209-run2.log`, `logs/test-final-20261002-1209-run3.log`); the first two fail before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. Through the picker's `s` an untraceable file cannot occur: plain `gir fixup` asks for one commit first, as before.
+
+<a id="verification-c3-ambiguous-insertion"></a>
+### Verification: `c3-ambiguous-insertion`
+
+- Claim: [c3-ambiguous-insertion](#c3-ambiguous-insertion)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: `acceptance.py` `c3` cases pass in all five runs (`logs/acceptance-fixed-x5-20261002-1209.log`); `split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits` and `split_at_a_terminal_asks_where_an_ambiguous_insertion_goes` pass (`logs/test-final-20261002-1209-run1.log`) and fail before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`); the review script's case 4 now names both commits (`logs/regression-sweep-20261002-1209.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. Choosing the line above's commit can make the later `rebase --autosquash` conflict, because both changes then touch the same place; that is git's behavior for that history, and the tests choose the line below.
+
+<a id="verification-c4-picker-offers-split"></a>
+### Verification: `c4-picker-offers-split`
+
+- Claim: [c4-picker-offers-split](#c4-picker-offers-split)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: `acceptance.py` `c4` passes (`logs/acceptance-fixed-x5-20261002-1209.log`); `split_is_not_offered_when_a_hunk_changes_lines_of_several_commits` passes (`logs/test-final-20261002-1209-run1.log`) and fails before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`); it also checks that the no-terminal refusal leaves out the `--split` hint.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c5-end-to-end"></a>
+### Verification: `c5-end-to-end`
+
+- Claim: [c5-end-to-end](#c5-end-to-end)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: Every terminal case in `acceptance.py` and the integration tests runs `git rebase -i --autosquash` and checks the history and file contents: all pass (`logs/acceptance-fixed-x5-20261002-1209.log`, `logs/test-final-20261002-1209-run1.log`); at the start, `acceptance.py` failed 24 checks across `c1` to `c4` (`logs/acceptance-head-f46e828-20261002-1205.log`). The earlier acceptance scripts still pass, 53/53 and 48/48 (`logs/regression-sweep-20261002-1209.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c6-spec-and-tests"></a>
+### Verification: `c6-spec-and-tests`
+
+- Claim: [c6-spec-and-tests](#c6-spec-and-tests)
+- Method: `acceptance.py` (five runs) and the integration tests (three runs), on the build of `45174c6` and on the source before the change.
+- Evidence considered: The new tests fail before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`) and pass three times on `45174c6` (`logs/test-final-20261002-1209-run1.log`, `logs/test-final-20261002-1209-run2.log`, `logs/test-final-20261002-1209-run3.log`: 223 passed, 0 failed each); clippy reports no warnings (`logs/clippy-20261002-1209.log`). The specification delta recorded under Decide is published to `spec/fixup.md` in the terminal checkpoint, the same commit that marks this Task `COMPLETED`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only here. Publication and this Verification share one checkpoint, as Stewardship's terminal checkpoint requires the delta to be applied there.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c6-spec-and-tests` with its publication in the terminal checkpoint.
 
 ## Learn
 
