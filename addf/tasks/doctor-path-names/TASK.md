@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Probe each suspicion in `c1-suspicions-settled` against the current build.
+**Resume at:** Record that the probe settled every uncertainty except the operator's decisions, then transition to `DECIDE`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
