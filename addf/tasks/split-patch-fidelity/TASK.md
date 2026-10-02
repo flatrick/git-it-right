@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `acceptance.py` - Probe and acceptance: each byte-sensitive case through `--split` and `git rebase --autosquash`, comparing each commit's bytes; the non-UTF-8 name case is Unix-only.
+-   `logs/acceptance-head-7b5b2d2-20261002-1153.log` - Evidence: `acceptance.py` at the Task's start.
 
 ## Specification impact
 
@@ -106,10 +108,10 @@
 #### `p1-split-loses-bytes`
 
 -   Claim: At this Task's starting revision, `gir fixup --split` fails for a CRLF file, a Latin-1 file, a staged last line ending in spaces, and with `apply.whitespace=error`.
--   State: `UNVERIFIED`
--   Scope: Linux, git 2.56.0, this branch at the Task's first commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `7b5b2d2`.
 -   Consequence if false: the review's reproductions do not hold here.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-split-loses-bytes).
 
 ### DEFINE gate
 
@@ -119,19 +121,26 @@
 
 ### Relevant context
 
-`PENDING`
+-   At `7b5b2d2`, `acceptance.py` (`logs/acceptance-head-7b5b2d2-20261002-1153.log`) fails CRLF, Latin-1, a staged last line ending in spaces, `apply.whitespace=error` and `=fix`, a textconv driver, and a non-UTF-8 file name; a last line ending in spaces with no final newline passes, because git's `\ No newline` line follows it.
+-   Bytes are lost in four places: `git::run` decodes stdout lossily as UTF-8 and trims trailing whitespace; `parse_hunks` splits with `str::lines`, which drops `\r`; `git apply --cached` follows `apply.whitespace`; `git diff` applies textconv by default.
+-   Paths are `String` throughout `trace`, `parse_hunks`, `blame` and the `--name-status -z` cross-check, so a non-UTF-8 name never matches and cannot be passed to `git blame`.
+-   `split.rs` builds the patch from each hunk's `header` and `changes` strings and passes it to `TempIndex::run_with_stdin` as `&str`; `git::run_with_stdin` has no other caller.
 
 ### Assumptions
 
--   `NONE` yet.
+-   On Windows, git writes paths as UTF-8, so converting path bytes to an OS string through UTF-8 there loses nothing for names Windows can hold. Source: Git for Windows stores paths as UTF-8; not verified here, since Windows is not available.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   The Windows path conversion branch runs in CI on `windows-latest`; this Task cannot observe it. Earliest checkpoint: the operator's later Windows testing. Consequence if false: paths with non-ASCII characters fail on Windows.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every case reproduces, and every place that loses bytes is identified.
 
 ## Investigate
 
@@ -147,7 +156,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-split-loses-bytes"></a>
+### Verification: `p1-split-loses-bytes`
+
+- Claim: [p1-split-loses-bytes](#p1-split-loses-bytes)
+- Method: `acceptance.py` with the build at `7b5b2d2`.
+- Evidence considered: `logs/acceptance-head-7b5b2d2-20261002-1153.log`: CRLF and Latin-1 fail with `patch does not apply`, a last line ending in spaces with `do not add up`, `apply.whitespace=error` with `1 line adds whitespace errors`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 
