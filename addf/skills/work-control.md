@@ -57,9 +57,10 @@ One entry per question:
 
 Number each entry by its position among the thread's questions, `Q1` being the first, and give its answer the same number; append-only keeps that position stable.
 Write the question and the answer as separate list items, so a rendered answer does not run into its question's paragraph.
-Settle an entry by appending a disposition line that names it, never by editing the entry:
+Settle an entry by appending a disposition line that names it, never by editing the entry.
+Number disposition lines by their position among the thread's dispositions, `D1` being the first, so a reference such as `Q1` on a disposition line is not mistaken for the entry's own ID:
 
-- D: `<Q positions, or all>` -> `<taken by Task name | rejected: reason | moved to place>`
+- D`<n>`: settles `<Q IDs, or all>` -> `<taken by Task name | rejected: reason | moved to place>`
 
 Before raising a new question, check the open threads `INDEX.md` lists; do not duplicate one a thread already answers.
 Add a question to the thread whose exploration it belongs to, or start a new thread and list it in `INDEX.md` in the same pass.

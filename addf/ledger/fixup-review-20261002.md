@@ -5,7 +5,7 @@ Copied here unchanged from the `ledger.md` of the Task `ledger-threads-and-concu
 
 Append-only: never edit or delete a prior entry; append new ones at the end.
 Number each entry by its position among the questions, `Q1` being the first; its answer takes the same number, as a separate list item.
-Settle an entry with a `D:` line that names it.
+Settle an entry with a numbered disposition line, `D1` being the first, that names the entries it settles.
 See `skills/work-control.md`'s Ledger section for the full contract, including how a Task takes entries and when the thread is archived.
 
 Entries 1–10 come from a `/code-review high` of `feat/fixup-modes` at `d246ab2`, run on 2026-10-02 against `target/debug/gir` with git 2.56.0 in throwaway repos.
@@ -63,8 +63,8 @@ For each one, whether to fix it on this branch is still OPEN.
 - A10: No, read from the files.
   `ROADMAP.md` lines 6, 7 and 40 and many lines of `CLIENT-TESTING.md` hold several sentences each.
   `addf/SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` is wrapped at a fixed width.
-- D: Q2 -> taken by Task diff-header-parsing
-- D: Q1, Q8 -> taken by Task split-preserves-index
+- D1: settles Q2 -> taken by Task diff-header-parsing
+- D2: settles Q1, Q8 -> taken by Task split-preserves-index
 - Q11: Can `gir fixup` trace a staged change to a file whose name contains a space?
 - A11: No, reproduced on `d246ab2` and on the fixed build (review script `edge.py` case 2; `tasks/fixup-fixes-acceptance/logs/edge-old.log` and `edge-new.log` while that Task is active).
   `gir fixup` reports `cannot tell which commit my file.txt belongs to`.
@@ -77,15 +77,15 @@ For each one, whether to fix it on this branch is still OPEN.
   Found while verifying the Task `fixup-fixes-acceptance`.
 - Q13: In what order, and in which Tasks, are the open *NIX issues fixed?
 - A13: Decided by the operator on 2026-10-02: Q11 first, as its own Task; then Q3 and Q4 together (the split patch reaching git exactly as staged); then Q5 and Q6 together (split refusals and advice that cannot work). Each Task is created when its turn comes.
-- D: Q11 -> taken by Task diff-path-names
-- D: Q3, Q4 -> taken by Task split-patch-fidelity
-- D: Q5, Q6, Q13 -> taken by Task split-refusal-advice
+- D3: settles Q11 -> taken by Task diff-path-names
+- D4: settles Q3, Q4 -> taken by Task split-patch-fidelity
+- D5: settles Q5, Q6, Q13 -> taken by Task split-refusal-advice
 - Q14: Does `gir doctor --fix` cope with a tracked hook file that is missing from the working tree?
 - A14: No, observed while testing the Task `doctor-path-names`: `git update-index --chmod=+x` needs the file, so `--fix` stops with `fatal: ... does not exist and --remove not passed` after applying the earlier fixes.
   This can happen when the hook is outside a sparse checkout's cone, or deleted locally.
   Possible fix: set the mode from the index entry (`git update-index --cacheinfo 100755,<object>,<path>`), which needs no working-tree file. Not tested.
-- D: Q14 -> taken by Task doctor-fix-missing-hook
+- D6: settles Q14 -> taken by Task doctor-fix-missing-hook
 - Q15: After `gir doctor --fix` sets a script's exec bit, does the file on disk match?
 - A15: No, observed while verifying the Task `doctor-fix-missing-hook`, on both the old (`--chmod=+x`) and the new code: the index entry becomes `100755`, but the file stays `100644`. With `core.filemode=true`, `git status` then shows every fixed script as modified, and a later `git add` would stage `100644` again, undoing the fix.
   Possible fix: also set the executable bit on the file when it exists (Unix only; Windows has no such bit). Not tested.
-- D: Q15 -> taken by Task doctor-fix-file-mode
+- D7: settles Q15 -> taken by Task doctor-fix-file-mode
