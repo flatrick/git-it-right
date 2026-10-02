@@ -1,6 +1,6 @@
 # Release guide
 
-How to cut a gir release: pick the version, write the changelog with git-cliff, tag the release commit on `main`, and publish a GitHub release.
+How to cut a gir release: pick the version, write the changelog with git-cliff, tag the release commit on `main`, publish a GitHub release, and publish the crate to crates.io.
 Pushing the tag runs the release workflow, which builds the binaries and attaches them to a draft release.
 
 Commands are PowerShell.
@@ -9,6 +9,7 @@ Replace `vX.Y.Z` with the new version throughout.
 ## Before you start
 
 - You need `git-cliff`, `gh` (logged in), and a Rust toolchain.
+- You need a crates.io API token with publish rights for `gir`, stored with `cargo login`.
 - Merge pull requests into `main` with a merge commit, not a squash.
   git-cliff reads individual commits from `main`; a squash leaves it one line per pull request.
   v0.0.1 was squashed, so only the `CHANGELOG.md` committed at that tag lists its changes.
@@ -42,7 +43,11 @@ Set `version = "X.Y.Z"` in `Cargo.toml`, then update `Cargo.lock` and check the 
 ```powershell
 cargo build
 cargo test
+cargo publish --dry-run --allow-dirty
 ```
+
+The dry run packages the crate and builds it from the package, without uploading.
+`--allow-dirty` is needed because the version bump is not committed yet.
 
 ## 3. Write the changelog
 
@@ -114,9 +119,24 @@ gh release edit vX.Y.Z --latest
 Publishing makes the release public and notifies watchers. Mark the published release as Latest.
 When you publish several drafts, publish the oldest first so the newest ends up as Latest.
 
+## 8. Publish to crates.io
+
+Publish from a clean checkout of the tag, so the crate holds exactly the tagged commit:
+
+```powershell
+git worktree add .worktrees/publish-vX.Y.Z vX.Y.Z
+cd .worktrees/publish-vX.Y.Z
+cargo publish
+cd ../..
+```
+
+A published version cannot be replaced or deleted, only yanked.
+If something is wrong after publishing, fix it and release the next patch version.
+
 ## Clean up
 
 ```powershell
 git worktree remove .worktrees/release-vX.Y.Z
+git worktree remove .worktrees/publish-vX.Y.Z
 git branch -d release/vX.Y.Z
 ```
