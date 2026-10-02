@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Record the fix design under Decide, then transition to `IMPLEMENT`.
+**Resume at:** Write the planned tests, see them fail, then make the fix in `parse_hunks`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-dash-dash-reproduces` blocks `UNDERSTAND`.
 
