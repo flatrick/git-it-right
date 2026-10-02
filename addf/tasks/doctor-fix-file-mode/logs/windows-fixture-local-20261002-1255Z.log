@@ -1,0 +1,23 @@
+2026-10-02 12:55 UTC
+Starting revision: 7aebc26 (VERIFY -> IMPLEMENT)
+
+The operator reported four failures in cargo test on Windows, with no saved
+assertion output. These are the only failures across the commands requested for
+the manual Windows run. All four tests call tests/doctor.rs::add_index_entries,
+which inserts Windows-invalid path bytes. The older test
+doctor_reports_windows_unsafe_index_names_without_renaming passed in that run
+and uses core.protectNTFS=false for its index insertion. The shared helper did
+not. The exact Windows failure mechanism remains a hypothesis.
+
+Change under evaluation: use core.protectNTFS=false in add_index_entries and
+capture Git stderr if insertion fails.
+
+cargo test --no-fail-fast -q: exit 0, 240 passed, 0 failed on Linux.
+cargo clippy --all-targets -- -D warnings: exit 0, no warnings.
+python addf/scripts/check-capsule --root addf --include-archive: exit 0;
+capsule is consistent.
+
+cargo fmt --check: exit 1 with widespread existing formatting differences in
+unrelated files; no formatter was run and no unrelated file was changed.
+
+Windows rerun: PENDING. Linux results do not establish the Windows claim.

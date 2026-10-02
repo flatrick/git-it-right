@@ -475,12 +475,14 @@ fn add_index_entries(repo: &Repo, mode: &str, paths: &[&[u8]]) {
     }
     let mut child = repo
         .cmd("git")
-        .args(["update-index", "--add", "-z", "--index-info"])
+        .args(["-c", "core.protectNTFS=false", "update-index", "--add", "-z", "--index-info"])
         .stdin(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
         .spawn()
         .unwrap();
     child.stdin.take().unwrap().write_all(&input).unwrap();
-    assert!(child.wait().unwrap().success());
+    let out = child.wait_with_output().unwrap();
+    assert!(out.status.success(), "git update-index: {}", String::from_utf8_lossy(&out.stderr));
 }
 
 fn report_line<'a>(report: &'a str, id: &str) -> Option<&'a str> {
