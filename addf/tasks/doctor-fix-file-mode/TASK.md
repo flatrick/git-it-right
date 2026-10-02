@@ -29,6 +29,7 @@
 -   `logs/criteria-unchanged-20261002-1405.log` - Evidence: the Success criteria, Specification impact and premise at `98feea1` against this checkpoint, ignoring State and Basis lines.
 -   `logs/verification-checkpoint-20261002-1235Z.log` - Evidence: draft PR #5, the disabled CI workflow, and the local verification checks at `7926f97`.
 -   `logs/windows-fixture-local-20261002-1255Z.log` - Evidence: the reported Windows failures, the focused fixture change, and local checks.
+-   `logs/windows-hooks-local-20261002-1311Z.log` - Evidence: the reported Windows hook-test failure, the Git-driven test change, and local checks.
 
 ## Specification impact
 
@@ -188,6 +189,7 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 -   `src/cmd/doctor.rs`: `apply`'s `Fix::Chmod` arm now ends with `make_executable_on_disk(root, paths)`, with a `#[cfg(unix)]` body as in Decide and a `#[cfg(not(unix))]` body that returns `Ok(())`.
 -   Committed as `7ff434a` after the checks under Verify; the committed tree is the tree those checks ran on (`git status` was clean apart from the new logs).
 -   After the operator reported four Windows test failures, `add_index_entries` now passes `core.protectNTFS=false` to `git update-index`, matching the older test that inserts Windows-unsafe names. It also captures Git stderr so another failure names the rejected path or other cause. Local tests and clippy pass; Windows remains unobserved (`logs/windows-fixture-local-20261002-1255Z.log`).
+-   After the operator reported two hook-test failures on Windows, `missing_gir_script` now invokes the installed `commit-msg` and `pre-push` shims through Git, with `gir` removed from PATH. This removes the test's direct dependency on a `sh` command in PATH. The two affected tests, the full Linux suite, and clippy pass (`logs/windows-hooks-local-20261002-1311Z.log`).
 
 ### IMPLEMENT gate after reassessment
 

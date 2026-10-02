@@ -1,0 +1,20 @@
+2026-10-02 13:11 UTC
+Starting revision: 0289e5c (VERIFY -> IMPLEMENT)
+
+The operator's Windows output for cargo test --test hooks showed two failures:
+installed_hooks_warn_when_gir_is_missing and
+installed_hooks_block_when_gir_is_missing_and_configured_to_fail. Both panicked
+at tests/hooks.rs:29 with Error { kind: NotFound, message: "program not found" }.
+That line was the test helper's direct Command::new("sh") invocation, before
+the installed hooks ran. The other five hook tests passed.
+
+The helper now runs commit-msg through git commit and pre-push through git push
+to a local bare repository, with gir removed from PATH as before. Assertions
+check the hook's expected message as a line because git push may add its own
+error line when a hook blocks the push.
+
+cargo test --test hooks -- --nocapture: exit 0, 7 passed, 0 failed on Linux.
+cargo test --no-fail-fast -q: exit 0, 240 passed, 0 failed on Linux.
+cargo clippy --all-targets -- -D warnings: exit 0, no warnings.
+
+Windows rerun: PENDING. Linux results do not establish the Windows result.

@@ -21,12 +21,18 @@ fn pre_push(repo: &Repo, local_sha: &str, remote_sha: &str) -> Output {
 fn missing_gir_script(repo: &Repo, name: &str) -> Output {
     let gir = if cfg!(windows) { "gir.exe" } else { "gir" };
     let dirs = std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()).filter(|dir| !dir.join(gir).exists()).collect::<Vec<_>>();
-    repo.cmd("sh")
-        .arg(repo.dir.join(".githooks").join(name))
-        .arg("unused-argument")
-        .env("PATH", std::env::join_paths(dirs).unwrap())
-        .output()
-        .unwrap()
+    let mut command = repo.cmd("git");
+    match name {
+        "commit-msg" => { command.args(["commit", "-q", "--allow-empty", "-m", "chore: missing gir"]); }
+        "pre-push" => {
+            let remote = repo.dir.parent().unwrap().join("missing-gir-remote.git");
+            repo.git(&["init", "-q", "--bare", remote.to_str().unwrap()]);
+            repo.commit_file("file.txt", "content\n", "chore: base");
+            command.args(["push", "-q", remote.to_str().unwrap(), "HEAD:refs/heads/main"]);
+        }
+        _ => unreachable!("unsupported hook: {name}"),
+    }
+    command.env("PATH", std::env::join_paths(dirs).unwrap()).output().unwrap()
 }
 
 #[test]
@@ -94,7 +100,7 @@ fn installed_hooks_warn_when_gir_is_missing() {
     for name in ["commit-msg", "pre-push"] {
         let out = missing_gir_script(&repo, name);
         assert_eq!(out.status.code(), Some(0), "{name}: {}", stderr(&out));
-        assert_eq!(stderr(&out), format!("gir: not installed, {name} check skipped\n"));
+        assert!(stderr(&out).lines().any(|line| line == format!("gir: not installed, {name} check skipped")), "{name}: {}", stderr(&out));
         assert!(out.stdout.is_empty(), "{name} printed stdout");
     }
 }
@@ -107,7 +113,7 @@ fn installed_hooks_block_when_gir_is_missing_and_configured_to_fail() {
     for name in ["commit-msg", "pre-push"] {
         let out = missing_gir_script(&repo, name);
         assert_eq!(out.status.code(), Some(1), "{name}: {}", stderr(&out));
-        assert_eq!(stderr(&out), format!("gir: not installed, {name} check blocked (gir.hookMissing=fail)\n"));
+        assert!(stderr(&out).lines().any(|line| line == format!("gir: not installed, {name} check blocked (gir.hookMissing=fail)")), "{name}: {}", stderr(&out));
         assert!(out.stdout.is_empty(), "{name} printed stdout");
     }
 }
