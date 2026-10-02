@@ -206,15 +206,25 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Learn
 
-Pending.
+### Technical
+
+GitHub stores repository Actions permission and each workflow's enabled state separately. Both needed an explicit change before PR #5 produced a run. The fork approval policy applies to `pull_request` but not `pull_request_target`, so the workflow trigger is part of the security boundary.
+
+### Process
+
+No material process learning beyond the recorded sequence: verify remote settings and the pushed workflow before enabling Actions.
+
+### LEARN gate
+
+`ESTABLISHED`: the relevant GitHub behavior is recorded here; no framework or product guidance change is warranted.
 
 ## Retention and promotion
 
-Pending.
+No Claim is promoted. `public-unprotected` is a historical preflight observation, and the four success Claims describe mutable GitHub settings or this branch's workflow. Their evidence and limitations remain in this Task bundle. The technical learning above is documented GitHub behavior and does not need a separate repository Knowledge file.
 
 ## Archive readiness
 
-Pending.
+The bundle contains its DEFINE dialogue, decision, setting values, workflow blob identity, API readbacks, and run link. External links are supplemental; the recorded values and job outcomes explain the conclusion without them. The bundle can move under `.archive/tasks/public-ci-safeguards/`.
 
 ## Terminal record
 
