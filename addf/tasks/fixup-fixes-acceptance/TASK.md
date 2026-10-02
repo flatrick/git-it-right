@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -48,46 +48,46 @@ Show, comparing the reviewed build `d246ab2` with this branch's `HEAD`, that `06
 #### `a1-review-scripts`
 
 -   Claim: With commit IDs and temporary paths normalised, the review's `edge.py`, `edge2.py` and `edge3.py` produce the same output on both builds except for the cases of findings #1 (index entries) and #2 (`-- ` lines), which on the new build behave as the fixes intend.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, old build `d246ab2`, new build this branch's `HEAD`.
 -   Consequence if false: a fix changed behavior the review saw as correct, or did not fix a reported case.
--   Basis: pending check.
+-   Basis: [Verification](#verification-a1-review-scripts).
 
 <a id="a2-header-end-to-end"></a>
 #### `a2-header-end-to-end`
 
 -   Claim: For the `-- ` deletion cases, `gir fixup` (or `--split`) followed by `git rebase --autosquash` leaves each original commit holding the intended lines on the new build, and not on the old one.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, old build `d246ab2`, new build this branch's `HEAD`.
 -   Consequence if false: the fix looks right in `--dry-run` but the folded history is wrong.
--   Basis: pending check.
+-   Basis: [Verification](#verification-a2-header-end-to-end).
 
 <a id="a3-split-end-to-end"></a>
 #### `a3-split-end-to-end`
 
 -   Claim: For a sparse checkout, a `skip-worktree` file with a local edit and a `git add -N` file, `gir fixup --split`, `git rebase --autosquash`, then `git add -A` and `git commit -a` delete no hidden file, commit no private edit and leave the intent-to-add file intent-to-add, on the new build; the old build fails this.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, old build `d246ab2`, new build this branch's `HEAD`.
 -   Consequence if false: the harm the review described still happens after the fix.
--   Basis: pending check.
+-   Basis: [Verification](#verification-a3-split-end-to-end).
 
 <a id="a4-setups"></a>
 #### `a4-setups`
 
 -   Claim: On the new build, a linked worktree, a sparse checkout in cone mode with a sparse index, running from a subdirectory, `gir amend --split`, `gir squash --split` and the interactive picker's `s` each keep index entries the split does not commit, and no `gir-split-index-*` file remains after a successful or a failed split.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch's `HEAD`.
 -   Consequence if false: the temporary index breaks or leaks in a setup the fix was not tested in.
--   Basis: pending check.
+-   Basis: [Verification](#verification-a4-setups).
 
 <a id="a5-regression-tests"></a>
 #### `a5-regression-tests`
 
 -   Claim: The regression-relevant cases of `a2-header-end-to-end` to `a4-setups` are cargo integration tests, and `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the scenarios regress unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-a5-regression-tests).
 
 ### Constraints
 
@@ -182,6 +182,53 @@ No probe is needed: the success Claims are themselves the observations to make, 
 - Evidence considered: `logs/edge-old.log` cases 1 and 1b (`cannot tell which commit header:5 belongs to`) and the intent-to-add case (`status after: '?? ita'`); `logs/edge2-old.log` cases 15 (` D out/c`) and 16 (` M cfg`).
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-a1-review-scripts"></a>
+### Verification: `a1-review-scripts`
+
+- Claim: [a1-review-scripts](#a1-review-scripts)
+- Method: `run_review_scripts.py` with the binary built from `d246ab2` and this branch's binary, with fixed commit dates; repeated in a second temporary directory.
+- Evidence considered: `logs/review-scripts-diff.log`: `edge.py` differs only in cases 1 and 1b (finding #2: now `feat: lua` and a correct two-commit split) and the intent-to-add case (finding #1: now ` A ita`); `edge2.py` only in cases 15 (` D out/c` now clean) and 16 (` M cfg` now clean); `edge3.py` is identical. `logs/platform-paths-20261002-1122.log`: the comparison is identical across two runs and with another `TMPDIR`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. The copies differ from the review's originals only in `edge.py`'s `GIR_BIN` and `os.devnull`, which change no output. The first comparison, before commit dates were fixed, was unsound; it is replaced.
+
+<a id="verification-a2-header-end-to-end"></a>
+### Verification: `a2-header-end-to-end`
+
+- Claim: [a2-header-end-to-end](#a2-header-end-to-end)
+- Method: `acceptance.py` scenarios `a2.1` to `a2.3` on both builds.
+- Evidence considered: `logs/acceptance-new-20261002-1130.log`: all checks in `a2.1` to `a2.3` pass, including the history and file contents after `git rebase -i --autosquash`. `logs/acceptance-old-20261002-1130.log`: the old build fails every one of those checks (`a2.1` refused, `a2.2` silently commits to `feat: A`, `a2.3` cannot split).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-a3-split-end-to-end"></a>
+### Verification: `a3-split-end-to-end`
+
+- Claim: [a3-split-end-to-end](#a3-split-end-to-end)
+- Method: `acceptance.py` scenarios `a3.1` to `a3.3` on both builds.
+- Evidence considered: `logs/acceptance-new-20261002-1130.log`: all checks pass. After the split, the rebase, `git add -A` and `git commit -a`, `out/c.txt` is still in `HEAD` and still `skip-worktree`; `cfg.txt`'s private edit is neither committed nor lost; `ita.txt` stays intent-to-add. `logs/acceptance-old-20261002-1130.log`: the old build fails the status checks after the split in all three scenarios and refuses the rebase in `a3.1` and `a3.2`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. `a3.3` checks the intent-to-add state after the split only: `git rebase` refuses to run while an intent-to-add entry exists, on any build. In `a3.1` the old build's `git add -A` ran after a refused rebase, so its later checks show the split's damage, not a rebase result.
+
+<a id="verification-a4-setups"></a>
+### Verification: `a4-setups`
+
+- Claim: [a4-setups](#a4-setups)
+- Method: `acceptance.py` scenarios `a4.1` to `a4.7` on the new build (and the old for comparison).
+- Evidence considered: `logs/acceptance-new-20261002-1130.log`: all checks pass for a linked worktree, cone mode with a sparse index (the index stays sparse with the same entries), a subdirectory, `gir amend --split` and `gir squash --split` through the rebase, and the picker's `s`; no `gir-split-index-*` file remains after a successful or a hook-refused split, in the worktree's git directory or the common one. `logs/acceptance-old-20261002-1130.log` fails `a4.1` to `a4.6`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. An interrupted gir (for example Ctrl+C mid-split) may still leave a temporary index file, because `Drop` does not run when the process is killed; not tested.
+
+<a id="verification-a5-regression-tests"></a>
+### Verification: `a5-regression-tests`
+
+- Claim: [a5-regression-tests](#a5-regression-tests)
+- Method: read the tests added in `2c6a352`; ran them against the source of `d246ab2`; ran `cargo test --no-fail-fast` and clippy on `2c6a352`.
+- Evidence considered: `logs/tests-on-old-build-20261002-1131.log` (9 failures on the old source, every new or changed test); `logs/test-final-20261002-1131.log` (207 passed, 0 failed); `logs/clippy-20261002-1131.log` (no warnings).
+- Conclusion: `VERIFIED`.
+- Limitations: run on Linux only here; CI runs the same suite on Windows, which this Task did not observe.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, on Linux.
 
 ## Learn
 
