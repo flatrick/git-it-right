@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-drops-flags` blocks `UNDERSTAND`; re-reading the spec after `diff-header-parsing` terminalizes blocks `VERIFY`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -42,28 +42,28 @@
 #### `sp-entries-kept`
 
 -   Claim: After a successful `gir fixup --split`, and after a failed one that restores, `skip-worktree` bits, intent-to-add entries and the sparse-checkout view are as they were before the command, and `git status` differs from before only by the effect of the new commits.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, this branch.
 -   Consequence if false: a later `git add -A` or `git commit -a` deletes sparse files, commits private edits, or loses intent-to-add entries.
--   Basis: pending check.
+-   Basis: [Verification](#verification-sp-entries-kept).
 
 <a id="sp-tests"></a>
 #### `sp-tests`
 
 -   Claim: Integration tests cover a sparse checkout, a `skip-worktree` file with a local edit, and a `git add -N` file, each for a successful split and for a restored failure.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-sp-tests).
 
 <a id="sp-gates-green"></a>
 #### `sp-gates-green`
 
 -   Claim: `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: regressions ship.
--   Basis: pending check.
+-   Basis: [Verification](#verification-sp-gates-green).
 
 ### Constraints
 
@@ -152,6 +152,37 @@
 - Evidence considered: `logs/probe-head-ae3d2ca-20261002-1019.log`, "sparse checkout, success": status after the split is ` D out/c`, and `git ls-files -v` changes `S out/c` to `H out/c`.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-sp-entries-kept"></a>
+### Verification: `sp-entries-kept`
+
+- Claim: [sp-entries-kept](#sp-entries-kept)
+- Method: `probe_split_index.py` on the fixed build, and the two integration tests from `3d8a04b`.
+- Evidence considered: `logs/probe-fixed-20261002-1022.log`: all six cases (three setups, success and hook-refused failure) report `verdict: kept`, with `git ls-files -v` flags identical before and after; at `ae3d2ca` all six reported `CHANGED` (`logs/probe-head-ae3d2ca-20261002-1019.log`). `logs/test-final-20261002-1022.log`: `split_leaves_index_entries_it_does_not_commit_alone` and `failed_split_leaves_index_entries_alone` pass. `logs/probe-index-bytes-20261002-1023.log`: per-entry stat data unchanged by a split.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. The sparse setups use non-cone mode in the probe and tests; cone mode with a sparse index was exercised only in `probe_temp_index.py`, by hand, not through gir.
+
+<a id="verification-sp-tests"></a>
+### Verification: `sp-tests`
+
+- Claim: [sp-tests](#sp-tests)
+- Method: read the two tests in `tests/fixup_modes.rs` at `3d8a04b` and their results.
+- Evidence considered: `INDEX_SETUPS` holds the sparse checkout, `skip-worktree` with a local edit, and `git add -N` setups; one test runs a successful split over all three, the other a hook-refused split; both assert `git status` and `git ls-files -v`. Both failed before the fix and pass after (`logs/test-final-20261002-1022.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+<a id="verification-sp-gates-green"></a>
+### Verification: `sp-gates-green`
+
+- Claim: [sp-gates-green](#sp-gates-green)
+- Method: `cargo test` and `cargo clippy --all-targets -- -D warnings` on the tree committed as `3d8a04b`.
+- Evidence considered: `logs/test-final-20261002-1022.log` (every target `ok`, 203 tests, 0 failed); `logs/clippy-20261002-1022.log` (finished, no warnings).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only.
+
+Q8, the stat-cache cost, was not promised. The real index's entries and stat data are no longer rebuilt, so the re-hashing the review predicted no longer happens; the file can still be rewritten once by `write-tree`, as before this Task.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ## Learn
 
