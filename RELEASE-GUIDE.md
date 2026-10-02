@@ -96,7 +96,7 @@ The binaries are unsigned, so macOS Gatekeeper and Windows SmartScreen warn on f
 ## 6. Finish the draft release
 
 ```powershell
-gh release edit vX.Y.Z --notes-file .scratch/release-notes-vX.Y.Z.md --latest
+gh release edit vX.Y.Z --notes-file .scratch/release-notes-vX.Y.Z.md
 ```
 
 This adds the notes to the draft the release workflow created.
@@ -108,9 +108,10 @@ Review the draft on the repository's Releases page.
 
 ```powershell
 gh release edit vX.Y.Z --draft=false
+gh release edit vX.Y.Z --latest
 ```
 
-Publishing makes the release public and notifies watchers.
+Publishing makes the release public and notifies watchers. Mark the published release as Latest.
 When you publish several drafts, publish the oldest first so the newest ends up as Latest.
 
 ## Clean up
