@@ -677,3 +677,98 @@ fn doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name() {
     assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
     assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755") && r.ends_with(b"hook\xe9")), "{:?}", index_modes(&repo));
 }
+
+#[test]
+fn doctor_fix_leaves_no_unstaged_change_for_fixed_scripts() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre-commit", b"tools/run.sh"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let modes = index_modes(&repo);
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{path}").as_bytes())), "{modes:?}");
+        assert_eq!(std::fs::read_to_string(repo.dir.join(path)).unwrap(), "#!/bin/sh\n");
+    }
+    assert_eq!(repo.git(&["diff", "--name-only"]), "");
+}
+
+#[cfg(unix)]
+fn disk_mode(repo: &Repo, rel: &str) -> u32 {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::symlink_metadata(repo.dir.join(rel)).unwrap().permissions().mode() & 0o777
+}
+
+// Windows has no executable bit to check.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_makes_fixed_scripts_executable_on_disk() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre-commit", b"tools/run.sh", b"README.md"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert_ne!(disk_mode(&repo, path) & 0o100, 0, "{path}: {:o}", disk_mode(&repo, path));
+    }
+    assert_eq!(disk_mode(&repo, "README.md") & 0o111, 0);
+    repo.git(&["add", "--", ".githooks/pre-commit", "tools/run.sh"]);
+    let modes = index_modes(&repo);
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{path}").as_bytes())), "{modes:?}");
+    }
+}
+
+// Git ignores a hook that is not executable, and only Unix has that bit.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_lets_git_run_the_fixed_hook() {
+    let repo = Repo::new();
+    repo.write(".githooks/pre-commit", "#!/bin/sh\n: > .git/pre-commit-ran\n");
+    repo.git(&["add", "-A"]);
+    repo.git(&["commit", "-q", "--no-verify", "-m", "chore: hook"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let commit = repo.git_out(&["commit", "-q", "-m", "chore: fixed hook mode"]);
+    assert!(commit.status.success(), "{}", stderr(&commit));
+    assert!(!stderr(&commit).contains("hook was ignored"), "{}", stderr(&commit));
+    assert!(repo.dir.join(".git/pre-commit-ran").exists());
+}
+
+// Windows has no executable bit, so git shows no mode change there either way.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b"tools/run.sh"]);
+    repo.write("tools/run.sh", "#!/bin/sh\necho edited\n");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert_eq!(std::fs::read_to_string(repo.dir.join("tools/run.sh")).unwrap(), "#!/bin/sh\necho edited\n");
+    assert_eq!(repo.git(&["show", ":tools/run.sh"]), "#!/bin/sh");
+    let diff = repo.git(&["diff", "--", "tools/run.sh"]);
+    assert!(diff.contains("+echo edited"), "{diff}");
+    assert!(!diff.contains("old mode"), "{diff}");
+}
+
+// Creating a symlink on Windows needs a privilege that test machines may not have.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_does_not_change_the_target_of_a_symlink_in_place_of_a_script() {
+    use std::os::unix::fs::PermissionsExt;
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b"tools/run.sh"]);
+    let target = repo.dir.with_file_name("outside.txt");
+    std::fs::write(&target, "not a script\n").unwrap();
+    std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o644)).unwrap();
+    std::fs::remove_file(repo.dir.join("tools/run.sh")).unwrap();
+    std::os::unix::fs::symlink(&target, repo.dir.join("tools/run.sh")).unwrap();
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\ttools/run.sh")));
+    assert!(repo.dir.join("tools/run.sh").is_symlink());
+    assert_eq!(std::fs::metadata(&target).unwrap().permissions().mode() & 0o777, 0o644);
+}

@@ -325,9 +325,37 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
             if !skipped.is_empty() {
                 git::run_with_stdin_bytes(&["update-index", "-z", "--skip-worktree", "--stdin"], &skipped)?;
             }
-            Ok(())
+            make_executable_on_disk(root, paths)
         }
     }
+}
+
+/// Gives each fixed script that is a regular file in the working tree an execute bit
+/// wherever it has a read bit, so the file matches its new `100755` index entry.
+#[cfg(unix)]
+fn make_executable_on_disk(root: &Path, paths: &[ChmodPath]) -> Result<(), String> {
+    use std::os::unix::ffi::OsStrExt;
+    use std::os::unix::fs::PermissionsExt;
+    for entry in paths {
+        let file = root.join(std::ffi::OsStr::from_bytes(&entry.path));
+        let Ok(meta) = std::fs::symlink_metadata(&file) else { continue };
+        if !meta.file_type().is_file() {
+            continue;
+        }
+        let mode = meta.permissions().mode();
+        let wanted = mode | ((mode & 0o444) >> 2);
+        if wanted != mode {
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(wanted))
+                .map_err(|e| format!("cannot make {} executable: {e}", display_path(&entry.path)))?;
+        }
+    }
+    Ok(())
+}
+
+/// Windows has no executable bit: git keeps the mode in the index only.
+#[cfg(not(unix))]
+fn make_executable_on_disk(_root: &Path, _paths: &[ChmodPath]) -> Result<(), String> {
+    Ok(())
 }
 
 #[cfg(test)]
