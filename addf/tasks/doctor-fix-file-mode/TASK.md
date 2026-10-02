@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Operator: settle `c3-os-agnostic` (Windows CI after a push, or a narrower Scope); then set the VERIFY gate and continue to LEARN (see Verify, Stopped here).
+**Resume at:** Wait for the operator's manual Windows test run of the pushed branch (and its Windows CI run); record it as the Verification of `c3-os-agnostic`, then set the VERIFY gate and continue to LEARN.
 
-**Open obligations:** `c3-os-agnostic` needs the Windows CI run its Scope names, which needs a push (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** `c3-os-agnostic` waits for the operator's Windows test run of the pushed branch (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 

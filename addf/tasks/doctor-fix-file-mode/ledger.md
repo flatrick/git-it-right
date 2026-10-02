@@ -18,3 +18,5 @@ Entries Q15 of `ledger/fixup-review-20261002.md`, copied unchanged.
   A: No other Task is active.
 - Q: Are the objective and success criteria viable and desirable?
   A: Agreed by the operator, as written in `TASK.md`.
+- Q: How is `c3-os-agnostic` settled, given that its Scope names Windows CI and the sub-agent could not push?
+  A: The operator chose to push `feat/fixup-modes` and run the tests manually on a Windows computer (2026-10-02). The supervising session reviewed the sub-agent's work first: 240 tests passed, clippy clean, `acceptance.py` 46/46 on the new build and 33/46 on the start build, and four new tests failing on the start source.
