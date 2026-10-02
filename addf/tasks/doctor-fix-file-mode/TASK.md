@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT`
 
-**Resume at:** Draft PR #5 points at `7926f97`, but GitHub's `ci` workflow is disabled. Wait for the operator's decision on re-enabling it and the manual Windows result; observe Windows CI, then verify `c3-os-agnostic` and continue to LEARN.
+**Resume at:** Repair the four Windows-invalid-name test fixtures by making their Git index insertion use the same Windows protection setting as the older passing test, and report Git stderr if it still fails. Then rerun local checks and return to VERIFY.
 
-**Open obligations:** `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** The reported Windows test failures need a discriminating rerun (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -74,10 +74,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c4-tests`
 
 -   Claim: Regression tests fail on the code at this Task's start and pass after; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `VERIFIED`
+-   State: `UNVERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: [Verification](#verification-c4-tests).
+-   Basis: The four Windows-invalid-name fixtures are being repaired after the operator reported their failures; the final test revision needs a new Verification. The earlier Linux result remains in [Verification](#verification-c4-tests).
 
 <a id="c5-spec"></a>
 #### `c5-spec`
@@ -252,6 +252,12 @@ After that, LEARN and the terminal checkpoint remain, including publishing the d
 ### Checkpoint on 2026-10-02
 
 Draft PR [#5](https://github.com/flatrick/git-it-right/pull/5) is open at `7926f97`. GitHub reports no checks or runs because workflow `ci` is `disabled_manually`. The operator was asked whether to re-enable it and for the manual Windows test result. Local tests, clippy, capsule tests and the archive check pass at this revision (`logs/verification-checkpoint-20261002-1235Z.log`). None of these observations establishes `c3-os-agnostic`; its State and the VERIFY gate remain unchanged.
+
+### Windows test report and reassessment
+
+The operator reported that `cargo test` on a Windows checkout failed only `doctor_compares_names_as_stored_for_case_collisions`, `doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form`, `doctor_reports_exec_bit_for_hook_names_git_quotes`, and `doctor_reports_windows_unsafe_names_as_stored`. The failure output is unavailable until the Windows computer is accessible again. All four use `add_index_entries` to insert paths Windows cannot hold. The older `doctor_reports_windows_unsafe_index_names_without_renaming` test, which the operator says passed with the rest, disables `core.protectNTFS` for its index insertion; the shared helper does not. This is a strong test-fixture hypothesis, not a verified Windows diagnosis.
+
+Reassessment: the test implementation needs a focused correction while the on-disk fix Decision remains justified. Return to IMPLEMENT to align the helper with the existing test and expose Git stderr. The rerun on Windows will distinguish a fixture failure from a doctor output failure; until then `c3-os-agnostic` and the VERIFY gate remain unsettled.
 
 ## Learn
 
