@@ -1,6 +1,7 @@
 # Release guide
 
 How to cut a gir release: pick the version, write the changelog with git-cliff, tag the release commit on `main`, and publish a GitHub release.
+Pushing the tag runs the release workflow, which builds the binaries and attaches them to a draft release.
 
 Commands are PowerShell.
 Replace `vX.Y.Z` with the new version throughout.
@@ -13,6 +14,8 @@ Replace `vX.Y.Z` with the new version throughout.
   v0.0.1 was squashed, so only the `CHANGELOG.md` committed at that tag lists its changes.
   The repository settings allow only merge commits, so GitHub offers no other method.
 - CI on `main` must be green.
+- `.github/workflows/release.yml` must be on `main` before you push the tag.
+  A tag pushed without it gets no binaries.
 
 ## 1. Pick the version
 
@@ -79,14 +82,26 @@ git push origin vX.Y.Z
 
 Check that `origin/main` is the release merge before you tag it.
 
-## 6. Draft the GitHub release
+The tag push starts the release workflow.
+It creates a draft release for the tag and uploads a `gir` binary and a `.sha256` file for Linux x86_64 (static musl), Windows x86_64, and macOS Apple Silicon.
+Wait for it to finish:
 
 ```powershell
-gh release create vX.Y.Z --draft --verify-tag --title vX.Y.Z --notes-file .scratch/release-notes-vX.Y.Z.md --latest
+gh run watch (gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
 ```
 
-`--verify-tag` stops `gh` from creating the tag if the push in step 5 failed.
+If a build fails, fix the cause and rerun the failed jobs with `gh run rerun --failed`.
+The binaries are unsigned, so macOS Gatekeeper and Windows SmartScreen warn on first run.
+
+## 6. Finish the draft release
+
+```powershell
+gh release edit vX.Y.Z --notes-file .scratch/release-notes-vX.Y.Z.md --latest
+```
+
+This adds the notes to the draft the release workflow created.
 A draft's URL shows `untagged-…` until it is published.
+Check that the draft has six assets: three binaries and their `.sha256` files.
 Review the draft on the repository's Releases page.
 
 ## 7. Publish

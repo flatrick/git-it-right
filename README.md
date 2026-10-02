@@ -10,7 +10,12 @@ It is one small Rust binary that works the same on Windows, Linux and macOS.
 
 ## Install
 
-You need `git` and a Rust toolchain (`rustup`).
+Download the binary for your platform from the [latest release](https://github.com/flatrick/git-it-right/releases/latest) and put it on your `PATH` as `gir` (`gir.exe` on Windows).
+Releases have binaries for Linux x86_64, Windows x86_64, and macOS Apple Silicon.
+Each binary has a `.sha256` file; check it with `sha256sum -c <file>.sha256` (`shasum -a 256 -c` on macOS).
+The binaries are unsigned, so macOS Gatekeeper and Windows SmartScreen warn on first run.
+
+To build from source instead, you need `git` and a Rust toolchain (`rustup`).
 
 ```sh
 git clone git@github.com:flatrick/git-it-right.git
