@@ -134,7 +134,16 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 
 ## Investigate
 
-`PENDING`
+No probe is needed. Dispositions:
+
+-   Which files change, and whether anything besides `skills/work-control.md` assumes one Task: resolved under Understand (`p1-single-task-assumption`).
+-   Whether a thread may quote text such as `<commit>` without failing the checker: resolved by reading `check_placeholders`; prose-mode checking strips inline code, so a `ledger/` directory checked in prose mode accepts it.
+-   Whether entry positions are stable enough to name an entry: resolved by the append-only contract, which this Task keeps.
+-   Template name, disposition format, move versus copy when one Task takes a whole thread, and what the checker enforces: not uncertainties; they are choices recorded under Decide.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: every decision-relevant uncertainty above has a disposition, and none is deferred.
 
 ## Decide
 
