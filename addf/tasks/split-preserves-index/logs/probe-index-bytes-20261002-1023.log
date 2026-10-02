@@ -1,0 +1,2 @@
+write-tree run before gir: False; split exit 0; index bytes unchanged: False; per-entry stat data unchanged: True
+write-tree run before gir: True; split exit 0; index bytes unchanged: True; per-entry stat data unchanged: True

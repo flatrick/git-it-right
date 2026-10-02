@@ -18,6 +18,10 @@
 -   `probe_split_index.py` - Probe: a sparse checkout, a `skip-worktree` file with a local edit, and a `git add -N` file, each through a successful `--split` and one a `commit-msg` hook makes fail.
 -   `probe_temp_index.py` - Probe: the split loop run by hand against a temporary index (`GIT_INDEX_FILE`), with the real index hashed before and after.
 -   `logs/probe-temp-index-20261002-1020.log` - Evidence: that probe's output.
+-   `logs/probe-fixed-20261002-1022.log` - Evidence: `probe_split_index.py` with the fix (the binary committed as `3d8a04b`).
+-   `logs/probe-index-bytes-20261002-1023.log` - Evidence: whether `--split` rewrites the bytes of `.git/index`, and whether it changes per-entry stat data.
+-   `logs/test-final-20261002-1022.log` - Evidence: `cargo test` on the tree committed as `3d8a04b`.
+-   `logs/clippy-20261002-1022.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on the tree committed as `3d8a04b`.
 -   `logs/probe-head-ae3d2ca-20261002-1019.log` - Evidence: the probe at `ae3d2ca`, before any change.
 
 ## Specification impact
@@ -132,7 +136,11 @@
 
 ## Implement
 
-`PENDING`
+-   `3d8a04b` adds `git::TempIndex` to `src/git.rs`, with `run`, `run_with_stdin` and `passthrough` sharing private helpers with the existing three functions, and uses it in `commit_each` in `src/cmd/fixup/split.rs`. The final check compares `HEAD^{tree}` with the staged tree, and rollback is `git reset --soft` alone.
+-   Tests in the same commit, `tests/fixup_modes.rs`: `split_leaves_index_entries_it_does_not_commit_alone` and `failed_split_leaves_index_entries_alone`, each looping over a sparse checkout, a `skip-worktree` file with a local edit and a `git add -N` file. Before the fix both failed at their first case, the sparse checkout (` D out/c.txt`, `S` flag lost); the loop stops at the first failure, so the other cases' failures are shown by the probe at `ae3d2ca` instead.
+-   Deviation from Decide: none in the design. The first clippy run failed on `type_complexity` for the setup table; a `type Setup = fn(&Repo)` alias fixed it. That failing log and the test log of the same run were deleted when the run was repeated, so they are not in `logs/`.
+-   Correction to the `3d8a04b` commit message, which says the real index "is never written": `split` still runs `git write-tree` on the real index to record the staged tree, as before this Task, and that can rewrite `.git/index` once to store cache-tree data. Entries, flags and stat data are unchanged (`logs/probe-index-bytes-20261002-1023.log`). The message is not amended, because history is not rewritten.
+-   The order constraint: `diff-header-parsing` terminalized with Terminal publication `NONE`, so the current specification this Task read in `DEFINE` is unchanged.
 
 ## Verify
 
