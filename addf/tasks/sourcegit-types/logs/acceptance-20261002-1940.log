@@ -1,0 +1,52 @@
+issue example: 1686 chars, contains a tab: True
+PASS  lint accepts `build` from the issue's file
+PASS  lint accepts `chore` from the issue's file
+PASS  lint accepts `ci` from the issue's file
+PASS  lint accepts `docs` from the issue's file
+PASS  lint accepts `feat` from the issue's file
+PASS  lint accepts `fix` from the issue's file
+PASS  lint accepts `perf` from the issue's file
+PASS  lint accepts `refactor` from the issue's file
+PASS  lint accepts `revert` from the issue's file
+PASS  lint accepts `style` from the issue's file
+PASS  lint accepts `test` from the issue's file
+PASS  lint rejects `wip`, which the file does not define
+      gir: rejected [type-unknown] `wip` is not an allowed type (did you mean `fix`?)
+        try: fix: change x   types: build chore ci docs feat fix perf refactor revert style test
+        more: gir explain type-unknown
+PASS  explain types names the file and shows its descriptions
+      Allowed types (from /tmp/tmp1jms0rs7/home/sourcegit-types.json):
+        build     Changes that affect the build system or external dependencies
+        chore     Other changes that don't modify src or test files
+        ci        Changes to our CI configuration files and scripts
+        docs      Documentation only changes
+        feat      Adding a new feature
+        fix       A bug fix
+        perf      A code change that improves performance
+        refactor  A code change that neither fixes a bug nor adds a feature
+        revert    Reverts a previous commit
+        style     Changes that do not affect the meaning of the code (formatting)
+        test      Adding missing tests or correcting existing tests
+      Auto-mapped aliases: feature->feat bugfix->fix hotfix->fix doc->docs tests->test refactoring->refactor chores->chore
+      When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.
+      
+Allowed types (from /tmp/tmp1jms0rs7/home/sourcegit-types.json):
+  build     Changes that affect the build system or external dependencies
+  chore     Other changes that don't modify src or test files
+  ci        Changes to our CI configuration files and scripts
+  docs      Documentation only changes
+  feat      Adding a new feature
+  fix       A bug fix
+  perf      A code change that improves performance
+  refactor  A code change that neither fixes a bug nor adds a feature
+  revert    Reverts a previous commit
+  style     Changes that do not affect the meaning of the code (formatting)
+  test      Adding missing tests or correcting existing tests
+Auto-mapped aliases: feature->feat bugfix->fix hotfix->fix doc->docs tests->test refactoring->refactor chores->chore
+When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.
+
+PASS  a syntax error refuses with path, origin and line
+      gir: types file /tmp/tmp1jms0rs7/home/sourcegit-types.json (gir.typesFile in /tmp/tmp1jms0rs7/home/.gitconfig): not valid JSON: expected `,` or `}` at line 35 column 5
+gir: types file /tmp/tmp1jms0rs7/home/sourcegit-types.json (gir.typesFile in /tmp/tmp1jms0rs7/home/.gitconfig): not valid JSON: expected `,` or `}` at line 35 column 5
+
+14 PASS, 0 FAIL

@@ -21,6 +21,11 @@
 -   `logs/probe-origin-20261002-1850.log` - Evidence: `probe_origin.py` with the `--type=path` cases.
 -   `probe_json_size.py` - Probe: release-binary size and dependencies `serde_json` adds to a minimal crate.
 -   `logs/probe-json-size-20261002-1840.log` - Evidence: `probe_json_size.py` output.
+-   `acceptance.py` - Probe and acceptance: the JSON example from issue #4, unchanged, through a global `~/` `gir.typesFile`.
+-   `logs/acceptance-20261002-1940.log` - Evidence: `acceptance.py` on the build of `a7da210`'s tree.
+-   `logs/test-full-20261002-1936.log` - Evidence: `cargo test --no-fail-fast` on that tree.
+-   `logs/test-perf-20261002-1936.log` - Evidence: the hook latency test with its timing line.
+-   `logs/clippy-20261002-1935.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
 
 ## Specification impact
 
@@ -202,7 +207,24 @@ SourceGit keeps the file's path in its own per-repository settings (`Conventiona
 
 ## Implement
 
-`NONE` yet.
+`a7da210` implements Decide in `src/config.rs`, `src/main.rs`, `src/explain.rs`, `src/explain.md` (`config` page), `src/cmd/init.rs` and `src/cmd/doctor.rs`, with seven tests in `tests/config.rs`.
+
+Deviations from Decide:
+
+-   `load_from(path)` stays, reading `.girconfig` and a types file it names but not git config; `load_at(root)` adds the git config fallback and is what `load`, `init` and `doctor` use. Reason: `tests/config.rs` calls `load_from` in-process, where reading git config would read the developer's own `~/.gitconfig`.
+-   An empty array is invalid (`defines no types`): it would reject every commit. Not asked for by the operator; strictness per ledger A4.
+-   A leading UTF-8 byte order mark is skipped, since SourceGit reads the file with `File.ReadAllText`, which skips it.
+-   `init` decides the commented `types` line from git config at every run, so a re-run after the global setting changes reports `.girconfig` as differing from the template, as for any other edit.
+
+Checkpoints:
+
+-   Mutation checks: making `alias_for` ignore its target, and resolving git config values against the root, each fail their test (`.scratch/mutation-alias-20261002-1928.log`, `.scratch/mutation-base-20261002-1930.log`, gitignored).
+-   `cargo test --no-fail-fast` and `cargo clippy --all-targets -- -D warnings` pass on the committed tree (`logs/test-full-20261002-1936.log`, `logs/clippy-20261002-1935.log`); hook median 6 ms against a 750 ms budget (`logs/test-perf-20261002-1936.log`).
+-   `acceptance.py` with the issue's own example file through a global `~/` value: 14 PASS, 0 FAIL (`logs/acceptance-20261002-1940.log`).
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: the change is committed and every success criterion has a test that runs.
 
 ## Verify
 
