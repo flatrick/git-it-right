@@ -63,3 +63,4 @@ For each one, whether to fix it on this branch is still OPEN.
   A: No, read from the files.
   `ROADMAP.md` lines 6, 7 and 40 and many lines of `CLIENT-TESTING.md` hold several sentences each.
   `addf/SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` is wrapped at a fixed width.
+- D: Q2 -> taken by Task diff-header-parsing

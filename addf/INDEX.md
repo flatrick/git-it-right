@@ -17,12 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [diff-header-parsing](tasks/diff-header-parsing/TASK.md) -
+  gir fixup reads `---`/`+++` only as file headers. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - ten edge cases
-  in `gir fixup` and `--split` from a code review; all ten open.
+  in `gir fixup` and `--split` from a code review; nine open (Q2 taken).
 
 ## Skills
 
