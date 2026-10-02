@@ -29,7 +29,11 @@ pub fn os_path(bytes: &[u8]) -> OsString {
 }
 
 pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
-    output_with_stdin(Command::new("git").args(args), input.as_bytes())
+    run_with_stdin_bytes(args, input.as_bytes())
+}
+
+pub fn run_with_stdin_bytes(args: &[&str], input: &[u8]) -> Result<String, String> {
+    output_with_stdin(Command::new("git").args(args), input)
 }
 
 /// Runs git with inherited stdio so the user sees git's own output.

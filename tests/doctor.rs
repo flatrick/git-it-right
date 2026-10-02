@@ -503,17 +503,107 @@ fn doctor_reports_exec_bit_for_hook_names_git_quotes() {
     );
 }
 
-/// Commits files with exactly these names, for `--fix`, which needs them in the working tree.
-#[cfg(unix)]
+/// Commits files with exactly these names.
 fn commit_files_named(repo: &Repo, names: &[&[u8]]) {
-    use std::os::unix::ffi::OsStrExt;
     for name in names {
-        let path = repo.dir.join(std::ffi::OsStr::from_bytes(name));
+        #[cfg(unix)]
+        let path = {
+            use std::os::unix::ffi::OsStrExt;
+            repo.dir.join(std::ffi::OsStr::from_bytes(name))
+        };
+        #[cfg(not(unix))]
+        let path = repo.dir.join(std::str::from_utf8(name).unwrap());
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(path, "#!/bin/sh\n").unwrap();
     }
     repo.git(&["add", "-A"]);
     repo.git(&["commit", "-q", "-m", "chore: hooks"]);
+}
+
+#[test]
+fn doctor_fix_sets_exec_bit_for_deleted_hook_without_restoring_file() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+    std::fs::remove_file(repo.dir.join(hook)).unwrap();
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    let report = stdout(&out);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(report.lines().last().is_some_and(|line| line.starts_with("gir doctor:")), "{report}");
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert!(!repo.dir.join(hook).exists());
+}
+
+#[test]
+fn doctor_fix_does_not_stage_unstaged_hook_edit() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+    repo.write(hook, "#!/bin/sh\necho edited\n");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert_eq!(repo.git(&["show", ":.githooks/pre-commit"]), "#!/bin/sh");
+    assert_eq!(repo.git(&["diff", "--name-only"]), hook);
+}
+
+#[test]
+fn doctor_fix_keeps_hooks_outside_sparse_cone_skipped() {
+    let repo = Repo::new();
+    let hooks = [".githooks/pre-commit", ".githooks/pre-push"];
+    commit_files_named(&repo, &[hooks[0].as_bytes(), hooks[1].as_bytes()]);
+    repo.git(&["sparse-checkout", "set", "--no-cone", "/*", "!/.githooks/"]);
+    for hook in hooks {
+        assert!(!repo.dir.join(hook).exists());
+    }
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let modes = index_modes(&repo);
+    let tagged = repo.git(&["ls-files", "-v"]);
+    for hook in hooks {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{hook}").as_bytes())), "{modes:?}");
+        assert!(tagged.lines().any(|line| line == format!("S {hook}")), "{tagged}");
+        assert!(!repo.dir.join(hook).exists());
+    }
+}
+
+#[test]
+fn doctor_fix_sets_exec_bit_for_unchanged_hook() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert!(repo.dir.join(hook).exists());
+}
+
+#[test]
+fn doctor_fix_leaves_unmerged_hook_stages_untouched() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/h", b".githooks/other"]);
+    repo.git(&["switch", "-q", "-c", "other"]);
+    repo.commit_file(".githooks/h", "#!/bin/sh\necho other\n", "feat: other hook");
+    repo.git(&["switch", "-q", "main"]);
+    repo.commit_file(".githooks/h", "#!/bin/sh\necho main\n", "feat: main hook");
+    assert!(!repo.git_out(&["merge", "-q", "other"]).status.success(), "the merge must conflict");
+
+    let before = repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout;
+    assert_eq!(String::from_utf8_lossy(&before).lines().count(), 3, "{}", String::from_utf8_lossy(&before));
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/other")), "{report}");
+    assert!(!report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{report}");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    let fixed = stdout(&out);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(!report_line(&fixed, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{fixed}");
+    assert_eq!(repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout, before);
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/other")));
 }
 
 // Windows file names cannot contain a double quote or a backslash.

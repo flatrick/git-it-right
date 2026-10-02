@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use super::templates;
@@ -16,7 +16,13 @@ enum Fix {
     LocalConfig(&'static str, &'static str),
     WriteFile(&'static str, &'static str),
     AppendIgnore(Vec<&'static str>),
-    Chmod(Vec<Vec<u8>>),
+    Chmod(Vec<ChmodPath>),
+}
+
+struct ChmodPath {
+    path: Vec<u8>,
+    object: Vec<u8>,
+    skip_worktree: bool,
 }
 
 struct Check {
@@ -224,14 +230,26 @@ fn display_path(path: &[u8]) -> String {
 }
 
 fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
-    let staged = git::run_raw(&["ls-files", "-s", "-z"])?;
+    let staged = git::run_raw(&["ls-files", "-s", "-v", "-z"])?;
+    let unmerged: BTreeSet<&[u8]> = staged
+        .split(|&b| b == 0)
+        .filter_map(|record| {
+            let tab = record.iter().position(|&b| b == b'\t')?;
+            let stage = record[..tab].split(|&b| b == b' ').nth(3)?;
+            (stage != b"0").then_some(&record[tab + 1..])
+        })
+        .collect();
     let mut by_lower: BTreeMap<Vec<u8>, Vec<&[u8]>> = BTreeMap::new();
-    let mut not_exec: Vec<Vec<u8>> = Vec::new();
+    let mut not_exec = Vec::new();
     let mut unsafe_names = Vec::new();
     let mut previous = None;
     for record in staged.split(|&b| b == 0) {
         let Some(tab) = record.iter().position(|&b| b == b'\t') else { continue };
         let (meta, path) = (&record[..tab], &record[tab + 1..]);
+        let mut fields = meta.split(|&b| b == b' ');
+        let tag = fields.next().unwrap_or_default();
+        let mode = fields.next().unwrap_or_default();
+        let object = fields.next().unwrap_or_default();
         if previous.replace(path) == Some(path) {
             continue;
         }
@@ -240,8 +258,8 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
         if windows_unsafe(path) {
             unsafe_names.push(display_path(path));
         }
-        if meta.starts_with(b"100644") && (path.ends_with(b".sh") || path.starts_with(b".githooks/")) {
-            not_exec.push(path.to_vec());
+        if mode == b"100644" && !unmerged.contains(path) && (path.ends_with(b".sh") || path.starts_with(b".githooks/")) {
+            not_exec.push(ChmodPath { path: path.to_vec(), object: object.to_vec(), skip_worktree: tag == b"S" });
         }
     }
     let collisions: Vec<String> = by_lower
@@ -260,7 +278,7 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
     }
     if !not_exec.is_empty() {
         index_ok = false;
-        let names: Vec<String> = not_exec.iter().map(|p| display_path(p)).collect();
+        let names: Vec<String> = not_exec.iter().map(|p| display_path(&p.path)).collect();
         out.push(check(Level::Warn, "exec-bit", format!("scripts not executable in git: {}", names.join(" ")), Some(Fix::Chmod(not_exec))));
     }
     if index_ok {
@@ -290,9 +308,24 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
             std::fs::write(&path, text).map_err(|e| format!("cannot write .gitignore: {e}"))
         }
         Fix::Chmod(paths) => {
-            let mut args: Vec<std::ffi::OsString> = ["update-index", "--chmod=+x", "--"].map(Into::into).into();
-            args.extend(paths.iter().map(|p| git::os_path(p)));
-            git::run_raw(&args).map(drop)
+            let mut input = Vec::new();
+            let mut skipped = Vec::new();
+            for entry in paths {
+                input.extend_from_slice(b"100755 ");
+                input.extend_from_slice(&entry.object);
+                input.push(b'\t');
+                input.extend_from_slice(&entry.path);
+                input.push(0);
+                if entry.skip_worktree {
+                    skipped.extend_from_slice(&entry.path);
+                    skipped.push(0);
+                }
+            }
+            git::run_with_stdin_bytes(&["update-index", "-z", "--index-info"], &input)?;
+            if !skipped.is_empty() {
+                git::run_with_stdin_bytes(&["update-index", "-z", "--skip-worktree", "--stdin"], &skipped)?;
+            }
+            Ok(())
         }
     }
 }
