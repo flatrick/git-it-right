@@ -188,19 +188,38 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ### Technical
 
-`PENDING`
+A git index holds state that no tree records: `skip-worktree` bits, intent-to-add entries and stat data. Rebuilding the user's index from a tree (`read-tree`) loses it for every path. Commits gir builds for itself belong in a private index (`git::TempIndex`). The two integration tests enforce this for `--split`.
 
 ### Process
 
-`PENDING`
+-   The `3d8a04b` commit message claimed the real index "is never written" before that was measured; a measurement afterwards showed `write-tree` can still rewrite the file. A claim in a commit message needs the same evidence as a claim in the Task.
+-   Rerunning clippy and the tests replaced their failing logs in `logs/` instead of keeping them beside the new ones.
+-   Neither is addf friction; no framework change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is enforced by tests (tooling); no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `sp-entries-kept`, `sp-tests`, `sp-gates-green`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is now specified in `spec/fixup.md` and covered by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-split-drops-flags`
+
+-   Claim: [p1-split-drops-flags](#p1-split-drops-flags)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the code before the fix.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, both probes and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 
