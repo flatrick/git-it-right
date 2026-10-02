@@ -15,6 +15,10 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `acceptance.py` - Probe and acceptance: `gir doctor --fix` with a deleted hook, hooks outside a sparse checkout's cone, and a hook with an unstaged local edit.
+-   `logs/acceptance-head-3ab3c09-20261002-1339.log` - Evidence: `acceptance.py` at the Task's start.
+-   `logs/probe-cacheinfo-20261002-1339.log` - Evidence: `git update-index --cacheinfo` against `--chmod=+x` for a missing hook file.
+-   `logs/probe-cacheinfo-skipworktree-20261002-1339.log` - Evidence: `--cacheinfo` drops `skip-worktree`, and `--skip-worktree` restores it.
 
 ## Specification impact
 
@@ -88,10 +92,10 @@
 #### `p1-cacheinfo-works`
 
 -   Claim: `git update-index --cacheinfo 100755,<object>,<path>` sets an index entry's mode when the file is missing from the working tree, including outside a sparse checkout's cone.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0.
 -   Consequence if false: the suggested fix does not work and another is needed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-cacheinfo-works).
 
 ### DEFINE gate
 
@@ -101,19 +105,28 @@
 
 ### Relevant context
 
-`PENDING`
+Observed at `3ab3c09` (`logs/acceptance-head-3ab3c09-20261002-1339.log`, `logs/probe-cacheinfo-20261002-1339.log`, `logs/probe-cacheinfo-skipworktree-20261002-1339.log`):
+
+-   **Deleted hook: reproduced.** `gir doctor --fix` exits `2` with `fatal: Unable to process path .githooks/pre-commit`; no exec bit is set, and later fixes (`.gitattributes`) are never reached.
+-   **Hooks outside a sparse checkout's cone: not reproduced.** `--fix` sets them to `100755`, keeps them `skip-worktree`, and finishes; `git update-index --chmod=+x` handles skip-worktree entries without their files. Thread entry Q14 inferred this case wrongly.
+-   **New: an unstaged local edit to a hook is staged by `--fix`.** `git update-index --chmod=+x` re-reads the file, so the index takes the working-tree content.
+-   **`--cacheinfo 100755,<object>,<path>`** sets the mode from the index entry without the file, keeping the staged content, but clears `skip-worktree`; `git update-index --skip-worktree -- <path>` restores it.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Open questions
 
--   `NONE` yet.
+-   `c1-reproduced` as worded includes the sparse case, which does not reproduce: the operator decides whether to narrow it.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the defect, a second one, and the constraint on the fix are observed.
 
 ## Investigate
 
@@ -129,7 +142,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-cacheinfo-works"></a>
+### Verification: `p1-cacheinfo-works`
+
+- Claim: [p1-cacheinfo-works](#p1-cacheinfo-works)
+- Method: ran `--cacheinfo` and, for comparison, `--chmod=+x` on a deleted hook and on a hook outside a sparse checkout's cone.
+- Evidence considered: `logs/probe-cacheinfo-20261002-1339.log`: `--cacheinfo` exits `0` and sets `100755` in both cases with no file on disk, where `--chmod=+x` fails for the deleted file; `logs/probe-cacheinfo-skipworktree-20261002-1339.log`: it clears `skip-worktree`, which `--skip-worktree` restores.
+- Conclusion: `VERIFIED`, with the limitation that the skip-worktree bit has to be restored.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 

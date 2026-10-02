@@ -1,0 +1,39 @@
+gir at 3ab3c09, git version 2.56.0
+
+## a hook deleted from the working tree
+  $ gir doctor --fix -> exit 2
+    gir: error: .githooks/pre-commit: does not exist and --remove not passed
+    fatal: Unable to process path .githooks/pre-commit
+  FAIL no fatal error
+  FAIL finished with the summary line
+  PASS .gitattributes was written (a fix after the hooks would have been reached)
+  FAIL .githooks/pre-commit is 100755 in the index (100644)
+  FAIL .githooks/commit-msg (present) is 100755
+  FAIL tools/run.sh (present) is 100755
+  PASS the deleted file was not restored
+
+## hooks outside a sparse checkout's cone
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS .gitattributes was written (a fix after the hooks would have been reached)
+  PASS .githooks/pre-commit is 100755 in the index
+  PASS .githooks/ is still not in the working tree
+  PASS hooks are still skip-worktree
+  PASS tools/run.sh (present) is 100755
+
+## a hook with an unstaged local edit
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS .gitattributes was written (a fix after the hooks would have been reached)
+  PASS .githooks/commit-msg is 100755
+  FAIL the local edit stays unstaged (.githooks/commit-msg
+.githooks/pre-commit
+tools/run.sh
+)
+  FAIL the staged content is the committed content (b'#!/bin/sh\n# local edit, not staged\n')
+
+13 PASS, 7 FAIL

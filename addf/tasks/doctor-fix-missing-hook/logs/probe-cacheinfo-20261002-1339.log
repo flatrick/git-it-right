@@ -1,0 +1,4 @@
+## deleted: update-index --cacheinfo exit 0 ''; now 'H 100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/h'; on disk: False
+   for comparison, --chmod=+x on the same: exit 128 'error: .githooks/h: does not exist and --remove not passed\nfatal: Unable to process path .githooks/h'
+## sparse: update-index --cacheinfo exit 0 ''; now 'H 100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/h'; on disk: False
+   for comparison, --chmod=+x on the same: exit 128 'error: .githooks/h: does not exist and --remove not passed\nfatal: Unable to process path .githooks/h'

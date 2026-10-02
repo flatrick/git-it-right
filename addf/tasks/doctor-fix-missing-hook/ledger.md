@@ -21,3 +21,5 @@ Entries Q14 of `ledger/fixup-review-20261002.md`, copied unchanged.
   A: No other Task is active.
 - Q: Are the objective and success criteria viable and desirable?
   A: Agreed by the operator, as written in `TASK.md`.
+- Q: Does the sparse-checkout case in Q14 reproduce?
+  A: No. At `3ab3c09`, `--fix` handles hooks outside the cone correctly; Q14 inferred that case wrongly. The deleted-hook case reproduces, and `--fix` was also found to stage unstaged edits to hooks.
