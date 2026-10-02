@@ -10,7 +10,7 @@
 
 **Resume at:** `NONE`
 
-**Open obligations:** `NONE`; the macOS doctor test failure belongs to `doctor-fix-file-mode`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
