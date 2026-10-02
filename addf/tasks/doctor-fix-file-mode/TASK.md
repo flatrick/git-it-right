@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Add the tests in tests/doctor.rs, show they fail on 98feea1, then implement make_executable_on_disk.
+**Resume at:** Write the Verifications for c2..c6 from the logs under logs/.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
