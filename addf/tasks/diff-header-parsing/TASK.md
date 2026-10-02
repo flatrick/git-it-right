@@ -184,19 +184,36 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ### Technical
 
-`PENDING`
+In a unified diff, a hunk line's first character is its kind and the rest is file content, so header prefixes can only be recognised outside hunk bodies. The unit test `hunk_lines_that_look_like_file_headers_are_content` now enforces this.
 
 ### Process
 
-`PENDING`
+No material process learning. Running the review's probe before and after the fix gave a direct comparison, as planned.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is enforced by a test (tooling), not a document; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `dh-dash-dash-deletion`, `dh-plus-plus-addition`, `dh-gates-green`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is already required by `spec/fixup.md#req-fixup-staged-line-target` and is now covered by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-dash-dash-reproduces`
+
+-   Claim: [p1-dash-dash-reproduces](#p1-dash-dash-reproduces)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the code before the fix.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, its probe and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 
