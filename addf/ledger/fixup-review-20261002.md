@@ -84,3 +84,4 @@ For each one, whether to fix it on this branch is still OPEN.
   A: No, observed while testing the Task `doctor-path-names`: `git update-index --chmod=+x` needs the file, so `--fix` stops with `fatal: ... does not exist and --remove not passed` after applying the earlier fixes.
   This can happen when the hook is outside a sparse checkout's cone, or deleted locally.
   Possible fix: set the mode from the index entry (`git update-index --cacheinfo 100755,<object>,<path>`), which needs no working-tree file. Not tested.
+- D: Q14 -> taken by Task doctor-fix-missing-hook

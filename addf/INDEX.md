@@ -17,13 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [doctor-fix-missing-hook](tasks/doctor-fix-missing-hook/TASK.md) -
+  gir doctor --fix sets the exec bit even without the file. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
-  in `gir fixup`, `--split` and `gir doctor`; five open (Q7, Q9, Q10, Q12,
-  Q14).
+  in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
 
 ## Skills
 
