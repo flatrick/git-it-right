@@ -94,7 +94,7 @@
 
 ### Relevant context
 
--   The probe (`logs/probe-head-8a2a60c-20261002-1145.log`) shows how git 2.56.0 writes names with `core.quotePath=false`. A name with a space ends its `---`/`+++` line with a tab. A name with a double quote, a backslash or a tab is C-quoted (`"a/say \\"hi\\".txt"`, `"a/back\\\\slash.txt"`, `"a/tab\\there.txt"`), with a trailing tab when it also has a space. `café.txt` is written as is and already works.
+-   The probe (`logs/probe-head-8a2a60c-20261002-1145.log`) shows how git 2.56.0 writes names with `core.quotePath=false`. A name with a space ends its `---`/`+++` line with a tab. A name with a double quote, a backslash or a tab is C-quoted (`"a/say \"hi\".txt"`, `"a/back\\slash.txt"`, `"a/tab\there.txt"`), with a trailing tab when it also has a space. `café.txt` is written as is and already works.
 -   `parse_hunks` (`src/cmd/fixup.rs`) keeps the trailing tab and only strips the outer quotes, without decoding escapes. Its new-file check matches only an unquoted `+++ b/`.
 -   `trace` then compares the parsed paths with `git diff --cached --name-status`, which quotes the same names. Even correct header parsing would still fail that comparison.
 -   `--split` reuses each hunk's header text unchanged, and `git apply` reads quoted headers itself, so the patch needs no change.
@@ -102,7 +102,7 @@
 
 ### Assumptions
 
--   A trailing tab on a `---`/`+++` line is always git's terminator: a name that itself contains a tab is quoted, so its tab is written as `\\t`. Source: the probe's `tab\\there.txt` case.
+-   A trailing tab on a `---`/`+++` line is always git's terminator: a name that itself contains a tab is quoted, so its tab is written as `\t`. Source: the probe's `tab\there.txt` case.
 
 ### Open questions
 
@@ -126,7 +126,16 @@ No further probe is needed: the probe already shows git's exact output for every
 
 ## Decide
 
-`PENDING`
+-   **Header paths.** A new function in `src/cmd/fixup.rs` turns the text after `--- ` or `+++ ` into a path. It drops one trailing tab, decodes a C-quoted name (`\"`, `\\`, `\t`, `\n` and the other single-letter escapes, and `\ooo` octal bytes), strips the `a/` or `b/` prefix, and gives no path for `/dev/null`. `parse_hunks` uses it for both lines, so the new-file check also handles quoted names.
+-   **Cross-check.** `trace` reads `git diff --cached --name-status -z`, which is NUL-separated and never quoted, instead of parsing quoted lines.
+-   **Rejected:** decoding the quoted `--name-status` lines too, which would be a second decoder for output that `-z` makes unnecessary; asking git for the paths some other way, which would not change how `--split` reuses the headers.
+-   **OS-agnostic rule.** Names with a double quote, a backslash or a tab cannot exist on Windows, so tests for them run only on Unix (`#[cfg(unix)]`) and the reason is stated where they are. Space-in-name tests run everywhere. The decoder's unit tests run everywhere, since they need no files.
+-   **Verification strategy.** Tests first, and see them fail: decoder unit tests; integration tests for a space and for each quoted kind, through `gir fixup` and `gir fixup --split` and `git rebase --autosquash`. Then rerun `probe_names.py`, `cargo test` and clippy.
+-   Out of scope, noted for the operator: `src/cmd/doctor.rs` reads `git ls-files` output without `-z`.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design is small and each success Claim has a planned test.
 
 ## Implement
 
