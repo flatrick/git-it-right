@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Verify each success Claim against the committed logs.
+**Resume at:** Record Learn, Retention and promotion and Archive readiness, then hand over to Stewardship for `COMPLETED`.
 
 **Open obligations:** `NONE`
 
