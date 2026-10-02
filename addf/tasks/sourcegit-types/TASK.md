@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Get the operator's explicit agreement to the Objective, Success criteria and the Open questions' proposed answers; then gate DEFINE.
+**Resume at:** Read how `Config` is loaded and consumed (`src/config.rs`, `src/main.rs`, `src/cmd/init.rs`, `src/cmd/doctor.rs`, `src/explain.rs`) and how `git config --show-origin` reports where a value was set.
 
-**Open obligations:** Operator agreement on DEFINE (blocks `DEFINE`). Open questions below (block `DEFINE`).
+**Open obligations:** Premise `p1-format` (blocks `INVESTIGATE`). Open questions on the JSON parser and `git -c` values (block `DECIDE`).
 
 ## Owned artifacts
 
@@ -33,7 +33,7 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 <a id="c1-setting"></a>
 #### `c1-setting`
 
--   Claim: `gir.typesFile` is honored when set in `.girconfig` and when set only in git config (global or repository); when both set it, the `.girconfig` value is used.
+-   Claim: `gir.typesFile` is honored when set in `.girconfig` and when set only in git config (global or repository); when both set it, the `.girconfig` value is used; a relative value resolves against the directory of the file that set it; an empty value in `.girconfig` turns off the git config value.
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: a user cannot share one file across repositories, or a repository cannot override it.
@@ -42,7 +42,7 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 <a id="c2-replaces"></a>
 #### `c2-replaces`
 
--   Claim: With a valid types file, `gir lint` accepts exactly the file's `Type` values and rejects every other type, including defaults the file leaves out; `gir explain types` lists the file's types with their `Description`; `gir init` generates `cliff.toml` parsers for the file's types.
+-   Claim: With a valid types file, `gir lint` accepts exactly the file's `Type` values and rejects every other type, including defaults the file leaves out and aliases to them; `gir explain types` lists the file's types with their `Description`; `gir init` generates `cliff.toml` parsers for the file's types and writes a new `.girconfig`'s `types` line commented out.
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: gir and SourceGit disagree on allowed types.
@@ -51,7 +51,7 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 <a id="c3-invalid-refuses"></a>
 #### `c3-invalid-refuses`
 
--   Claim: A configured types file that is missing, unreadable, not valid JSON, not an array, has an entry missing `Type`, `Name` or `Description` or with a non-string value for one, an empty or malformed `Type`, or a duplicate `Type`, makes `gir lint`, `gir hook`, `gir fixup` and `gir init` exit `2` before doing anything, with a message naming the file's path, where the setting came from, and the reason (with line and column for a JSON syntax error).
+-   Claim: A configured types file that is missing, unreadable, not valid JSON, not an array, has an entry missing `Type`, `Name` or `Description` or with a non-string value for one, an empty or malformed `Type`, or a duplicate `Type`, makes `gir lint`, `gir hook`, `gir fixup` and `gir init` exit `2` before doing anything, with a message naming the file's path, where the setting came from, and the reason (with line and column for a JSON syntax error); `gir explain` instead falls back to the defaults and `gir doctor` prints the error as a `warn` line.
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: gir acts on a types list the user did not intend, or the user cannot find what to fix.
@@ -89,6 +89,11 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 -   Isolate: the operator chose a new worktree and branch. Worktree `.claude/worktrees/sourcegit-types`, branch `feat/sourcegit-types`, from `8692ce2`.
 -   Code behaves the same on Windows, Linux and macOS (`rules/os-agnostic-code.md`), including path handling for `gir.typesFile`.
 -   Aliases stay in gir's own configuration; the JSON format has none.
+    An alias whose target the file leaves out stops applying (ledger A10).
+-   A relative `gir.typesFile` resolves against the directory of the file that set it; `~/` expands to the home directory; an empty value in `.girconfig` turns off a value from git config (ledger A11).
+-   `gir explain` falls back to the defaults and `gir doctor` prints a `warn` line on an invalid types file (ledger A12).
+-   With a types file configured, `gir init` writes the `types` line of a new `.girconfig` commented out (ledger A13).
+-   A valid `Type` is nonempty and only ASCII letters, digits and `-` (ledger A14).
 -   No other active Task; no overlap.
 
 ### Material empirical premises
@@ -101,6 +106,10 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 -   Scope: the issue's example; SourceGit's own source not yet read.
 -   Consequence if false: gir rejects files SourceGit writes, or accepts ones it does not.
 -   Basis: pending check against SourceGit's source in `INVESTIGATE`.
+
+### DEFINE gate
+
+`ESTABLISHED`: on 2026-10-02 the operator explicitly agreed that the objective and success criteria are right, with the answers recorded in `ledger.md` (A15).
 
 ## Understand
 
@@ -116,14 +125,8 @@ No JSON parser is a dependency yet.
 
 ### Open questions
 
-Proposed answers, awaiting the operator:
-
--   Q8: an alias whose target the file leaves out stops applying, so the aliased type is rejected like any unknown type.
--   A relative `gir.typesFile` resolves against the repository root, wherever it was set; `~/` expands to the home directory.
--   An empty `gir.typesFile =` in `.girconfig` turns off a value inherited from git config.
--   `gir explain` keeps falling back to the defaults on an invalid configuration, including an invalid types file; `gir doctor` reports an invalid types file as a `warn` line, as it does `.girconfig` errors.
--   `gir init` writes `types = ...` into a new `.girconfig`; with a global types file that triggers the c5 warning in every new repository. Proposed: when a types file is configured, `gir init` writes the `types` line commented out.
--   A `Type` is valid when it is nonempty and contains only ASCII letters, digits and `-`.
+-   Which JSON parser: a dependency (`serde_json`) or hand-written. Settle in `DECIDE`.
+-   What a relative value set with `git -c` resolves against, since it has no file. Settle in `DECIDE`.
 
 ### Deferred verification
 
