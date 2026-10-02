@@ -20,4 +20,4 @@ macOS is such a difference for file names, and nothing in addf records which nam
 ## Why
 
 Each difference cost a push, a hosted CI run or a manual Windows run, and a return from `VERIFY` to `IMPLEMENT`.
-See `tasks/doctor-fix-file-mode/TASK.md`, sections "Windows test report and reassessment", "Hosted CI and macOS fixture reassessment" and "Hosted CI green".
+See `history:tasks/doctor-fix-file-mode/TASK.md`, sections "Windows test report and reassessment", "Hosted CI and macOS fixture reassessment" and "Hosted CI green".

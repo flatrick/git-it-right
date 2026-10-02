@@ -15,4 +15,4 @@ DEFINE agreed the Claims without checking that each one's settling observation i
 ## Why
 
 A Claim whose check needs authority the executor lacks blocks `Complete` late, after all other work is done.
-See `tasks/doctor-fix-file-mode/TASK.md`, Verify, "Stopped here".
+See `history:tasks/doctor-fix-file-mode/TASK.md`, Verify, "Stopped here".
