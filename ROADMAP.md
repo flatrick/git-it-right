@@ -40,3 +40,19 @@ It only reports; gir makes no decision based on the process names.
 **Why:** today an `amend!` subject returns before any rule runs. A replacement message that is not a Conventional Commit is only caught after `git rebase --autosquash` has folded it in. By then it is an ordinary commit, which `pre-push` or CI rejects, and fixing it takes another reword.
 
 **Depends on:** nothing.
+
+## Skip CI jobs whose inputs were already tested
+
+**What:** each CI job skips its work when its inputs are identical to a run that already passed.
+- A first step computes a fingerprint of the job's inputs: the Git tree hashes of the paths it depends on (for `test`: `src/`, `tests/`, `Cargo.toml`, `Cargo.lock` and the workflow file; for `capsule`: `addf/` and the workflow file), the runner OS and the Rust toolchain version.
+- It looks up a marker for that fingerprint with `actions/cache`; when one exists, the remaining steps are skipped and the job passes.
+- After a green run, the job saves the marker.
+- On a pull request the checkout is the merge with the base branch, so a change on the base also changes the fingerprint.
+- Commit-message lint depends on the commits, not the files, so it moves to its own small job that always runs.
+- The Rust toolchain is pinned to a version, so a new stable release changes the fingerprint instead of being trusted from an older run.
+
+**Why:** every push to a pull request runs the whole matrix again, including the Rust tests on three systems when only `addf/` documents changed.
+Path filters do not fix this: for a pull request GitHub compares the whole pull request with its base, not the changes since the last push.
+
+**Depends on:** adding `actions/cache` to the repository's selected action allowlist, which today allows only `actions/checkout`, `actions/setup-python` and `dtolnay/rust-toolchain`.
+A skipped job trusts the runner image of the earlier run; markers expire after 7 days unused, after which the job simply runs again.
