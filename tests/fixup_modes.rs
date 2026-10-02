@@ -1,6 +1,7 @@
 mod common;
 
 use common::{Repo, stderr};
+use std::path::{Path, PathBuf};
 
 const EDITOR: (&str, &str) = ("GIT_EDITOR", "true");
 const INTERACTIVE: (&str, &str) = ("GIR_INTERACTIVE", "1");
@@ -230,15 +231,37 @@ fn skip_worktree_with_local_edit(repo: &Repo) {
     repo.write("cfg.txt", "private local edit\n");
 }
 
+fn sparse_index(repo: &Repo) {
+    repo.commit_file("out/c.txt", "c\n", "feat: add c");
+    repo.git(&["sparse-checkout", "set", "--cone", "--sparse-index", "in"]);
+}
+
 fn intent_to_add(repo: &Repo) {
     repo.write("ita.txt", "not staged yet\n");
     repo.git(&["add", "-N", "ita.txt"]);
 }
 
-/// `git status --short` without the lines for `skip`, and `git ls-files -v`, which shows `S` for skip-worktree.
+/// `git status --short` without the lines for `skip`, and `git ls-files --sparse -v`, which shows `S` for
+/// skip-worktree and a sparse index's directory entries.
 fn index_view(repo: &Repo, skip: &[&str]) -> (Vec<String>, String) {
     let status = repo.git(&["status", "--short"]).lines().filter(|l| !skip.contains(&&l[3..])).map(str::to_string).collect();
-    (status, repo.git(&["ls-files", "-v"]))
+    (status, repo.git(&["ls-files", "--sparse", "-v"]))
+}
+
+/// `gir-split-index-*` files left in `dir`'s git directory or its common git directory.
+fn leftover_temp_indexes(repo: &Repo, dir: &Path) -> Vec<String> {
+    let mut found = Vec::new();
+    for which in ["--absolute-git-dir", "--git-common-dir"] {
+        let out = repo.cmd("git").current_dir(dir).args(["rev-parse", "--path-format=absolute", which]).output().unwrap();
+        let git_dir = PathBuf::from(String::from_utf8_lossy(&out.stdout).trim());
+        for entry in std::fs::read_dir(&git_dir).unwrap() {
+            let name = entry.unwrap().file_name().to_string_lossy().to_string();
+            if name.starts_with("gir-split-index-") {
+                found.push(name);
+            }
+        }
+    }
+    found
 }
 
 fn split_repo_with(setup: Setup) -> (Repo, [(String, &'static str); 2]) {
@@ -256,8 +279,12 @@ fn split_repo_with(setup: Setup) -> (Repo, [(String, &'static str); 2]) {
 
 type Setup = fn(&Repo);
 
-const INDEX_SETUPS: [(&str, Setup); 3] =
-    [("sparse checkout", sparse_checkout), ("skip-worktree", skip_worktree_with_local_edit), ("intent-to-add", intent_to_add)];
+const INDEX_SETUPS: [(&str, Setup); 4] = [
+    ("sparse checkout", sparse_checkout),
+    ("sparse index", sparse_index),
+    ("skip-worktree", skip_worktree_with_local_edit),
+    ("intent-to-add", intent_to_add),
+];
 
 #[test]
 fn split_leaves_index_entries_it_does_not_commit_alone() {
@@ -268,6 +295,7 @@ fn split_leaves_index_entries_it_does_not_commit_alone() {
         assert_eq!(out.status.code(), Some(0), "{name}: {}", stderr(&out));
         assert_eq!(index_view(&repo, &["a.txt", "b.txt"]), before, "{name}");
         assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "", "{name}");
+        assert_eq!(leftover_temp_indexes(&repo, &repo.dir), Vec::<String>::new(), "{name}");
     }
 }
 
@@ -289,7 +317,64 @@ fn failed_split_leaves_index_entries_alone() {
         assert!(stderr(&out).contains("restored HEAD and the index"), "{name}: {}", stderr(&out));
         assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{name}");
         assert_eq!(index_view(&repo, &[]), before, "{name}");
+        assert_eq!(leftover_temp_indexes(&repo, &repo.dir), Vec::<String>::new(), "{name}");
     }
+}
+
+#[test]
+fn add_all_and_commit_all_after_split_keep_hidden_and_private_files() {
+    let (repo, _) = split_repo_with(sparse_checkout);
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    repo.git(&["add", "-A"]);
+    let _ = repo.git_out(&["commit", "-q", "-a", "-m", "chore: everything"]);
+    assert_eq!(repo.git(&["show", "HEAD:out/c.txt"]), "c");
+
+    let (repo, _) = split_repo_with(skip_worktree_with_local_edit);
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    repo.git(&["add", "-A"]);
+    let _ = repo.git_out(&["commit", "-q", "-a", "-m", "chore: everything"]);
+    assert_eq!(repo.git(&["show", "HEAD:cfg.txt"]), "c");
+    assert_eq!(std::fs::read_to_string(repo.dir.join("cfg.txt")).unwrap(), "private local edit\n");
+}
+
+#[test]
+fn split_in_a_linked_worktree_keeps_its_index_entries() {
+    let repo = topic_repo();
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    repo.commit_file("cfg.txt", "c\n", "feat: add cfg");
+    let wt = repo.dir.parent().unwrap().join("linked");
+    repo.git(&["worktree", "add", "-q", "-b", "linked", wt.to_str().unwrap(), "topic"]);
+    let git_in = |args: &[&str]| {
+        let out = repo.cmd("git").current_dir(&wt).args(args).output().unwrap();
+        assert!(out.status.success(), "git {args:?}: {}", stderr(&out));
+        String::from_utf8_lossy(&out.stdout).trim_end().to_string()
+    };
+    git_in(&["update-index", "--skip-worktree", "cfg.txt"]);
+    std::fs::write(wt.join("cfg.txt"), "private local edit\n").unwrap();
+    std::fs::write(wt.join("a.txt"), "one\nTWO\nthree\n").unwrap();
+    std::fs::write(wt.join("b.txt"), "B\n").unwrap();
+    git_in(&["add", "a.txt", "b.txt"]);
+    let flags = git_in(&["ls-files", "-v"]);
+    let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(&wt).args(["fixup", "--split"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(git_in(&["status", "--short"]), "");
+    assert_eq!(git_in(&["ls-files", "-v"]), flags);
+    assert_eq!(leftover_temp_indexes(&repo, &wt), Vec::<String>::new());
+    assert_eq!(repo.git(&["status", "--short"]), "");
+}
+
+#[test]
+fn split_from_a_subdirectory_keeps_index_entries() {
+    let (repo, _) = split_repo_with(skip_worktree_with_local_edit);
+    let sub = repo.dir.join("sub");
+    std::fs::create_dir(&sub).unwrap();
+    let before = index_view(&repo, &["a.txt", "b.txt"]);
+    let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(&sub).args(["fixup", "--split"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(index_view(&repo, &["a.txt", "b.txt"]), before);
+    assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "");
 }
 
 #[test]

@@ -326,3 +326,17 @@ fn added_line_starting_with_plus_b_is_not_a_new_file() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: z\n", &z[..10]));
 }
+
+#[test]
+fn dev_null_comment_split_folds_into_the_right_commits() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nl4\n", "feat: lua a");
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nL4\n", "feat: lua b");
+    stage(&repo, "x.lua", "l1\nl2\nl3\nL4x\n");
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: lua b\nfeat: lua a\nfeat: add a");
+    assert_eq!(repo.git(&["show", "HEAD~1:x.lua"]), "l1\nl2\nl3\nl4");
+    assert_eq!(repo.git(&["show", "HEAD:x.lua"]), "l1\nl2\nl3\nL4x");
+}
