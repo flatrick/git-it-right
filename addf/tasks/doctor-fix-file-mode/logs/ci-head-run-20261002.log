@@ -1,0 +1,26 @@
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37022589671
+Event: pull_request
+Head: 16997f1f89b72468f1170928ceba657aaa751e21
+Conclusion: success
+
+capsule (ubuntu-latest): success
+  Check the addf capsule: success
+  Check the addf archive: success
+test (windows-latest): success
+  Run cargo clippy --all-targets -- -D warnings: success
+  Run cargo test: success
+  Hook latency: success
+  Lint commit messages: success
+test (macos-latest): success
+  Run cargo clippy --all-targets -- -D warnings: success
+  Run cargo test: success
+  Hook latency: success
+  Lint commit messages: success
+capsule (windows-latest): success
+  Check the addf capsule: success
+  Check the addf archive: success
+test (ubuntu-latest): success
+  Run cargo clippy --all-targets -- -D warnings: success
+  Run cargo test: success
+  Hook latency: success
+  Lint commit messages: success

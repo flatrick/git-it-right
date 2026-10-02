@@ -34,6 +34,7 @@
 -   `logs/ci-first-run-20261002.log` - Evidence: hosted CI run at `b8175a8`, including passing Windows jobs and the macOS fixture failure.
 -   `logs/ci-startup-failure-20261002.log` - Evidence: startup failure after the action policy became `local_only`, and the operator-authorized selected allowlist.
 -   `logs/ci-green-run-20261002.log` - Evidence: two further macOS-only test failures, their fixes at `e507d42` and `6813712`, and the all-green hosted run at `6813712`.
+-   `logs/ci-head-run-20261002.log` - Evidence: the all-green hosted run at `16997f1`, the branch head when the `VERIFY` gate was recorded.
 
 ## Specification impact
 
@@ -318,6 +319,12 @@ The selected allowlist resolved the startup failure: [run 37017909114](https://g
 -   `explain_does_not_change_repository_files_or_git_config` saw `.git/objects/maintenance.lock` from Git's detached auto maintenance after the test's setup commit, before `gir explain` ran. `6813712` sets `maintenance.auto=false` in the test harness's global Git config, so no background Git process changes a test repository.
 
 [Run 37020537546](https://github.com/flatrick/git-it-right/actions/runs/37020537546) at `6813712` passed every job: `test` on macOS, Windows and Ubuntu, and `capsule` on Windows and Ubuntu. On macOS, clippy, `cargo test`, hook latency and commit-message lint all passed. The hosted run that `VERIFY` waited on is green; the gate result is not yet recorded.
+
+`16997f1` then changed `src/cmd/doctor.rs` and `spec/doctor.md#req-doctor-gitattributes-rule` for the `.gitattributes` check, outside this Task's change. [Run 37022589671](https://github.com/flatrick/git-it-right/actions/runs/37022589671) at `16997f1` also passed every job; each `test` job passed clippy, `cargo test`, hook latency and commit-message lint, and each `capsule` job passed the capsule and archive checks (`logs/ci-head-run-20261002.log`).
+
+### VERIFY gate
+
+`ESTABLISHED`: `c1-reproduced`, `c2-fixed`, `c3-os-agnostic`, `c4-tests` and `c6-stops-for-decisions` are `VERIFIED`, and hosted CI is green on macOS, Windows and Ubuntu at the branch head `16997f1`. `c5-spec` stays `UNVERIFIED`: it is published in the terminal checkpoint, which `VERIFY` does not block.
 
 ## Learn
 
