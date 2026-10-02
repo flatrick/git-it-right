@@ -15,6 +15,7 @@
 ## Owned artifacts
 
 -   `ledger.md` - the root Ledger's ten fixup findings, moved here unchanged, and the questions that shaped this Task with the operator's answers.
+-   `logs/p1-references-20261002-0943.log` - Evidence: every current mention of the Ledger, the active Task and resuming, searched in `UNDERSTAND`.
 -   `logs/c1-references-20261002-1000.log` - Evidence: the root `LEDGER.md` is absent, and every current mention of it.
 -   `logs/c2-c3-rules-20261002-1000.log` - Evidence: the thread, handoff, archival and several-Task rules in the Skills and index.
 -   `logs/c4-tests-20261002-1000.log` - Evidence: the checker's test suite at `32db650`.
@@ -187,7 +188,7 @@ Residual uncertainty: none known. Verification strategy: each success criterion 
 
 - Claim: [p1-single-task-assumption](#p1-single-task-assumption)
 - Method: searched current addf files for `ledger`, `the active task`, `the current task`, `one task`, `active cursor`, `the task's` and `resum` (case-insensitive), then read each hit in context.
-- Evidence considered: the search output (129 lines, kept locally in `.scratch/understand-refs-20261002-0943.log`, not committed); the four `skills/work-control.md` passages listed under Relevant context; `check_index` in `scripts/check-capsule` iterating over every active Task.
+- Evidence considered: the search output (129 lines, `logs/p1-references-20261002-0943.log`); the four `skills/work-control.md` passages listed under Relevant context; `check_index` in `scripts/check-capsule` iterating over every active Task.
 - Conclusion: `VERIFIED`: apart from `skills/work-control.md`, no current file assumes one active Task; within it, the opening line is the rule, and the other three passages are wording or the Isolate scope.
 - Limitations: a keyword search can miss a paraphrase. `skills/work-control.md` was read in full; `skills/stewardship.md` and `skills/evidence-and-verification.md` only around their hits.
 
@@ -251,19 +252,39 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c1-ledger-thread
 
 ### Technical
 
-`PENDING`
+A success Claim worded as "no file refers to X" is falsified by the change's own enforcement and history: the checker that refuses X, the adoption note that migrates X, and the records of the Task that retired X all name it.
+`c1-ledger-threads` had to be narrowed in `VERIFY` for that reason. A retirement Claim should be worded as "no current file tells anyone to use X".
 
 ### Process
 
-`PENDING`
+-   Hand-made State-change commits went wrong twice (`3aab4e9`, `922e673`), and the recommended transition message form exceeds this repository's 72-character header limit for long Task names. Recorded as framework friction in `SELF-IMPROVEMENT/20261002T080904Z-hand-made-transition-commits.md`; no framework change made.
+-   The Isolate question was not asked before the ledger commit `e3e3c3b`, although the rule required it then. The rule was clear; the agent missed it. No change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is about wording success Claims; it is recorded here and in the SELF-IMPROVEMENT log, with no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-ledger-threads`, `c2-thread-handoff`, `c3-several-active-tasks`, `c4-checker-layout`, `c5-findings-thread`, `c6-self-improvement`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the rules now live in the Skills and are enforced by `scripts/check-capsule`, which is the current truth.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-single-task-assumption`
+
+-   Claim: [p1-single-task-assumption](#p1-single-task-assumption)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the files before this Task changed them.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger and every log it cites under `logs/`; internal links are relative.
+References to framework files and commits are supplemental.
+The ten fixup findings live on in `ledger/fixup-review-20261002.md`; the copy in this bundle's `ledger.md` is history.
 
 ## Terminal record
 
