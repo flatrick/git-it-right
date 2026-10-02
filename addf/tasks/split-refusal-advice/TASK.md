@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `acceptance.py` - Probe and acceptance: each criterion's cases with and without a terminal (`GIR_INTERACTIVE`), through `git rebase --autosquash` where a split happens.
+-   `logs/acceptance-head-f46e828-20261002-1205.log` - Evidence: `acceptance.py` at the Task's start.
 
 ## Specification impact
 
@@ -97,10 +99,10 @@
 #### `p1-advice-fails`
 
 -   Claim: At this Task's starting revision, `gir fixup --split` without a terminal and with a new file staged advises `pass one: gir fixup <commit>`; with `GIR_INTERACTIVE=1` it puts everything into one commit; and an insertion between two commits' lines is refused with `split it with git add -p`.
--   State: `UNVERIFIED`
--   Scope: Linux, git 2.56.0, this branch at the Task's first commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `f46e828`.
 -   Consequence if false: the review's reproductions do not hold here.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-advice-fails).
 
 ### DEFINE gate
 
@@ -110,19 +112,26 @@
 
 ### Relevant context
 
-`PENDING`
+-   At `f46e828` (`logs/acceptance-head-f46e828-20261002-1205.log`): without a terminal, `--split` with a new, binary or mode-only file ends with `pass one: gir fixup <commit>`; at a terminal it asks for one commit and puts everything there; an insertion between two commits' lines is refused with `split it with git add -p`, with or without a terminal; the picker offers `s` even when a hunk changes lines of two commits and the split would refuse.
+-   `trace` returns `Trace::Unattributed` at the first file it cannot trace, so `run` never reaches `split` with such a file, and `--split` is lost. `parse_hunks` returns an error for the first new file; the `--name-status -z` cross-check finds the rest (binary files and mode-only changes have no `---`/`+++` lines). A hunk whose lines `git blame` cannot name also ends the trace.
+-   `split` refuses any hunk with several commits before committing, insertion or not. `split::commit_each` rebuilds each round from patches only, so a whole-file change has no way in.
+-   `pick::choose` reads each answer from the shared stdin buffer, so several questions in one run read consecutive lines.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `git update-index --cacheinfo <mode> <object> <path>` in the temporary index places a file's staged version exactly, including mode-only changes and binary content; source: git documentation; checked by `acceptance.py` after implementation.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every failure reproduces, and the code paths that cause them are known.
 
 ## Investigate
 
@@ -138,7 +147,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-advice-fails"></a>
+### Verification: `p1-advice-fails`
+
+- Claim: [p1-advice-fails](#p1-advice-fails)
+- Method: `acceptance.py` with the build at `f46e828`.
+- Evidence considered: `logs/acceptance-head-f46e828-20261002-1205.log`: every `c1` case ends with `pass one: gir fixup <commit>`; the terminal `c2` new-file case creates one `fixup!` for everything; both `c3` cases end with `split it with git add -p`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 

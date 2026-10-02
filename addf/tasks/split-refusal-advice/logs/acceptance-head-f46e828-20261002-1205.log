@@ -1,0 +1,101 @@
+gir at f46e828, git version 2.56.0
+
+## c1 no terminal, --split, new file
+  $ gir fixup --split -> exit 2:
+    gir: new.txt is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+  PASS exit 2
+  PASS nothing committed
+  PASS the message names new.txt
+  FAIL the message mentions --split
+  FAIL no 'pass one: gir fixup <commit>' advice
+
+## c1 no terminal, --split, binary file
+  $ gir fixup --split -> exit 2:
+    gir: cannot tell which commit bin.dat belongs to; pass one: gir fixup <commit>
+  PASS exit 2
+  PASS nothing committed
+  PASS the message names bin.dat
+  FAIL the message mentions --split
+  FAIL no 'pass one: gir fixup <commit>' advice
+
+## c1 no terminal, --split, mode-only change
+  $ gir fixup --split -> exit 2:
+    gir: cannot tell which commit a.txt belongs to; pass one: gir fixup <commit>
+  PASS exit 2
+  PASS nothing committed
+  PASS the message names a.txt
+  FAIL the message mentions --split
+  FAIL no 'pass one: gir fixup <commit>' advice
+
+## c2 terminal, --split, a new file: asked for that file only, then split
+  $ GIR_INTERACTIVE=1 gir fixup --split <<< '2\n' -> exit 0:
+    gir: new.txt is a new file, so it has no earlier commit; pick the commit it belongs to:
+      1) 57257ed662 feat: b
+      2) 8457078991 feat: a
+    pick [1-2, q]: gir: created fixup! for 8457078991 feat: a
+      fold: git rebase --autosquash 0be360b0b9
+  PASS exit 0
+  PASS asked once, about new.txt
+  FAIL two fixup! commits were created
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: a, feat: b
+  FAIL new.txt is in feat: a (None)
+  FAIL feat: a holds A, feat: b holds B
+
+## c2 terminal, --split, a binary file: asked for that file, then split
+  $ GIR_INTERACTIVE=1 gir fixup --split <<< '1\n' -> exit 0:
+    gir: cannot tell which commit bin.dat belongs to; pick the commit it belongs to:
+      1) caebecd4a0 feat: bin
+      2) 57257ed662 feat: b
+      3) 8457078991 feat: a
+    pick [1-3, q]: gir: created fixup! for caebecd4a0 feat: bin
+      fold: git rebase --autosquash 0be360b0b9
+  PASS exit 0
+  PASS rebase --autosquash succeeds
+  PASS bin.dat's staged bytes are in feat: bin
+  FAIL feat: a holds A, feat: b holds B
+
+## c3 no terminal, --split, an insertion between two commits' lines
+  $ gir fixup --split -> exit 2:
+    gir: f.txt:1 spans several commits; split it with git add -p
+  PASS exit 2
+  PASS nothing committed
+  FAIL names the hunk and both commits
+  FAIL no git add -p advice
+
+## c3 terminal, --split, an insertion between two commits' lines: asked, then split
+  $ GIR_INTERACTIVE=1 gir fixup --split <<< '1\n' -> exit 2:
+    gir: f.txt:1 spans several commits; split it with git add -p
+  FAIL exit 0
+  FAIL asked about f.txt:1
+  FAIL two fixup! commits were created
+  FAIL rebase --autosquash succeeds
+  PASS history keeps four commits
+  FAIL mid went into exactly one commit, and stays in HEAD ([])
+  FAIL feat: a holds A
+
+## c3 terminal, picker s, an insertion between two commits' lines: asked, then split
+  $ GIR_INTERACTIVE=1 gir fixup <<< 's\n1\n' -> exit 2:
+    gir: staged changes belong to several commits:
+      1) 61a1db4391 feat: two  <- f.txt:1
+      2) 8457078991 feat: a  <- a.txt:1
+      3) e74ec25b87 feat: one  <- f.txt:1
+      s) split: one fixup! per commit
+    pick [1-3, s, q]: gir: f.txt:1 spans several commits; split it with git add -p
+  FAIL exit 0
+  PASS the picker offered s
+  FAIL asked about f.txt:1 after s
+  FAIL the split went ahead
+
+## c4 the picker does not offer s when the split cannot go ahead
+  $ GIR_INTERACTIVE=1 gir fixup <<< 'q\n' -> exit 1:
+    gir: staged changes belong to several commits:
+      1) 61a1db4391 feat: two  <- f.txt:1
+      2) 8457078991 feat: a  <- a.txt:1
+      3) e74ec25b87 feat: one  <- f.txt:1
+      s) split: one fixup! per commit
+    pick [1-3, s, q]: gir: cancelled; nothing committed
+  PASS the picker was shown
+  FAIL s is not offered (f.txt:1 changes lines of two commits in one hunk)
+
+19 PASS, 24 FAIL
