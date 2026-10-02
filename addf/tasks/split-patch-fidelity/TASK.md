@@ -144,7 +144,11 @@
 
 ## Investigate
 
-`PENDING`
+No further probe is needed: `acceptance.py` already reproduces every case, and the causes were read from the code.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`.
 
 ## Decide
 
