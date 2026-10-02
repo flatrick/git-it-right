@@ -40,6 +40,9 @@ is available through its archived bundle, not through this index.
 - [Self-improvement log](rules/self-improvement-log.md) — record, in the
   same pass, any change to addf's own framework mechanics or any friction
   noticed while using it.
+- [OS-agnostic code](rules/os-agnostic-code.md) — all code the repository
+  produces, including scripts inside addf Tasks, behaves the same on Windows
+  and Linux.
 
 ## Self-improvement
 
