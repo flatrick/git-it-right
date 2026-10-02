@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Replace the hook tests' direct `sh` launch with Git operations that invoke the installed hooks, then rerun the affected tests and return to VERIFY. The doctor fixture rerun and Windows CI remain open.
+**Resume at:** At the new branch head, have the operator rerun the Windows doctor and hook tests, then the full Windows suite and acceptance script. If any fail, use the captured output. Windows CI remains unavailable while workflow `ci` is disabled.
 
-**Open obligations:** The reported Windows hook tests need a portable invocation and rerun (blocks `VERIFY`); the four reported doctor tests need a rerun of the corrected fixture (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** The two reported Windows hook tests and four reported doctor tests need a rerun after their corrections (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -76,10 +76,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c4-tests`
 
 -   Claim: Regression tests fail on the code at this Task's start and pass after; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: The test revision will change to fix a Windows-only hook test launch failure; rerun local tests and clippy before reevaluating [Verification](#verification-c4-tests).
+-   Basis: [Verification](#verification-c4-tests).
 
 <a id="c5-spec"></a>
 #### `c5-spec`
@@ -191,6 +191,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 -   After the operator reported four Windows test failures, `add_index_entries` now passes `core.protectNTFS=false` to `git update-index`, matching the older test that inserts Windows-unsafe names. It also captures Git stderr so another failure names the rejected path or other cause. Local tests and clippy pass; Windows remains unobserved (`logs/windows-fixture-local-20261002-1255Z.log`).
 -   After the operator reported two hook-test failures on Windows, `missing_gir_script` now invokes the installed `commit-msg` and `pre-push` shims through Git, with `gir` removed from PATH. This removes the test's direct dependency on a `sh` command in PATH. The two affected tests, the full Linux suite, and clippy pass (`logs/windows-hooks-local-20261002-1311Z.log`).
 
+### IMPLEMENT gate after hook-test reassessment
+
+`ESTABLISHED`: the hook tests' direct shell launch was replaced in `ba625c5`, and the installed hooks can be evaluated through Git on Windows.
+
 ### IMPLEMENT gate after reassessment
 
 `ESTABLISHED`: the focused test-fixture change is committed as `3e69631`, and the Windows rerun can distinguish a remaining Git insertion failure from a doctor report failure.
@@ -238,7 +242,7 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 
 - Claim: [c4-tests](#c4-tests)
 - Method: the new tests against the source at `98feea1`; `cargo test --no-fail-fast` and clippy on the tree committed as `7ff434a`.
-- Evidence considered: `logs/tests-on-start-98feea1-20261002-1402.log`: 40 passed, 4 failed; the failures are the four tests of the new behavior (no unstaged change, executable on disk, hook runs, edited script), and the symlink guard passes there, as planned in Decide. `logs/test-final-20261002-1402.log`: every test binary reports `ok`, 240 passed, 0 failed in total, the 44 in `tests/doctor.rs` among them. `logs/clippy-20261002-1402.log`: no warnings. After the test-fixture change at `3e69631`, `logs/windows-fixture-local-20261002-1255Z.log` records 240 passing Linux tests and clean clippy; the Rust source of `gir` is unchanged.
+- Evidence considered: `logs/tests-on-start-98feea1-20261002-1402.log`: 40 passed, 4 failed; the failures are the four tests of the new behavior (no unstaged change, executable on disk, hook runs, edited script), and the symlink guard passes there, as planned in Decide. `logs/test-final-20261002-1402.log`: every test binary reports `ok`, 240 passed, 0 failed in total, the 44 in `tests/doctor.rs` among them. `logs/clippy-20261002-1402.log`: no warnings. After the test-fixture change at `3e69631`, `logs/windows-fixture-local-20261002-1255Z.log` records 240 passing Linux tests and clean clippy; after the hook-test change at `ba625c5`, `logs/windows-hooks-local-20261002-1311Z.log` records 7 passing hook tests, 240 passing tests total, and clean clippy on Linux. The Rust source of `gir` is unchanged.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux only.
 
@@ -274,6 +278,10 @@ Reassessment: the test implementation needs a focused correction while the on-di
 ### Windows hook test report and reassessment
 
 The operator also reported that `installed_hooks_warn_when_gir_is_missing` and `installed_hooks_block_when_gir_is_missing_and_configured_to_fail` fail on Windows at `tests/hooks.rs:29`, where `missing_gir_script` calls `repo.cmd("sh").output().unwrap()`: Windows returns `NotFound` before either hook runs. The test helper depends on a shell executable being on PATH, although installed hooks are invoked by Git in normal use. Return to IMPLEMENT to use Git as the test driver; the existing hook behavior expectations remain unchanged. The Windows rerun is still required.
+
+### Verification after hook-test correction
+
+`ba625c5` changes the two affected tests to drive the installed hooks through Git. All seven hook tests, the full Linux suite, and clippy pass (`logs/windows-hooks-local-20261002-1311Z.log`). The Windows tests have not been rerun. The VERIFY gate remains `NOT_SATISFIED` until the Windows observations and CI establish `c3-os-agnostic`.
 
 ## Learn
 
