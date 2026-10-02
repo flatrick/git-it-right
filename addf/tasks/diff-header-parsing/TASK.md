@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then hand over to Stewardship for `COMPLETED`.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`
 
@@ -26,7 +26,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-staged-line-target`
 - Proposed delta: `NONE`. The requirement already says gir selects the commit that last changed the staged lines; this Task brings the implementation in line with it.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -219,8 +219,10 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir fixup` now reads `---` and `+++` lines as file headers only outside hunk bodies (`06c5ee4`).
+A deleted line starting with `-- ` is traced like any other line, and a deleted `-- /dev/null` no longer hides later hunks or sends a fixup to the wrong commit.
+No specification change: the existing requirement already demanded this behavior.
 
 ### Gate basis
 
-`PENDING`
+All three success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0. No Claim is carried forward.
