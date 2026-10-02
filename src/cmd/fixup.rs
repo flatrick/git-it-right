@@ -249,8 +249,13 @@ fn trace(base: Option<&str>) -> Result<Trace, String> {
         Err(reason) => return Ok(Trace::Unattributed(reason)),
     };
     let traced: BTreeSet<&str> = hunks.iter().map(|h| h.path.as_str()).collect();
-    let staged = git::run(&["-c", "core.quotePath=false", "diff", "--cached", "--name-status", "--no-renames"])?;
-    if let Some((status, path)) = staged.lines().filter_map(|l| l.split_once('\t')).find(|(_, p)| !traced.contains(p)) {
+    let staged = git::run(&["diff", "--cached", "--name-status", "-z", "--no-renames"])?;
+    let fields: Vec<&str> = staged.split('\0').collect();
+    let mut entries = fields.chunks(2).filter_map(|c| match c {
+        [status, path] => Some((*status, *path)),
+        _ => None,
+    });
+    if let Some((status, path)) = entries.find(|(_, p)| !traced.contains(p)) {
         return Ok(Trace::Unattributed(if status == "A" {
             format!("{path} is a new file, so it has no earlier commit")
         } else {
@@ -299,12 +304,11 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
             header.push('\n');
         }
         if in_header && let Some(p) = line.strip_prefix("--- ") {
-            path = match p {
-                "/dev/null" => None,
-                p => Some(p.trim_matches('"').strip_prefix("a/").unwrap_or(p).to_string()),
-            };
-        } else if in_header && line.starts_with("+++ b/") && path.is_none() {
-            let new = line.trim_start_matches("+++ b/");
+            path = header_path(p, "a/");
+        } else if in_header
+            && path.is_none()
+            && let Some(new) = line.strip_prefix("+++ ").and_then(|p| header_path(p, "b/"))
+        {
             return Err(format!("{new} is a new file, so it has no earlier commit"));
         } else if let Some(h) = line.strip_prefix("@@ -") {
             in_header = false;
@@ -336,6 +340,55 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
         }
     }
     Ok(hunks)
+}
+
+/// The path in a `---`/`+++` header line without its `a/` or `b/` prefix, or `None` for
+/// `/dev/null`. git ends the line with a tab when the name has a space, and C-quotes names
+/// with special characters.
+fn header_path(text: &str, prefix: &str) -> Option<String> {
+    let text = text.strip_suffix('\t').unwrap_or(text);
+    if text == "/dev/null" {
+        return None;
+    }
+    let name = match text.strip_prefix('"').and_then(|t| t.strip_suffix('"')) {
+        Some(quoted) => unquote(quoted),
+        None => text.to_string(),
+    };
+    Some(name.strip_prefix(prefix).map_or(name.clone(), str::to_string))
+}
+
+/// Decodes git's C-style quoting: single-letter escapes and `\ooo` octal bytes.
+fn unquote(quoted: &str) -> String {
+    let mut bytes = Vec::new();
+    let mut input = quoted.bytes().peekable();
+    while let Some(b) = input.next() {
+        if b != b'\\' {
+            bytes.push(b);
+            continue;
+        }
+        match input.next() {
+            Some(b'a') => bytes.push(7),
+            Some(b'b') => bytes.push(8),
+            Some(b't') => bytes.push(b'\t'),
+            Some(b'n') => bytes.push(b'\n'),
+            Some(b'v') => bytes.push(11),
+            Some(b'f') => bytes.push(12),
+            Some(b'r') => bytes.push(b'\r'),
+            Some(d @ b'0'..=b'7') => {
+                let mut value = u16::from(d - b'0');
+                for _ in 0..2 {
+                    if let Some(&n @ b'0'..=b'7') = input.peek() {
+                        value = value * 8 + u16::from(n - b'0');
+                        input.next();
+                    }
+                }
+                bytes.push(u8::try_from(value).unwrap_or(u8::MAX));
+            }
+            Some(other) => bytes.push(other),
+            None => bytes.push(b'\\'),
+        }
+    }
+    String::from_utf8_lossy(&bytes).into_owned()
 }
 
 /// `start,count` or `start` (count 1) from an `@@` line.
@@ -392,6 +445,23 @@ mod tests {
         );
         assert_eq!(hunks[0].changes, "--- /dev/null\n--- a/other\n");
         assert_eq!(hunks[2].changes, "+++ b/foo\n");
+    }
+
+    #[test]
+    fn header_paths_drop_the_tab_terminator_and_decode_quoting() {
+        assert_eq!(header_path("a/src/x.rs", "a/"), Some("src/x.rs".to_string()));
+        assert_eq!(header_path("a/my file.txt\t", "a/"), Some("my file.txt".to_string()));
+        assert_eq!(header_path("/dev/null", "a/"), None);
+        assert_eq!(header_path("\"a/say \\\"hi\\\".txt\"\t", "a/"), Some("say \"hi\".txt".to_string()));
+        assert_eq!(header_path("\"b/back\\\\slash.txt\"", "b/"), Some("back\\slash.txt".to_string()));
+        assert_eq!(header_path("\"a/tab\\there.txt\"", "a/"), Some("tab\there.txt".to_string()));
+        assert_eq!(header_path("\"a/caf\\303\\251.txt\"", "a/"), Some("caf\u{e9}.txt".to_string()));
+    }
+
+    #[test]
+    fn new_files_with_quoted_names_need_an_explicit_target() {
+        let diff = "diff --git \"a/n\\\"q.rs\" \"b/n\\\"q.rs\"\n--- /dev/null\n+++ \"b/n\\\"q.rs\"\n@@ -0,0 +1 @@\n+x\n";
+        assert!(parse_hunks(diff).unwrap_err().contains("n\"q.rs is a new file"));
     }
 
     #[test]

@@ -340,3 +340,38 @@ fn dev_null_comment_split_folds_into_the_right_commits() {
     assert_eq!(repo.git(&["show", "HEAD~1:x.lua"]), "l1\nl2\nl3\nl4");
     assert_eq!(repo.git(&["show", "HEAD:x.lua"]), "l1\nl2\nl3\nL4x");
 }
+
+/// Two commits change `name`; a fixup for the first line goes to the first, and `--split`
+/// followed by `rebase --autosquash` puts each change in its own commit.
+fn trace_and_split_two_commits_in(name: &str) {
+    let repo = topic_repo();
+    repo.commit_file(name, "one\ntwo\nthree\nfour\n", "feat: first");
+    let first = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file(name, "one\ntwo\nthree\nFOUR\n", "feat: second");
+    stage(&repo, name, "ONE\ntwo\nthree\nFOUR\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{name:?}: {}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: first\n", &first[..10]), "{name:?}");
+    stage(&repo, name, "ONE\ntwo\nthree\nFOURx\n");
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{name:?}: {}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: second\nfeat: first\nfeat: add a", "{name:?}");
+    assert_eq!(repo.git(&["show", &format!("HEAD~1:{name}")]), "ONE\ntwo\nthree\nfour", "{name:?}");
+    assert_eq!(repo.git(&["show", &format!("HEAD:{name}")]), "ONE\ntwo\nthree\nFOURx", "{name:?}");
+}
+
+#[test]
+fn file_name_with_a_space_is_traced_and_split() {
+    trace_and_split_two_commits_in("my file.txt");
+}
+
+// Windows file names cannot contain a double quote, a backslash or a tab, which are the
+// characters that make git quote a name in diff headers.
+#[cfg(unix)]
+#[test]
+fn quoted_file_names_are_traced_and_split() {
+    for name in ["say \"hi\".txt", "back\\slash.txt", "tab\there.txt", "space and \"quote\".txt"] {
+        trace_and_split_two_commits_in(name);
+    }
+}
