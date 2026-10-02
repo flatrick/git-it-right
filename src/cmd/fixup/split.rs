@@ -1,10 +1,10 @@
-use super::{Hunk, Mode, Traced, base_hint, commit, subject, targets};
+use super::{Hunk, Mode, Traced, base_hint, subject, targets};
 use crate::git;
 
 /// One autosquash commit per target, each holding only that target's hunks. Every round
-/// resets the index to the original `HEAD` and applies the hunks of this and all earlier
-/// targets, so hunk line numbers always match and nothing is traced twice. The working
-/// tree is never touched.
+/// resets a temporary index to the original `HEAD` and applies the hunks of this and all
+/// earlier targets, so hunk line numbers always match and nothing is traced twice. The
+/// working tree and the real index are never touched.
 pub(super) fn split(mode: Mode, hunks: &[Traced], base: Option<&str>, dry_run: bool) -> Result<i32, String> {
     if let Some(spanning) = hunks.iter().find(|t| t.shas.len() > 1) {
         return Err(format!("{} spans several commits; split it with git add -p", spanning.hunk.place()));
@@ -19,13 +19,13 @@ pub(super) fn split(mode: Mode, hunks: &[Traced], base: Option<&str>, dry_run: b
     let orig = git::run(&["rev-parse", "HEAD"])?;
     let goal = git::run(&["write-tree"])?;
     let result = commit_each(mode, hunks, &order, &orig).and_then(|()| {
-        if git::run(&["write-tree"])? != goal {
+        if git::run(&["rev-parse", "HEAD^{tree}"])? != goal {
             return Err("the split commits do not add up to the staged changes".to_string());
         }
         Ok(())
     });
     if let Err(e) = result {
-        let restored = git::run(&["reset", "-q", "--soft", &orig]).and_then(|_| git::run(&["read-tree", &goal]));
+        let restored = git::run(&["reset", "-q", "--soft", &orig]);
         return Err(match restored {
             Ok(_) => format!("{e}; restored HEAD and the index"),
             Err(r) => format!("{e}; restoring failed ({r}); your staged changes are tree {goal} on top of {orig}"),
@@ -39,12 +39,13 @@ pub(super) fn split(mode: Mode, hunks: &[Traced], base: Option<&str>, dry_run: b
 }
 
 fn commit_each(mode: Mode, hunks: &[Traced], order: &[String], orig: &str) -> Result<(), String> {
+    let index = git::TempIndex::new("gir-split-index")?;
     for (k, sha) in order.iter().enumerate() {
         let done = &order[..=k];
         let patch = patch(hunks.iter().filter(|t| t.shas.iter().all(|s| done.contains(s))).map(|t| &t.hunk));
-        git::run(&["read-tree", orig])?;
-        git::run_with_stdin(&["apply", "--cached", "--unidiff-zero", "-"], &patch)?;
-        commit(mode, sha)?;
+        index.run(&["read-tree", orig])?;
+        index.run_with_stdin(&["apply", "--cached", "--unidiff-zero", "-"], &patch)?;
+        index.passthrough(&["commit", "--quiet", &mode.commit_arg(sha)])?;
     }
     Ok(())
 }

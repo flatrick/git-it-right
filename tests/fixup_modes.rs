@@ -219,6 +219,79 @@ fn split_restores_head_and_index_when_a_commit_fails() {
     assert_eq!(repo.git(&["write-tree"]), goal);
 }
 
+fn sparse_checkout(repo: &Repo) {
+    repo.commit_file("out/c.txt", "c\n", "feat: add c");
+    repo.git(&["sparse-checkout", "set", "--no-cone", "/*", "!/out/"]);
+}
+
+fn skip_worktree_with_local_edit(repo: &Repo) {
+    repo.commit_file("cfg.txt", "c\n", "feat: add cfg");
+    repo.git(&["update-index", "--skip-worktree", "cfg.txt"]);
+    repo.write("cfg.txt", "private local edit\n");
+}
+
+fn intent_to_add(repo: &Repo) {
+    repo.write("ita.txt", "not staged yet\n");
+    repo.git(&["add", "-N", "ita.txt"]);
+}
+
+/// `git status --short` without the lines for `skip`, and `git ls-files -v`, which shows `S` for skip-worktree.
+fn index_view(repo: &Repo, skip: &[&str]) -> (Vec<String>, String) {
+    let status = repo.git(&["status", "--short"]).lines().filter(|l| !skip.contains(&&l[3..])).map(str::to_string).collect();
+    (status, repo.git(&["ls-files", "-v"]))
+}
+
+fn split_repo_with(setup: Setup) -> (Repo, [(String, &'static str); 2]) {
+    let repo = topic_repo();
+    let a = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    let b = repo.git(&["rev-parse", "HEAD"]);
+    setup(&repo);
+    stage(&repo, "a.txt", "one\nTWO\nthree\n");
+    stage(&repo, "b.txt", "B\n");
+    let mut targets = [(a, "feat: add a"), (b, "feat: add b")];
+    targets.sort();
+    (repo, targets)
+}
+
+type Setup = fn(&Repo);
+
+const INDEX_SETUPS: [(&str, Setup); 3] =
+    [("sparse checkout", sparse_checkout), ("skip-worktree", skip_worktree_with_local_edit), ("intent-to-add", intent_to_add)];
+
+#[test]
+fn split_leaves_index_entries_it_does_not_commit_alone() {
+    for (name, setup) in INDEX_SETUPS {
+        let (repo, _) = split_repo_with(setup);
+        let before = index_view(&repo, &["a.txt", "b.txt"]);
+        let out = repo.gir(&["fixup", "--split"]);
+        assert_eq!(out.status.code(), Some(0), "{name}: {}", stderr(&out));
+        assert_eq!(index_view(&repo, &["a.txt", "b.txt"]), before, "{name}");
+        assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "", "{name}");
+    }
+}
+
+#[test]
+fn failed_split_leaves_index_entries_alone() {
+    for (name, setup) in INDEX_SETUPS {
+        let (repo, targets) = split_repo_with(setup);
+        let head = repo.git(&["rev-parse", "HEAD"]);
+        let hook = repo.dir.join(".git/hooks/commit-msg");
+        std::fs::write(&hook, format!("#!/bin/sh\n! grep -q '{}' \"$1\"\n", targets[1].1)).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let before = index_view(&repo, &[]);
+        let out = repo.gir(&["fixup", "--split"]);
+        assert_eq!(out.status.code(), Some(2), "{name}: {}", stderr(&out));
+        assert!(stderr(&out).contains("restored HEAD and the index"), "{name}: {}", stderr(&out));
+        assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{name}");
+        assert_eq!(index_view(&repo, &[]), before, "{name}");
+    }
+}
+
 #[test]
 fn picker_number_puts_all_staged_changes_in_that_commit() {
     let (repo, targets) = two_target_repo();

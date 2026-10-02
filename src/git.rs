@@ -1,14 +1,23 @@
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// Runs `git` in the current directory and returns trimmed stdout, or trimmed stderr on failure.
 pub fn run(args: &[&str]) -> Result<String, String> {
-    let out = Command::new("git")
-        .args(args)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|e| format!("could not run git: {e}"))?;
+    output(Command::new("git").args(args))
+}
+
+pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
+    output_with_stdin(Command::new("git").args(args), input)
+}
+
+/// Runs git with inherited stdio so the user sees git's own output.
+pub fn passthrough(args: &[&str]) -> Result<(), String> {
+    status(Command::new("git").args(args), args)
+}
+
+fn output(cmd: &mut Command) -> Result<String, String> {
+    let out = cmd.stdin(Stdio::null()).output().map_err(|e| format!("could not run git: {e}"))?;
     if out.status.success() {
         Ok(String::from_utf8_lossy(&out.stdout).trim_end().to_string())
     } else {
@@ -16,9 +25,8 @@ pub fn run(args: &[&str]) -> Result<String, String> {
     }
 }
 
-pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
-    let mut child = Command::new("git")
-        .args(args)
+fn output_with_stdin(cmd: &mut Command, input: &str) -> Result<String, String> {
+    let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -33,10 +41,44 @@ pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
     }
 }
 
-/// Runs git with inherited stdio so the user sees git's own output.
-pub fn passthrough(args: &[&str]) -> Result<(), String> {
-    let status = Command::new("git").args(args).status().map_err(|e| format!("could not run git: {e}"))?;
+fn status(cmd: &mut Command, args: &[&str]) -> Result<(), String> {
+    let status = cmd.status().map_err(|e| format!("could not run git: {e}"))?;
     if status.success() { Ok(()) } else { Err(format!("git {} failed", args.join(" "))) }
+}
+
+/// An index file of gir's own in the git directory, so commits can be built without
+/// touching the staged changes. The file is removed when this is dropped.
+pub struct TempIndex(PathBuf);
+
+impl TempIndex {
+    pub fn new(name: &str) -> Result<TempIndex, String> {
+        let dir = run(&["rev-parse", "--absolute-git-dir"])?;
+        Ok(TempIndex(Path::new(&dir).join(format!("{name}-{}", std::process::id()))))
+    }
+
+    fn git(&self, args: &[&str]) -> Command {
+        let mut cmd = Command::new("git");
+        cmd.args(args).env("GIT_INDEX_FILE", &self.0);
+        cmd
+    }
+
+    pub fn run(&self, args: &[&str]) -> Result<String, String> {
+        output(&mut self.git(args))
+    }
+
+    pub fn run_with_stdin(&self, args: &[&str], input: &str) -> Result<String, String> {
+        output_with_stdin(&mut self.git(args), input)
+    }
+
+    pub fn passthrough(&self, args: &[&str]) -> Result<(), String> {
+        status(&mut self.git(args), args)
+    }
+}
+
+impl Drop for TempIndex {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
 }
 
 pub fn get_config(key: &str) -> Option<String> {
