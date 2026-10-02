@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Transition to `UNDERSTAND` and verify the live repository settings and workflow execution path.
+**Resume at:** Verify GitHub Actions and branch settings, then inspect how the current workflow runs for fork PRs and pushes.
 
 **Open obligations:** Live settings and workflow inspection block `UNDERSTAND`; repository settings and workflow changes block `IMPLEMENT`; readback, workflow checks, and safely enabling CI block `VERIFY`.
 
