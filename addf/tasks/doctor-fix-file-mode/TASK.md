@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Repair the four Windows-invalid-name test fixtures by making their Git index insertion use the same Windows protection setting as the older passing test, and report Git stderr if it still fails. Then rerun local checks and return to VERIFY.
+**Resume at:** Ask the operator to rerun `cargo test --test doctor -- --nocapture` and the Windows acceptance check at the new branch head. If the four tests still fail, use the captured Git stderr or doctor report to identify the cause. Windows CI remains unavailable while workflow `ci` is disabled.
 
-**Open obligations:** The reported Windows test failures need a discriminating rerun (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** The four reported Windows test failures need a rerun of the corrected fixture (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -75,10 +75,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c4-tests`
 
 -   Claim: Regression tests fail on the code at this Task's start and pass after; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: The four Windows-invalid-name fixtures are being repaired after the operator reported their failures; the final test revision needs a new Verification. The earlier Linux result remains in [Verification](#verification-c4-tests).
+-   Basis: [Verification](#verification-c4-tests).
 
 <a id="c5-spec"></a>
 #### `c5-spec`
@@ -189,6 +189,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 -   Committed as `7ff434a` after the checks under Verify; the committed tree is the tree those checks ran on (`git status` was clean apart from the new logs).
 -   After the operator reported four Windows test failures, `add_index_entries` now passes `core.protectNTFS=false` to `git update-index`, matching the older test that inserts Windows-unsafe names. It also captures Git stderr so another failure names the rejected path or other cause. Local tests and clippy pass; Windows remains unobserved (`logs/windows-fixture-local-20261002-1255Z.log`).
 
+### IMPLEMENT gate after reassessment
+
+`ESTABLISHED`: the focused test-fixture change is committed as `3e69631`, and the Windows rerun can distinguish a remaining Git insertion failure from a doctor report failure.
+
 ## Verify
 
 <a id="verification-p1-git-ignores-non-executable-hook"></a>
@@ -232,7 +236,7 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 
 - Claim: [c4-tests](#c4-tests)
 - Method: the new tests against the source at `98feea1`; `cargo test --no-fail-fast` and clippy on the tree committed as `7ff434a`.
-- Evidence considered: `logs/tests-on-start-98feea1-20261002-1402.log`: 40 passed, 4 failed; the failures are the four tests of the new behavior (no unstaged change, executable on disk, hook runs, edited script), and the symlink guard passes there, as planned in Decide. `logs/test-final-20261002-1402.log`: every test binary reports `ok`, 240 passed, 0 failed in total, the 44 in `tests/doctor.rs` among them. `logs/clippy-20261002-1402.log`: no warnings. Later commits in this Task change only `addf/`.
+- Evidence considered: `logs/tests-on-start-98feea1-20261002-1402.log`: 40 passed, 4 failed; the failures are the four tests of the new behavior (no unstaged change, executable on disk, hook runs, edited script), and the symlink guard passes there, as planned in Decide. `logs/test-final-20261002-1402.log`: every test binary reports `ok`, 240 passed, 0 failed in total, the 44 in `tests/doctor.rs` among them. `logs/clippy-20261002-1402.log`: no warnings. After the test-fixture change at `3e69631`, `logs/windows-fixture-local-20261002-1255Z.log` records 240 passing Linux tests and clean clippy; the Rust source of `gir` is unchanged.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux only.
 
@@ -260,6 +264,10 @@ Draft PR [#5](https://github.com/flatrick/git-it-right/pull/5) is open at `7926f
 The operator reported that `cargo test` on a Windows checkout failed only `doctor_compares_names_as_stored_for_case_collisions`, `doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form`, `doctor_reports_exec_bit_for_hook_names_git_quotes`, and `doctor_reports_windows_unsafe_names_as_stored`. The failure output is unavailable until the Windows computer is accessible again. All four use `add_index_entries` to insert paths Windows cannot hold. The older `doctor_reports_windows_unsafe_index_names_without_renaming` test, which the operator says passed with the rest, disables `core.protectNTFS` for its index insertion; the shared helper does not. This is a strong test-fixture hypothesis, not a verified Windows diagnosis.
 
 Reassessment: the test implementation needs a focused correction while the on-disk fix Decision remains justified. Return to IMPLEMENT to align the helper with the existing test and expose Git stderr. The rerun on Windows will distinguish a fixture failure from a doctor output failure; until then `c3-os-agnostic` and the VERIFY gate remain unsettled.
+
+### Verification after fixture correction
+
+`3e69631` changes only the four failing tests' shared index fixture and its failure output. Linux tests and clippy pass (`logs/windows-fixture-local-20261002-1255Z.log`). The Windows tests have not been rerun, so their result and `c3-os-agnostic` remain unverified. The VERIFY gate is `NOT_SATISFIED`.
 
 ## Learn
 
