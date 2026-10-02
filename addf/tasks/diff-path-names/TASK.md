@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write the planned tests, see them fail, then add the header-path decoder and switch `trace` to `--name-status -z`.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-space-name-fails` blocks `UNDERSTAND`.
 
@@ -16,6 +16,10 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `probe_names.py` - Probe: how git writes six kinds of file name in diff headers and `--name-status`, and what `gir fixup --dry-run` does with each; names Windows cannot hold are skipped there.
+-   `logs/probe-fixed-20261002-1146.log` - Evidence: `probe_names.py` with the fix (the tree committed as `4f0fd88`).
+-   `logs/test-final-20261002-1146.log` - Evidence: `cargo test --no-fail-fast` on that tree.
+-   `logs/clippy-20261002-1146.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/tests-on-start-d6b61b1-20261002-1147.log` - Evidence: the new end-to-end tests run against the committed source before the fix (`d6b61b1`).
 -   `logs/probe-head-8a2a60c-20261002-1145.log` - Evidence: that probe at the Task's start.
 
 ## Specification impact
@@ -139,7 +143,10 @@ No further probe is needed: the probe already shows git's exact output for every
 
 ## Implement
 
-`PENDING`
+-   `4f0fd88` adds `header_path` and `unquote` to `src/cmd/fixup.rs` and uses `header_path` for both `---` and `+++` lines in `parse_hunks`; `trace` reads `git diff --cached --name-status -z`.
+-   Tests in the same commit: unit tests `header_paths_drop_the_tab_terminator_and_decode_quoting` and `new_files_with_quoted_names_need_an_explicit_target`; integration tests `file_name_with_a_space_is_traced_and_split` (all platforms) and `quoted_file_names_are_traced_and_split` (`#[cfg(unix)]`, with the reason in a comment), both through `gir fixup --dry-run`, `gir fixup --split` and `git rebase --autosquash` via the helper `trace_and_split_two_commits_in`.
+-   Before the fix both integration tests failed (exit `2` where `0` was expected), and they fail again when run against the committed source without the fix (`logs/tests-on-start-d6b61b1-20261002-1147.log`).
+-   No deviation from Decide.
 
 ## Verify
 
