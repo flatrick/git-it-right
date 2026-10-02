@@ -17,7 +17,8 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [doctor-path-names](tasks/doctor-path-names/TASK.md) -
+  gir doctor reads file names exactly as git stores them. State: `DEFINE`.
 
 ## Ledger
 
