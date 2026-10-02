@@ -22,7 +22,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/doctor.md#req-doctor-case-collision`, `framework:spec/doctor.md#req-doctor-windows-names`, `framework:spec/doctor.md#req-doctor-exec-bit`, `framework:spec/doctor.md#req-doctor-ignore-rules`
-- Proposed delta: To be settled in `DECIDE` from what the investigation confirms; `NONE` if no requirement changes.
+- Proposed delta: `windows-names` also covers control characters and bytes that are not valid UTF-8; a new `path-display` says how report lines show paths; both as written under Decide.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -133,7 +133,21 @@ The probe settled every factual uncertainty (Understand). Dispositions:
 
 ## Decide
 
-`PENDING`
+The operator chose each open point (`ledger.md`).
+
+-   **Raw names.** `file_checks` reads `git ls-files --cached --others --exclude-standard -z` and `git ls-files -z`, and `index_checks` reads `git ls-files -s -z`, all through `git::run_raw`; names stay bytes. Marker and probe matching compare bytes.
+-   **Checks on real names.** `windows_unsafe` takes the name's bytes: bytes that are not valid UTF-8, or any byte from 1 to 31, make it unsafe; the existing rules apply to the decoded name. `case-collision` groups by the lowercased name when it is valid UTF-8, and by the ASCII-lowercased bytes otherwise, so two different undecodable names never collide by accident. `exec-bit` keeps byte paths (`Fix::Chmod(Vec<Vec<u8>>)`), and `--fix` passes them to `git update-index` as OS strings.
+-   **Shared helper.** `os_path` moves from `src/cmd/fixup.rs` to `git::os_path`, used by both commands, so the two platform branches exist once.
+-   **Display.** A new `display_path` shows a name as it is, unless it has a control character or bytes that are not valid UTF-8; then it is C-quoted as git quotes it (`"`, `\`, `\a \b \t \n \v \f \r`, other such bytes as `\ooo` octal; valid non-ASCII characters as they are).
+-   **Spec delta**, published at completion:
+    -   `windows-names`: "... or the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, a control character (bytes 1 to 31), or bytes that are not valid UTF-8 ...".
+    -   new `path-display`: report lines SHALL show each path as stored, except that a path with a control character or bytes that are not valid UTF-8 SHALL be shown in git's C-quoted form.
+-   **Rejected:** keeping `core.quotePath` text output and decoding it (a second decoder for output `-z` makes unnecessary); escaping only the unprintable characters (the operator chose git's form).
+-   **Verification strategy.** Integration tests first for each confirmed case (exec-bit and `--fix` for a quoted hook name; the ignore-rule marker with a non-ASCII name; `windows-names` and `case-collision` reporting real names; control characters; non-UTF-8 names, including `--fix`), Unix-only where Windows cannot hold the name; see them fail; then the change; then `probe_doctor_names.py`, `cargo test` and clippy.
+
+### DECIDE gate
+
+`ESTABLISHED`: every operator decision is reflected, and each success Claim has a planned test.
 
 ## Implement
 
