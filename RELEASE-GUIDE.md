@@ -11,6 +11,7 @@ Replace `vX.Y.Z` with the new version throughout.
 - Merge pull requests into `main` with a merge commit, not a squash.
   git-cliff reads individual commits from `main`; a squash leaves it one line per pull request.
   v0.0.1 was squashed, so only the `CHANGELOG.md` committed at that tag lists its changes.
+  The repository settings allow only merge commits, so GitHub offers no other method.
 - CI on `main` must be green.
 
 ## 1. Pick the version
