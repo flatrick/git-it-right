@@ -1,0 +1,27 @@
+## c2/c3: rules in Skills and templates
+addf/templates/INDEX.md:25:`NONE`. `<or one entry per open thread under ledger/: a link and a concise
+addf/CORE.md:20:Before the threshold is crossed, or before a Task's name and objective are settled, do not let that exploration evaporate.
+addf/skills/work-control.md:24:Ask once per Task: an answer given for another Task, in this conversation or earlier, does not carry over.
+addf/skills/work-control.md:48:Before a Task exists, or before its name and objective are settled, keep the exploration that leads there from being lost.
+addf/skills/work-control.md:59:Settle an entry by appending a disposition line that names it, never by editing the entry:
+addf/skills/work-control.md:63:Before raising a new question, check the open threads `INDEX.md` lists; do not duplicate one a thread already answers.
+addf/skills/work-control.md:68:- If it takes every entry of a thread, move the thread file into the Task's bundle as `ledger.md` and remove the thread from `INDEX.md`. No disposition line is needed.
+addf/skills/work-control.md:69:- Otherwise, copy the entries it takes into the bundle's `ledger.md`, unchanged and naming the thread and their positions, and append a disposition line to the thread naming the Task. The copy keeps the bundle self-contained after archival.
+addf/skills/work-control.md:74:A thread whose every `Q:` has a disposition is settled; load [Stewardship](stewardship.md) to archive it.
+addf/skills/work-control.md:127:At most three Tasks may be active at once; with three active, do not create another.
+addf/skills/work-control.md:140:Where they overlap, record the overlap and the order in both Tasks' Constraints.
+addf/skills/work-control.md:141:The order is the order of spec publication: the earlier Task publishes its delta and terminalizes first.
+addf/skills/work-control.md:146:1. If more than one Task is active and the operator has not named one, list the active Tasks from `INDEX.md` and ask which to resume.
+addf/skills/work-control.md:169:| `INVESTIGATE` | Every decision-relevant uncertainty has a disposition. |
+addf/skills/work-control.md:173:| `LEARN` | Material learning and its disposition were considered. |
+addf/skills/work-control.md:186:the Task's `INDEX.md` entry to the new State. Close settled obligations, split
+addf/skills/work-control.md:222:| A success claim is unsettled but the strategy remains justified | `VERIFY` |
+addf/skills/work-control.md:250:- No Ledger entry was silently discarded: each is still open in its thread, settled by a disposition line, or moved with its whole thread into a Task's bundle.
+addf/skills/work-control.md:253:- At most three Tasks are active, and active Tasks that overlap record the overlap and their order in their Constraints.
+addf/skills/evidence-and-verification.md:94:manual inspection is Evidence or input, not a direct Basis for a settled
+addf/skills/stewardship.md:134:## Archive a settled thread
+addf/skills/stewardship.md:136:A Ledger thread is settled when every `Q:` entry in it has a disposition line (Work control's Ledger section).
+addf/skills/stewardship.md:137:Move a settled thread to `.archive/ledger/` and remove it from the index in the same pass.
+addf/skills/stewardship.md:157:pass, or when a terminal or Stop decision itself is still unsettled. Load
+addf/skills/stewardship.md:170:- No settled Ledger thread remains under `ledger/`, and no thread with an open entry was archived.
+addf/skills/stewardship.md:174:- Retention and promotion records an explicit disposition for Learning and
