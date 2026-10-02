@@ -460,3 +460,130 @@ fn doctor_fix_keeps_read_data_denied_gitattributes() {
     assert!(!fixed.contains("fixed .gitattributes"), "{fixed}");
     assert_eq!(content_after_reset(&repo, ".gitattributes"), "# mine\n");
 }
+
+/// Adds index entries with exactly these path bytes and no files, so names that Windows
+/// cannot hold as files can still be tested there.
+fn add_index_entries(repo: &Repo, mode: &str, paths: &[&[u8]]) {
+    use std::io::Write;
+    repo.write("blob.txt", "content\n");
+    let blob = repo.git(&["hash-object", "-w", "blob.txt"]);
+    let mut input = Vec::new();
+    for path in paths {
+        input.extend_from_slice(format!("{mode} {blob}\t").as_bytes());
+        input.extend_from_slice(path);
+        input.push(0);
+    }
+    let mut child = repo
+        .cmd("git")
+        .args(["update-index", "--add", "-z", "--index-info"])
+        .stdin(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    child.stdin.take().unwrap().write_all(&input).unwrap();
+    assert!(child.wait().unwrap().success());
+}
+
+fn report_line<'a>(report: &'a str, id: &str) -> Option<&'a str> {
+    report.lines().find(|l| l.contains(&format!(" {id}: ")))
+}
+
+fn index_modes(repo: &Repo) -> Vec<Vec<u8>> {
+    repo.git_out(&["ls-files", "-s", "-z"]).stdout.split(|&b| b == 0).filter(|r| !r.is_empty()).map(<[u8]>::to_vec).collect()
+}
+
+#[test]
+fn doctor_reports_exec_bit_for_hook_names_git_quotes() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b".githooks/pre \"x\"", b".githooks/back\\slash", b".githooks/my hook"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "exec-bit"),
+        Some("warn  exec-bit: scripts not executable in git: .githooks/back\\slash .githooks/my hook .githooks/pre \"x\""),
+        "{report}"
+    );
+}
+
+/// Commits files with exactly these names, for `--fix`, which needs them in the working tree.
+#[cfg(unix)]
+fn commit_files_named(repo: &Repo, names: &[&[u8]]) {
+    use std::os::unix::ffi::OsStrExt;
+    for name in names {
+        let path = repo.dir.join(std::ffi::OsStr::from_bytes(name));
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, "#!/bin/sh\n").unwrap();
+    }
+    repo.git(&["add", "-A"]);
+    repo.git(&["commit", "-q", "-m", "chore: hooks"]);
+}
+
+// Windows file names cannot contain a double quote or a backslash.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_sets_exec_bit_on_hook_names_git_quotes() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre \"x\"", b".githooks/back\\slash"]);
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let hooks: Vec<Vec<u8>> = index_modes(&repo).into_iter().filter(|r| r.windows(10).any(|w| w == b".githooks/")).collect();
+    assert_eq!(hooks.len(), 2, "{hooks:?}");
+    assert!(hooks.iter().all(|r| r.starts_with(b"100755")), "{hooks:?}");
+}
+
+#[test]
+fn doctor_reports_windows_unsafe_names_as_stored() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"say \"hi\".txt", b"back\\slash.txt"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "windows-names"),
+        Some("warn  windows-names: cannot be checked out on Windows: back\\slash.txt say \"hi\".txt"),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"tab\there.txt", b"bell\x07.txt", b"caf\xe9.txt"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "windows-names"),
+        Some("warn  windows-names: cannot be checked out on Windows: \"bell\\a.txt\" \"caf\\351.txt\" \"tab\\there.txt\""),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_compares_names_as_stored_for_case_collisions() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"Q \"a\".txt", b"q \"a\".txt", b"x\xe8", b"x\xe9"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "case-collision"),
+        Some("warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: Q \"a\".txt = q \"a\".txt"),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_suggests_ignore_rules_for_a_non_ascii_marker_name() {
+    let repo = Repo::new();
+    repo.write("\u{c5}ngstr\u{f6}m.csproj", "<Project/>\n");
+    let report = stdout(&repo.gir(&["doctor"]));
+    let line = report_line(&report, ".gitignore").unwrap_or_default();
+    assert!(line.contains(" bin/ obj/"), "{report}");
+}
+
+// `--fix` passes the name to git as an argument, and Windows arguments cannot carry bytes
+// that are not valid UTF-8.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/hook\xe9"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(report_line(&report, "exec-bit"), Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\""), "{report}");
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755") && r.ends_with(b"hook\xe9")), "{:?}", index_modes(&repo));
+}

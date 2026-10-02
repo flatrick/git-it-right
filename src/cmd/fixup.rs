@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 
 use crate::git;
 use crate::pick::{self, Choice};
@@ -431,7 +431,7 @@ fn range(r: &str) -> (u32, u32) {
 }
 
 fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
-    let path = os_path(path);
+    let path = git::os_path(path);
     let mut shas = BTreeSet::new();
     for line in lines {
         let range = format!("{line},{line}");
@@ -445,18 +445,6 @@ fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
     shas
 }
 
-/// A path from git's output as an argument for git: its bytes as they are on Unix; through
-/// UTF-8 elsewhere, which is how git writes paths on Windows.
-#[cfg(unix)]
-fn os_path(bytes: &[u8]) -> OsString {
-    use std::os::unix::ffi::OsStrExt;
-    OsStr::from_bytes(bytes).to_os_string()
-}
-
-#[cfg(not(unix))]
-fn os_path(bytes: &[u8]) -> OsString {
-    OsString::from(String::from_utf8_lossy(bytes).into_owned())
-}
 
 #[cfg(test)]
 mod tests {

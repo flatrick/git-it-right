@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 use std::ffi::OsStr;
 
-use super::{Hunk, Mode, Trace, Traced, base_hint, blame, cancelled, os_path, pick_branch_commit, subject, targets};
+use super::{Hunk, Mode, Trace, Traced, base_hint, blame, cancelled, pick_branch_commit, subject, targets};
 use crate::git;
 use crate::pick::{self, Choice};
 
@@ -123,7 +123,7 @@ fn commit_each(mode: Mode, hunks: &[Traced], placed: &[(Vec<u8>, String)], order
 /// Sets `path` in `index` to its entry in the staged tree `goal`, or removes it when the
 /// staged tree has none.
 fn place_whole_file(index: &git::TempIndex, goal: &str, path: &[u8]) -> Result<(), String> {
-    let path = os_path(path);
+    let path = git::os_path(path);
     let entry = index.run_raw(&[OsStr::new("ls-tree"), OsStr::new(goal), OsStr::new("--"), &path])?;
     let entry = String::from_utf8_lossy(&entry);
     let fields: Vec<&str> = entry.split_whitespace().take(3).collect();
