@@ -288,7 +288,7 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
     let mut hunks: Vec<Hunk> = Vec::new();
     let mut path: Option<String> = None;
     let mut header = String::new();
-    let mut in_header = false;
+    let mut in_header = true;
     for line in diff.lines() {
         if line.starts_with("diff --git ") {
             header.clear();
@@ -298,12 +298,12 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
             header.push_str(line);
             header.push('\n');
         }
-        if let Some(p) = line.strip_prefix("--- ") {
+        if in_header && let Some(p) = line.strip_prefix("--- ") {
             path = match p {
                 "/dev/null" => None,
                 p => Some(p.trim_matches('"').strip_prefix("a/").unwrap_or(p).to_string()),
             };
-        } else if line.starts_with("+++ b/") && path.is_none() {
+        } else if in_header && line.starts_with("+++ b/") && path.is_none() {
             let new = line.trim_start_matches("+++ b/");
             return Err(format!("{new} is a new file, so it has no earlier commit"));
         } else if let Some(h) = line.strip_prefix("@@ -") {
@@ -380,6 +380,18 @@ mod tests {
         assert_eq!(hunks[0].changes, "-a\n+b\n");
         assert_eq!((hunks[1].old_start, hunks[1].old_count, hunks[1].new_count), (5, 0, 1));
         assert_eq!(hunks[1].changes, "+c\n\\ No newline at end of file\n");
+    }
+
+    #[test]
+    fn hunk_lines_that_look_like_file_headers_are_content() {
+        let diff = "diff --git a/x.lua b/x.lua\n--- a/x.lua\n+++ b/x.lua\n@@ -1,2 +0,0 @@\n--- /dev/null\n--- a/other\n@@ -5 +3 @@\n-d\n+D\n@@ -7,0 +6 @@\n+++ b/foo\n";
+        let hunks = parse_hunks(diff).unwrap();
+        assert_eq!(
+            hunks.iter().map(|h| (h.path.as_str(), h.lines.clone())).collect::<Vec<_>>(),
+            vec![("x.lua", vec![1, 2]), ("x.lua", vec![5]), ("x.lua", vec![7, 8])]
+        );
+        assert_eq!(hunks[0].changes, "--- /dev/null\n--- a/other\n");
+        assert_eq!(hunks[2].changes, "+++ b/foo\n");
     }
 
     #[test]

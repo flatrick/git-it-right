@@ -290,3 +290,39 @@ fn insertion_between_base_and_topic_lines_targets_topic() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: topic line\n", &topic[..10]));
 }
+
+#[test]
+fn deleted_line_starting_with_dashes_is_traced_like_any_other() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- header\nlocal a = 1\nlocal b = 2\nlocal c = 3\nlocal d = 4\n", "feat: lua");
+    let lua = repo.git(&["rev-parse", "HEAD"]);
+    stage(&repo, "x.lua", "local a = 1\nlocal b = 2\nlocal c = 3\nlocal d = 5\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: lua\n", &lua[..10]));
+}
+
+#[test]
+fn deleted_dev_null_comment_does_not_hide_later_hunks() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nl4\n", "feat: lua a");
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nL4\n", "feat: lua b");
+    stage(&repo, "x.lua", "l1\nl2\nl3\nL4x\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    let err = stderr(&out);
+    assert_eq!(out.status.code(), Some(2), "{err}");
+    assert!(err.contains("staged changes belong to several commits:"), "{err}");
+    assert!(err.contains("feat: lua a  <- x.lua:1"), "{err}");
+    assert!(err.contains("feat: lua b  <- x.lua:5"), "{err}");
+}
+
+#[test]
+fn added_line_starting_with_plus_b_is_not_a_new_file() {
+    let repo = topic_repo();
+    repo.commit_file("z.lua", "-- /dev/null\nm1\nm2\nm3\nm4\n", "feat: z");
+    let z = repo.git(&["rev-parse", "HEAD"]);
+    stage(&repo, "z.lua", "m1\nm2\nm3\n++ b/foo\nm4\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: z\n", &z[..10]));
+}
