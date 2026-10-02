@@ -37,16 +37,16 @@
 <a id="c1-reproduced"></a>
 #### `c1-reproduced`
 
--   Claim: On the build at this Task's start, `gir doctor --fix` exits with a fatal error after applying earlier fixes when a tracked `100644` hook is missing from the working tree, both when deleted locally and when outside a sparse checkout's cone.
--   State: `UNVERIFIED`
--   Scope: Linux, git 2.56.0, this branch.
+-   Claim: On the build at this Task's start, `gir doctor --fix` exits with a fatal error when a tracked `100644` hook was deleted from the working tree, and stages an unstaged local edit to a hook it fixes. (Narrowed by the operator in `UNDERSTAND`: the sparse-checkout case did not reproduce.)
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `3ab3c09`.
 -   Consequence if false: the fix targets a defect that is not there.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-reproduced).
 
 <a id="c2-fixed"></a>
 #### `c2-fixed`
 
--   Claim: After the change, `gir doctor --fix` sets those index entries to `100755` without needing the file, leaves the working tree and file contents unchanged, and finishes normally; hooks present in the working tree are still fixed as before.
+-   Claim: After the change, `gir doctor --fix` sets those index entries to `100755` without needing the file, leaves the working tree and the staged content unchanged (an unstaged edit stays unstaged), keeps hooks outside a sparse checkout's cone `skip-worktree`, and finishes normally; hooks present in the working tree are still fixed.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: `--fix` still leaves repositories half-changed.
@@ -118,7 +118,7 @@ Observed at `3ab3c09` (`logs/acceptance-head-3ab3c09-20261002-1339.log`, `logs/p
 
 ### Open questions
 
--   `c1-reproduced` as worded includes the sparse case, which does not reproduce: the operator decides whether to narrow it.
+-   `NONE`; the operator narrowed `c1-reproduced` and added the staging case (`ledger.md`).
 
 ### Deferred verification
 
@@ -149,6 +149,15 @@ Observed at `3ab3c09` (`logs/acceptance-head-3ab3c09-20261002-1339.log`, `logs/p
 - Method: ran `--cacheinfo` and, for comparison, `--chmod=+x` on a deleted hook and on a hook outside a sparse checkout's cone.
 - Evidence considered: `logs/probe-cacheinfo-20261002-1339.log`: `--cacheinfo` exits `0` and sets `100755` in both cases with no file on disk, where `--chmod=+x` fails for the deleted file; `logs/probe-cacheinfo-skipworktree-20261002-1339.log`: it clears `skip-worktree`, which `--skip-worktree` restores.
 - Conclusion: `VERIFIED`, with the limitation that the skip-worktree bit has to be restored.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c1-reproduced"></a>
+### Verification: `c1-reproduced`
+
+- Claim: [c1-reproduced](#c1-reproduced)
+- Method: `acceptance.py` on the build at `3ab3c09`.
+- Evidence considered: `logs/acceptance-head-3ab3c09-20261002-1339.log`: the deleted-hook case exits `2` with `fatal: Unable to process path .githooks/pre-commit`, leaving every hook `100644` and `.gitattributes` unwritten; the local-edit case leaves `.githooks/commit-msg` staged with the edit.
+- Conclusion: `VERIFIED` for the narrowed Claim.
 - Limitations: Linux, git 2.56.0.
 
 ## Learn

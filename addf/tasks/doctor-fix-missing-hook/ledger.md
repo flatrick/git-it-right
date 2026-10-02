@@ -23,3 +23,5 @@ Entries Q14 of `ledger/fixup-review-20261002.md`, copied unchanged.
   A: Agreed by the operator, as written in `TASK.md`.
 - Q: Does the sparse-checkout case in Q14 reproduce?
   A: No. At `3ab3c09`, `--fix` handles hooks outside the cone correctly; Q14 inferred that case wrongly. The deleted-hook case reproduces, and `--fix` was also found to stage unstaged edits to hooks.
+- Q: How should the criteria change, given that the sparse case does not reproduce and the staging problem does?
+  A: Narrow `c1-reproduced` to the deleted hook and the staging problem; `c2-fixed` also checks that unstaged edits stay unstaged and sparse hooks stay `skip-worktree`.
