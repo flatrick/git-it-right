@@ -25,3 +25,5 @@ Entries Q14 of `ledger/fixup-review-20261002.md`, copied unchanged.
   A: No. At `3ab3c09`, `--fix` handles hooks outside the cone correctly; Q14 inferred that case wrongly. The deleted-hook case reproduces, and `--fix` was also found to stage unstaged edits to hooks.
 - Q: How should the criteria change, given that the sparse case does not reproduce and the staging problem does?
   A: Narrow `c1-reproduced` to the deleted hook and the staging problem; `c2-fixed` also checks that unstaged edits stay unstaged and sparse hooks stay `skip-worktree`.
+- Q: How should exec-bit treat a file with an unresolved merge conflict?
+  A: Skip it: no exec-bit warning and no fix while it has conflict entries; included in this Task, with a spec rule and a regression test. Found while reviewing Codex's first diff: both the old and the new `--fix` mark such a hook resolved with the wrong content.

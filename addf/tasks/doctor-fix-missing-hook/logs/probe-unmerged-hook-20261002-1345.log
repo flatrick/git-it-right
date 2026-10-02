@@ -1,0 +1,10 @@
+## codex build: doctor --fix exit 1
+  index before: 100644 a57779d5607d5dccbe0c4345f0cc40080f7ca48d 1	.githooks/h | 100644 4b5ad2d79ac14f67917d468782efba4e35d60ac6 2	.githooks/h | 100644 68fd105b870c1b08f331280c6bea2b63ee5827be 3	.githooks/h
+  index after:  100755 a57779d5607d5dccbe0c4345f0cc40080f7ca48d 0	.githooks/h
+  exec-bit/error lines: ['fixed exec-bit: scripts not executable in git: .githooks/h']
+  stage-0 content: #!/bin/sh / base
+## current build (HEAD): doctor --fix exit 1
+  index before: 100644 a57779d5607d5dccbe0c4345f0cc40080f7ca48d 1	.githooks/h | 100644 4b5ad2d79ac14f67917d468782efba4e35d60ac6 2	.githooks/h | 100644 68fd105b870c1b08f331280c6bea2b63ee5827be 3	.githooks/h
+  index after:  100755 8d5776fbaac80a19769b212cf76baf59ec105a53 0	.githooks/h
+  exec-bit/error lines: ['fixed exec-bit: scripts not executable in git: .githooks/h']
+  stage-0 content: #!/bin/sh / <<<<<<< HEAD / main / ======= / other / >>>>>>> other

@@ -23,7 +23,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/doctor.md#req-doctor-exec-bit`
-- Proposed delta: `exec-bit`: `--fix` SHALL set the flagged index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree, instead of naming the `git update-index --chmod=+x` command.
+- Proposed delta: `exec-bit`: `--fix` SHALL set the flagged index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree, instead of naming the `git update-index --chmod=+x` command; a path with unresolved conflict entries SHALL NOT be flagged.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -46,7 +46,7 @@
 <a id="c2-fixed"></a>
 #### `c2-fixed`
 
--   Claim: After the change, `gir doctor --fix` sets those index entries to `100755` without needing the file, leaves the working tree and the staged content unchanged (an unstaged edit stays unstaged), keeps hooks outside a sparse checkout's cone `skip-worktree`, and finishes normally; hooks present in the working tree are still fixed.
+-   Claim: After the change, `gir doctor --fix` sets those index entries to `100755` without needing the file, leaves the working tree and the staged content unchanged (an unstaged edit stays unstaged), keeps hooks outside a sparse checkout's cone `skip-worktree`, leaves a file with unresolved conflict entries unflagged and its entries untouched, and finishes normally; hooks present in the working tree are still fixed.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: `--fix` still leaves repositories half-changed.
@@ -151,7 +151,9 @@ No further probe is needed for the design: the probes under Understand settled i
 
 ## Implement
 
-`PENDING`
+-   Codex run 1 (`gpt-6-sol`, `codex exec -s workspace-write` in a throwaway clone at `ee01f29`, 177 seconds; prompt, events and diff in the gitignored `.scratch/codex-q14/`): changed `src/cmd/doctor.rs`, `src/git.rs` (`run_with_stdin_bytes`) and `tests/doctor.rs` (four tests), following Decide.
+-   Review of that diff found a case the design missed: for a hook with unresolved conflict entries, `--index-info` writes one stage-0 entry with the base version's object, so `--fix` resolves the conflict to the base content. The current build also resolves it, staging the working-tree file with its conflict markers (`logs/probe-unmerged-hook-20261002-1345.log`). The operator chose to skip such files in this Task (`ledger.md`).
+-   Codex's report listed the doc-tests `0 passed` line as its test result; it is not used as evidence (`c5-verified-here`).
 
 ## Verify
 
