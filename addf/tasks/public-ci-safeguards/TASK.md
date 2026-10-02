@@ -130,7 +130,16 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Decide
 
-Pending.
+- Set `main` branch protection through GitHub's API with `enforce_admins:true`, `allow_force_pushes:false`, `allow_deletions:false`, and no required checks, PR reviews, or push restrictions. This blocks the two destructive operations for admins too, while direct maintenance and the existing PR remain possible.
+- Set the repository fork PR approval policy to `all_external_contributors`. Read it back before enabling Actions.
+- Add `permissions: contents: read` to the workflow. Give the Rust test job 30 minutes and the capsule job 10 minutes. Cancel an older run when a new run starts for the same ref. Keep the `pull_request` event, standard hosted runner matrix, and no artifact uploads.
+- Verify both live settings and the workflow on the feature branch while Actions remains disabled. Then enable repository Actions and the `ci` workflow. Push a new commit to trigger the existing PR, and observe the resulting jobs, including Windows. If a safeguard fails, leave Actions disabled while correcting it.
+- Requiring a CI status check before CI runs would block `main` unnecessarily. Relying on timeouts alone would still let every external PR start a run. Disabling PR runs would prevent the Windows PR verification needed by `doctor-fix-file-mode`.
+- Verification uses API readback for branch protection, approval policy, Actions, and workflow state; static workflow inspection and validation; and the hosted run on draft PR #5. No destructive push or fork PR is needed to test the two remote policies.
+
+### DECIDE gate
+
+`ESTABLISHED`: each requested protection has a setting or workflow change and a readback check. The order keeps Actions disabled until the safeguards are in place.
 
 ## Implement
 
