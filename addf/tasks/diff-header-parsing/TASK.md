@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-dash-dash-reproduces` blocks `UNDERSTAND`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -40,28 +40,28 @@
 #### `dh-dash-dash-deletion`
 
 -   Claim: When a staged change deletes a line whose content starts with `-- `, including `-- /dev/null`, `gir fixup` without a commit argument creates its `fixup!` for the commit that last changed that line, and later hunks in the same file are still traced.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, this branch.
 -   Consequence if false: a fixup goes to the wrong commit, or is refused, for Lua, SQL or Haskell comments.
--   Basis: pending check.
+-   Basis: [Verification](#verification-dh-dash-dash-deletion).
 
 <a id="dh-plus-plus-addition"></a>
 #### `dh-plus-plus-addition`
 
 -   Claim: When a staged change adds a line whose content starts with `++ b/`, `gir fixup` does not report it as a new file.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, this branch.
 -   Consequence if false: an ordinary addition is refused as a new file.
--   Basis: pending check.
+-   Basis: [Verification](#verification-dh-plus-plus-addition).
 
 <a id="dh-gates-green"></a>
 #### `dh-gates-green`
 
 -   Claim: Tests cover both cases above, and `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-dh-gates-green).
 
 ### Constraints
 
@@ -150,6 +150,35 @@ No further probe is needed. Dispositions:
 - Evidence considered: `logs/probe-head-afd58e8-20261002-1015.log`, case 1: `gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>`, exit `2`.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-dh-dash-dash-deletion"></a>
+### Verification: `dh-dash-dash-deletion`
+
+- Claim: [dh-dash-dash-deletion](#dh-dash-dash-deletion)
+- Method: the unit and integration tests added in `06c5ee4`, and the probe rerun with the fix.
+- Evidence considered: `logs/test-final-20261002-1017.log`: `hunk_lines_that_look_like_file_headers_are_content` (deleted `--- /dev/null` and `--- a/other` lines stay in `x.lua`, later hunks keep path `x.lua`), `deleted_line_starting_with_dashes_is_traced_like_any_other` and `deleted_dev_null_comment_does_not_hide_later_hunks` pass. `logs/probe-fixed-20261002-1017.log`: case 1 selects `feat: lua`; case 2 reports both commits A (`x.lua:1`) and B (`x.lua:5`). Before the fix (`logs/probe-head-afd58e8-20261002-1015.log`) case 1 was refused and case 2 silently selected A.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-dh-plus-plus-addition"></a>
+### Verification: `dh-plus-plus-addition`
+
+- Claim: [dh-plus-plus-addition](#dh-plus-plus-addition)
+- Method: the unit test and `added_line_starting_with_plus_b_is_not_a_new_file` from `06c5ee4`, and probe cases 3 and 4.
+- Evidence considered: `logs/test-final-20261002-1017.log` shows both tests passing; `logs/probe-fixed-20261002-1017.log` case 4 selects `feat: z`, where before the fix it reported `foo is a new file`. Case 3 already passed before the fix, so for an `++ b/` line on its own the Claim guards against a regression rather than fixing one.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-dh-gates-green"></a>
+### Verification: `dh-gates-green`
+
+- Claim: [dh-gates-green](#dh-gates-green)
+- Method: `cargo test` and `cargo clippy --all-targets -- -D warnings` on the tree committed as `06c5ee4`.
+- Evidence considered: `logs/test-final-20261002-1017.log` (every target `ok`, 201 tests, 0 failed); `logs/clippy-20261002-1017.log` (finished, no warnings).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ## Learn
 
