@@ -81,6 +81,16 @@ impl TempIndex {
     pub fn passthrough(&self, args: &[&str]) -> Result<(), String> {
         status(&mut self.git(args), args)
     }
+
+    pub fn run_raw<S: AsRef<OsStr>>(&self, args: &[S]) -> Result<Vec<u8>, String> {
+        let out = Command::new("git")
+            .args(args)
+            .env("GIT_INDEX_FILE", &self.0)
+            .stdin(Stdio::null())
+            .output()
+            .map_err(|e| format!("could not run git: {e}"))?;
+        if out.status.success() { Ok(out.stdout) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+    }
 }
 
 impl Drop for TempIndex {

@@ -79,19 +79,25 @@ pub fn run(mode: Mode, target: Option<String>, opts: Options) -> Result<i32, Str
                 None => return Ok(cancelled()),
             }
         }
-        None => match trace(base.as_deref())? {
-            Trace::Unattributed(reason) if ask => match pick_branch_commit(&format!("{reason}; pick the commit it belongs to:"), base.as_deref())? {
-                Some(sha) => sha,
-                None => return Ok(cancelled()),
-            },
-            Trace::Unattributed(reason) => return Err(format!("{reason}; {}", mode.pass_one())),
-            Trace::Hunks(hunks) if opts.split => return split::split(mode, &hunks, base.as_deref(), opts.dry_run),
-            Trace::Hunks(hunks) => {
+        None => match trace(base.as_deref(), opts.split)? {
+            trace if opts.split => return split::split(mode, trace, base.as_deref(), opts.dry_run, ask),
+            Trace { untraced, .. } if !untraced.is_empty() => {
+                let reason = &untraced[0].reason;
+                if !ask {
+                    return Err(format!("{reason}; {}", mode.pass_one()));
+                }
+                match pick_branch_commit(&format!("{reason}; pick the commit it belongs to:"), base.as_deref())? {
+                    Some(sha) => sha,
+                    None => return Ok(cancelled()),
+                }
+            }
+            Trace { hunks, .. } => {
                 let targets = targets(&hunks);
+                let can_split = split::can_split(&hunks);
                 if targets.len() == 1 {
                     targets.into_keys().next().unwrap()
                 } else if !ask {
-                    return Err(several_targets(mode, &targets));
+                    return Err(several_targets(mode, &targets, can_split));
                 } else {
                     let items: Vec<String> = targets
                         .iter()
@@ -99,13 +105,13 @@ pub fn run(mode: Mode, target: Option<String>, opts: Options) -> Result<i32, Str
                         .collect();
                     eprintln!("gir: staged changes belong to several commits:");
                     let split = format!("one {} per commit", mode.prefix());
-                    match pick::choose(&items, Some(&split), std::io::stdin().lock(), std::io::stderr()) {
+                    match pick::choose(&items, can_split.then_some(split.as_str()), std::io::stdin().lock(), std::io::stderr()) {
                         Choice::Item(i) => {
                             let sha = targets.into_keys().nth(i).unwrap();
                             eprintln!("gir: all staged changes go into one {} for {}", mode.prefix(), &sha[..10]);
                             sha
                         }
-                        Choice::Split => return split::split(mode, &hunks, base.as_deref(), false),
+                        Choice::Split => return split::split(mode, Trace { hunks, untraced: Vec::new() }, base.as_deref(), false, true),
                         Choice::Cancel => return Ok(cancelled()),
                     }
                 }
@@ -168,13 +174,15 @@ fn pick_branch_commit(question: &str, base: Option<&str>) -> Result<Option<Strin
     })
 }
 
-fn several_targets(mode: Mode, targets: &BTreeMap<String, Vec<String>>) -> String {
+fn several_targets(mode: Mode, targets: &BTreeMap<String, Vec<String>>, can_split: bool) -> String {
     let mut msg = String::from("staged changes belong to several commits:");
     for (sha, places) in targets {
         msg.push_str(&format!("\n  {} {}  <- {}", &sha[..10], subject(sha), places.join(" ")));
     }
     msg.push_str(&format!("\n  split: git restore --staged . && git add -p, then one gir {} per commit", mode.name()));
-    msg.push_str(&format!("\n  or: gir {} --split creates one {} per commit", mode.name(), mode.prefix()));
+    if can_split {
+        msg.push_str(&format!("\n  or: gir {} --split creates one {} per commit", mode.name(), mode.prefix()));
+    }
     if mode == Mode::Fixup && git::on_path("git-absorb") {
         msg.push_str("\n  or: git absorb (installed) creates one fixup per commit");
     }
@@ -224,10 +232,17 @@ struct Traced {
     shas: BTreeSet<String>,
 }
 
-enum Trace {
-    Hunks(Vec<Traced>),
-    /// A staged file that no commit can be named for; the reason reads as a clause.
-    Unattributed(String),
+/// A staged file that no commit can be named for; the reason reads as a clause.
+struct Untraced {
+    path: Vec<u8>,
+    reason: String,
+}
+
+/// The traced hunks, and the staged files that could not be traced: new files first, then
+/// files without lines to trace, then files with a hunk `git blame` cannot name.
+struct Trace {
+    hunks: Vec<Traced>,
+    untraced: Vec<Untraced>,
 }
 
 fn targets(hunks: &[Traced]) -> BTreeMap<String, Vec<String>> {
@@ -240,29 +255,39 @@ fn targets(hunks: &[Traced]) -> BTreeMap<String, Vec<String>> {
     targets
 }
 
-fn trace(base: Option<&str>) -> Result<Trace, String> {
+/// With `all`, every staged file is traced or listed as untraced; without it, tracing stops
+/// at the first file it cannot trace, as only that one is reported.
+fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
     let diff = git::run_raw(&[
         "-c", "core.quotePath=false", "diff", "--cached", "-U0", "--no-color", "--no-ext-diff", "--no-textconv",
         "--no-renames", "--src-prefix=a/", "--dst-prefix=b/",
     ])?;
-    let hunks = match parse_hunks(&diff) {
-        Ok(hunks) => hunks,
-        Err(reason) => return Ok(Trace::Unattributed(reason)),
-    };
+    let hunks = parse_hunks(&diff);
     let traced: BTreeSet<&[u8]> = hunks.iter().map(|h| h.path.as_slice()).collect();
     let staged = git::run_raw(&["diff", "--cached", "--name-status", "-z", "--no-renames"])?;
     let fields: Vec<&[u8]> = staged.split(|&b| b == 0).collect();
-    let mut entries = fields.chunks(2).filter_map(|c| match c {
+    let entries = fields.chunks(2).filter_map(|c| match c {
         [status, path] => Some((*status, *path)),
         _ => None,
     });
-    if let Some((status, path)) = entries.find(|(_, p)| !traced.contains(p)) {
-        let path = String::from_utf8_lossy(path);
-        return Ok(Trace::Unattributed(if status == b"A" {
-            format!("{path} is a new file, so it has no earlier commit")
-        } else {
-            format!("cannot tell which commit {path} belongs to")
-        }));
+    let (mut untraced, others): (Vec<Untraced>, Vec<Untraced>) = entries
+        .filter(|(_, p)| !traced.contains(p))
+        .map(|(status, path)| {
+            let name = String::from_utf8_lossy(path);
+            let reason = if status == b"A" {
+                format!("{name} is a new file, so it has no earlier commit")
+            } else {
+                format!("cannot tell which commit {name} belongs to")
+            };
+            (status == b"A", Untraced { path: path.to_vec(), reason })
+        })
+        .fold((Vec::new(), Vec::new()), |(mut new, mut other), (is_new, u)| {
+            if is_new { new.push(u) } else { other.push(u) }
+            (new, other)
+        });
+    untraced.extend(others);
+    if !all && !untraced.is_empty() {
+        return Ok(Trace { hunks: Vec::new(), untraced });
     }
     let allowed: Option<HashSet<String>> = match base {
         Some(b) => Some(git::run(&["rev-list", &format!("{b}..HEAD")])?.lines().map(str::to_string).collect()),
@@ -274,7 +299,11 @@ fn trace(base: Option<&str>) -> Result<Trace, String> {
         let blamed = blame(&hunk.path, &hunk.lines);
         let place = hunk.place();
         if blamed.is_empty() {
-            return Ok(Trace::Unattributed(format!("cannot tell which commit {place} belongs to")));
+            untraced.push(Untraced { path: hunk.path.clone(), reason: format!("cannot tell which commit {place} belongs to") });
+            if !all {
+                return Ok(Trace { hunks: Vec::new(), untraced });
+            }
+            continue;
         }
         let in_range: BTreeSet<String> = blamed.iter().filter(|s| allowed.as_ref().is_none_or(|a| a.contains(*s))).cloned().collect();
         let on_base = blamed.iter().find(|s| !in_range.contains(*s));
@@ -286,12 +315,14 @@ fn trace(base: Option<&str>) -> Result<Trace, String> {
         }
         out.push(Traced { hunk, shas: in_range });
     }
-    Ok(Trace::Hunks(out))
+    let unblamed: BTreeSet<Vec<u8>> = untraced.iter().map(|u| u.path.clone()).collect();
+    out.retain(|t| !unblamed.contains(&t.hunk.path));
+    Ok(Trace { hunks: out, untraced })
 }
 
 /// Lines in the HEAD version each hunk touches. A pure insertion has no old
-/// lines, so the lines around it stand in for it. A new file is an error.
-fn parse_hunks(diff: &[u8]) -> Result<Vec<Hunk>, String> {
+/// lines, so the lines around it stand in for it. A new file has no such lines and no hunks.
+fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
     let mut hunks: Vec<Hunk> = Vec::new();
     let mut path: Option<Vec<u8>> = None;
     let mut header = Vec::new();
@@ -308,11 +339,6 @@ fn parse_hunks(diff: &[u8]) -> Result<Vec<Hunk>, String> {
         }
         if in_header && let Some(p) = line.strip_prefix(b"--- ") {
             path = header_path(p, b"a/");
-        } else if in_header
-            && path.is_none()
-            && let Some(new) = line.strip_prefix(b"+++ ").and_then(|p| header_path(p, b"b/"))
-        {
-            return Err(format!("{} is a new file, so it has no earlier commit", String::from_utf8_lossy(&new)));
         } else if let Some(h) = line.strip_prefix(b"@@ -") {
             in_header = false;
             let h = String::from_utf8_lossy(h);
@@ -344,7 +370,7 @@ fn parse_hunks(diff: &[u8]) -> Result<Vec<Hunk>, String> {
             last.changes.push(b'\n');
         }
     }
-    Ok(hunks)
+    hunks
 }
 
 /// The path in a `---`/`+++` header line without its `a/` or `b/` prefix, or `None` for
@@ -439,7 +465,7 @@ mod tests {
     #[test]
     fn parses_modifications_and_insertions() {
         let diff = "diff --git a/x b/x\n--- a/src/x.rs\n+++ b/src/x.rs\n@@ -3,2 +3,2 @@\n-a\n-b\n+c\n+d\n@@ -10,0 +11 @@\n+e\n@@ -20 +21 @@\n-f\n+g\n";
-        let hunks = parse_hunks(diff.as_bytes()).unwrap();
+        let hunks = parse_hunks(diff.as_bytes());
         assert_eq!(hunks.iter().map(|h| h.lines.clone()).collect::<Vec<_>>(), vec![vec![3, 4], vec![10, 11], vec![20]]);
         assert!(hunks.iter().all(|h| h.path == b"src/x.rs"));
     }
@@ -447,7 +473,7 @@ mod tests {
     #[test]
     fn keeps_each_hunks_header_and_ranges_for_rebuilding_a_patch() {
         let diff = "diff --git a/x b/x\nindex 1..2 100644\n--- a/x\n+++ b/x\n@@ -1 +1 @@ ctx\n-a\n+b\n@@ -5,0 +6 @@\n+c\n\\ No newline at end of file\n";
-        let hunks = parse_hunks(diff.as_bytes()).unwrap();
+        let hunks = parse_hunks(diff.as_bytes());
         assert_eq!(hunks[0].header, b"diff --git a/x b/x\nindex 1..2 100644\n--- a/x\n+++ b/x\n");
         assert_eq!((hunks[0].old_start, hunks[0].old_count, hunks[0].new_count), (1, 1, 1));
         assert_eq!(hunks[0].changes, b"-a\n+b\n");
@@ -458,7 +484,7 @@ mod tests {
     #[test]
     fn hunk_lines_that_look_like_file_headers_are_content() {
         let diff = "diff --git a/x.lua b/x.lua\n--- a/x.lua\n+++ b/x.lua\n@@ -1,2 +0,0 @@\n--- /dev/null\n--- a/other\n@@ -5 +3 @@\n-d\n+D\n@@ -7,0 +6 @@\n+++ b/foo\n";
-        let hunks = parse_hunks(diff.as_bytes()).unwrap();
+        let hunks = parse_hunks(diff.as_bytes());
         assert_eq!(
             hunks.iter().map(|h| (h.path.as_slice(), h.lines.clone())).collect::<Vec<_>>(),
             vec![(&b"x.lua"[..], vec![1, 2]), (b"x.lua", vec![5]), (b"x.lua", vec![7, 8])]
@@ -480,14 +506,14 @@ mod tests {
     }
 
     #[test]
-    fn new_files_with_quoted_names_need_an_explicit_target() {
+    fn new_files_with_quoted_names_have_no_lines_to_trace() {
         let diff = "diff --git \"a/n\\\"q.rs\" \"b/n\\\"q.rs\"\n--- /dev/null\n+++ \"b/n\\\"q.rs\"\n@@ -0,0 +1 @@\n+x\n";
-        assert!(parse_hunks(diff.as_bytes()).unwrap_err().contains("n\"q.rs is a new file"));
+        assert!(parse_hunks(diff.as_bytes()).is_empty());
     }
 
     #[test]
-    fn new_files_need_an_explicit_target() {
+    fn new_files_have_no_lines_to_trace() {
         let diff = "--- /dev/null\n+++ b/new.rs\n@@ -0,0 +1 @@\n+x\n";
-        assert!(parse_hunks(diff.as_bytes()).unwrap_err().contains("new.rs is a new file"));
+        assert!(parse_hunks(diff.as_bytes()).is_empty());
     }
 }

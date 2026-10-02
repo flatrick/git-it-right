@@ -575,3 +575,157 @@ fn split_traces_non_utf8_file_names() {
     use std::os::unix::ffi::OsStrExt;
     split_and_fold_keeps_bytes(OsStr::from_bytes(b"caf\xe9.txt"), FOUR_LINES, &[], &[]);
 }
+
+/// `topic_repo` plus `feat: add b`; the caller stages changes.
+fn a_and_b_repo() -> Repo {
+    let repo = topic_repo();
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    repo
+}
+
+fn stage_a_and_b(repo: &Repo) {
+    stage(repo, "a.txt", "one\nTWO\nthree\n");
+    stage(repo, "b.txt", "B\n");
+}
+
+/// Stages a change gir cannot trace and returns its path.
+fn stage_untraceable(repo: &Repo, kind: &str) -> &'static str {
+    match kind {
+        "new file" => {
+            stage(repo, "new.txt", "new\n");
+            "new.txt"
+        }
+        "binary file" => {
+            std::fs::write(repo.dir.join("bin.dat"), b"\x00\x01old").unwrap();
+            repo.git(&["add", "bin.dat"]);
+            repo.git(&["commit", "-q", "-m", "feat: add bin"]);
+            std::fs::write(repo.dir.join("bin.dat"), b"\x00\x01new").unwrap();
+            repo.git(&["add", "bin.dat"]);
+            "bin.dat"
+        }
+        _ => {
+            repo.git(&["update-index", "--chmod=+x", "b.txt"]);
+            "b.txt"
+        }
+    }
+}
+
+#[test]
+fn split_without_a_terminal_refuses_an_untraceable_file_with_split_advice() {
+    for kind in ["new file", "binary file", "mode-only change"] {
+        let repo = a_and_b_repo();
+        let path = stage_untraceable(&repo, kind);
+        stage(&repo, "a.txt", "one\nTWO\nthree\n");
+        let head = repo.git(&["rev-parse", "HEAD"]);
+        let out = repo.gir(&["fixup", "--split"]);
+        let err = stderr(&out);
+        assert_eq!(out.status.code(), Some(2), "{kind}: {err}");
+        assert!(err.ends_with(&format!(
+            "; --split cannot place it: commit it on its own or unstage it (git restore --staged -- {path}), then run gir fixup --split again\n"
+        )), "{kind}: {err}");
+        assert!(!err.contains("pass one"), "{kind}: {err}");
+        assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{kind}");
+    }
+}
+
+#[test]
+fn split_at_a_terminal_asks_where_an_untraceable_file_goes() {
+    let repo = a_and_b_repo();
+    stage_untraceable(&repo, "new file");
+    stage_a_and_b(&repo);
+    // newest first: 1) feat: add b, 2) feat: add a
+    let out = repo.gir_with(&["fixup", "--split"], &[INTERACTIVE], "2\n");
+    let err = stderr(&out);
+    assert_eq!(out.status.code(), Some(0), "{err}");
+    assert!(err.contains("new.txt is a new file, so it has no earlier commit; pick the commit it belongs to:"), "{err}");
+    assert_eq!(err.matches("pick [").count(), 1, "{err}");
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: add b\nfeat: add a");
+    assert_eq!(repo.git(&["show", "HEAD~1:new.txt"]), "new");
+    assert_eq!(repo.git(&["show", "HEAD~1:a.txt"]), "one\nTWO\nthree");
+    assert_eq!(repo.git(&["show", "HEAD:b.txt"]), "B");
+}
+
+#[test]
+fn split_at_a_terminal_places_a_binary_file_whole() {
+    let repo = a_and_b_repo();
+    stage_untraceable(&repo, "binary file");
+    stage_a_and_b(&repo);
+    // newest first: 1) feat: add bin
+    let out = repo.gir_with(&["fixup", "--split"], &[INTERACTIVE], "1\n");
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: add bin\nfeat: add b\nfeat: add a");
+    assert_eq!(repo.git_out(&["show", "HEAD:bin.dat"]).stdout, b"\x00\x01new");
+    assert_eq!(repo.git(&["show", "HEAD~2:a.txt"]), "one\nTWO\nthree");
+    assert_eq!(repo.git(&["show", "HEAD~1:b.txt"]), "B");
+}
+
+/// `f.txt` gets `one` from `feat: one` and `two` from `feat: two`; `mid` is staged between them,
+/// along with a change to `a.txt`.
+fn insertion_repo() -> Repo {
+    let repo = topic_repo();
+    repo.commit_file("f.txt", "one\n", "feat: one");
+    repo.commit_file("f.txt", "one\ntwo\n", "feat: two");
+    stage(&repo, "f.txt", "one\nmid\ntwo\n");
+    stage(&repo, "a.txt", "one\nTWO\nthree\n");
+    repo
+}
+
+#[test]
+fn split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits() {
+    let repo = insertion_repo();
+    let head = repo.git(&["rev-parse", "HEAD"]);
+    let out = repo.gir(&["fixup", "--split"]);
+    let err = stderr(&out);
+    assert_eq!(out.status.code(), Some(2), "{err}");
+    assert!(err.starts_with("gir: f.txt:1 is an insertion between lines of "), "{err}");
+    assert!(err.contains("feat: one") && err.contains("feat: two"), "{err}");
+    assert!(err.ends_with("; run gir fixup --split in a terminal to choose, or stage it on its own and run gir fixup <commit>\n"), "{err}");
+    assert!(!err.contains("add -p"), "{err}");
+    assert_eq!(repo.git(&["rev-parse", "HEAD"]), head);
+}
+
+#[test]
+fn split_at_a_terminal_asks_where_an_ambiguous_insertion_goes() {
+    for args in [vec!["fixup", "--split"], vec!["fixup"]] {
+        let repo = insertion_repo();
+        let input = if args.len() == 1 { "s\n2\n" } else { "2\n" };
+        let out = repo.gir_with(&args, &[INTERACTIVE], input);
+        let err = stderr(&out);
+        assert_eq!(out.status.code(), Some(0), "{args:?}: {err}");
+        assert!(err.contains("gir: f.txt:1 is an insertion between lines of two commits; pick the one it belongs to:"), "{args:?}: {err}");
+        repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+        assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: two\nfeat: one\nfeat: add a", "{args:?}");
+        assert_eq!(repo.git(&["show", "HEAD:f.txt"]), "one\nmid\ntwo", "{args:?}");
+        assert_eq!(repo.git(&["show", "HEAD~2:a.txt"]), "one\nTWO\nthree", "{args:?}");
+    }
+}
+
+#[test]
+fn split_is_not_offered_when_a_hunk_changes_lines_of_several_commits() {
+    let repo = topic_repo();
+    repo.commit_file("a.txt", "one\ntwo\nthree\nfour\n", "feat: extend a");
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    stage(&repo, "a.txt", "one\ntwo\nTHREE\nFOUR\n");
+    stage(&repo, "b.txt", "B\n");
+    let out = repo.gir_with(&["fixup"], &[INTERACTIVE], "q\n");
+    let err = stderr(&out);
+    assert!(err.contains("pick ["), "{err}");
+    assert!(!err.contains("s) split"), "{err}");
+    let out = repo.gir(&["fixup"]);
+    let err = stderr(&out);
+    assert!(err.contains("staged changes belong to several commits:"), "{err}");
+    assert!(!err.contains("--split"), "{err}");
+}
+
+#[test]
+fn split_places_a_file_in_a_commit_with_no_hunks_of_its_own() {
+    let repo = a_and_b_repo();
+    stage_untraceable(&repo, "new file");
+    // newest first: 1) feat: add b
+    let out = repo.gir_with(&["fixup", "--split"], &[INTERACTIVE], "1\n");
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(repo.git(&["log", "-1", "--format=%s"]), "fixup! feat: add b");
+    assert_eq!(repo.git(&["show", "HEAD:new.txt"]), "new");
+}
