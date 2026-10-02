@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Write Learn and Retention and promotion; then the terminal checkpoint with the specification delta.
+**Resume at:** `NONE`
 
-**Open obligations:** Publish the specification delta (blocks `COMPLETED`).
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -34,7 +34,7 @@
 
 - Current contract: `framework:spec/config.md#req-config-location`, `framework:spec/config.md#req-config-types`, `framework:spec/config.md#req-config-aliases`, `framework:spec/config.md#req-config-malformed`, `framework:spec/config.md#req-config-explain-tolerates-invalid`, `framework:spec/explain.md#req-explain-types-config`, `framework:spec/explain.md#req-explain-types-summaries`, `framework:spec/init.md#req-init-cliff-parsers`, `framework:spec/init.md#req-init-config-error`, `framework:spec/doctor.md#req-doctor-girconfig`.
 - Proposed delta: a new `gir.typesFile` setting, read from git config and `.girconfig`, naming a SourceGit-format JSON file whose entries become the complete list of allowed types, with their names and descriptions; an invalid file makes gir refuse with the file's path and the reason. Exact wording settled in `DECIDE`.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/config.md#req-config-location`, `framework:spec/config.md#req-config-aliases`, `framework:spec/config.md#req-config-types-file`, `framework:spec/config.md#req-config-types-file-location`, `framework:spec/config.md#req-config-types-file-invalid`, `framework:spec/config.md#req-config-types-file-overrides-types`, `framework:spec/config.md#req-config-explain-tolerates-invalid`, `framework:spec/explain.md#req-explain-types-config`, `framework:spec/explain.md#req-explain-types-summaries`, `framework:spec/explain.md#req-explain-types-aliases`, `framework:spec/init.md#req-init-config-file`, `framework:spec/init.md#req-init-config-error`, `framework:spec/doctor.md#req-doctor-girconfig`.
 
 ## Define
 
@@ -332,11 +332,20 @@ No Claim is carried forward: every Claim is `VERIFIED`.
 
 ## Archive readiness
 
-`NONE` yet.
+The bundle holds its ledger, probes, acceptance script and logs; internal references are relative.
+References outside it (`src/`, `tests/`, commits, PR #9, CI runs, SourceGit's repository) are supplemental evidence anchors.
+The mutation logs under `.scratch/` were not kept; their outcome is recorded in Implement.
 
 ## Terminal record
 
-`NONE` yet.
+### Summary
+
+`COMPLETED`: gir reads SourceGit's type definition file named by `gir.typesFile`, from `.girconfig` or git config, and refuses on an invalid one; implemented in `a7da210`, draft PR #9.
+
+### Gate basis
+
+c1 to c6 are `VERIFIED` through their Verifications, including hosted CI run 37039567751 on Ubuntu, macOS and Windows; the operator accepted every deviation (`ledger.md` A18).
+No deferred obligation remains. The specification delta is published in this checkpoint (Specification impact).
 
 ## Stop record
 

@@ -8,6 +8,7 @@
 
 <a id="req-config-location"></a>
 **location.** gir SHALL read its settings from `.girconfig` at the root of the current git repository, in git-config syntax, reading only keys under `gir.`.
+The only setting also read from git config SHALL be `gir.typesFile` (see types-file-location).
 
 <a id="req-config-absent"></a>
 **absent.** Outside a git repository, or when `.girconfig` does not exist, gir SHALL use the defaults below.
@@ -42,9 +43,28 @@ The default SHALL be `feat fix docs style refactor perf test build ci chore reve
 <a id="req-config-aliases"></a>
 **aliases.** Keys under `gir.alias.` SHALL map a type alias to an allowed type, overriding a default alias of the same name.
 The default aliases SHALL be `feature` and `bugfix` to `feat` and `fix`, `hotfix` to `fix`, `doc` to `docs`, `tests` to `test`, `refactoring` to `refactor`, and `chores` to `chore`.
+An alias whose target is not an allowed type SHALL NOT apply, so the aliased type is rejected like any type that is not allowed.
 
 <a id="req-config-hook-missing"></a>
 **hook-missing.** `gir.hookMissing` SHALL be accepted by gir and read only by the installed hook scripts (see the hooks module).
+
+## Types file
+
+<a id="req-config-types-file"></a>
+**types-file.** `gir.typesFile` SHALL name a SourceGit Conventional Commit type definition file: a JSON array of objects, each with string fields `Type`, `Name` and `Description`.
+When it names one, the allowed types SHALL be exactly its `Type` values in file order, each keeping its `Name` and `Description`; other fields, such as `PrefillShortDesc`, SHALL be ignored.
+
+<a id="req-config-types-file-location"></a>
+**types-file-location.** `gir.typesFile` SHALL be read from `.girconfig`, and otherwise from git config (system, global, repository or command line).
+A relative value SHALL resolve against the directory of the file that set it, and a command-line value against the repository root; `~/` SHALL expand as git expands path values.
+An empty value in `.girconfig` SHALL mean no types file, even when git config sets one.
+
+<a id="req-config-types-file-invalid"></a>
+**types-file-invalid.** A named types file that cannot be read, is not valid JSON, is not a nonempty array, has an entry that is not an object, lacks a string `Type`, `Name` or `Description`, has a `Type` that is empty or not only ASCII letters, digits and `-`, or repeats a `Type`, SHALL fail with `types file <path> (gir.typesFile in <origin>): ` followed by the reason, and exit `2`.
+The reason SHALL name the entry by position and, once read, its `Type`; for a JSON syntax error it SHALL give line and column. A leading UTF-8 byte order mark SHALL be ignored.
+
+<a id="req-config-types-file-overrides-types"></a>
+**types-file-overrides-types.** When `.girconfig` sets `gir.types` and a types file is named, the types file SHALL win and gir SHALL print a warning naming both.
 
 ## Invalid settings
 
@@ -58,7 +78,7 @@ The default aliases SHALL be `feature` and `bugfix` to `feat` and `fix`, `hotfix
 **malformed.** A `.girconfig` that git cannot parse SHALL fail with `.girconfig: ` followed by git's error and exit `2`; a `.girconfig` with no `gir.` key SHALL mean the defaults.
 
 <a id="req-config-explain-tolerates-invalid"></a>
-**explain-tolerates-invalid.** `gir explain` SHALL fall back to the defaults when `.girconfig` is invalid instead of failing.
+**explain-tolerates-invalid.** `gir explain` SHALL fall back to the defaults when `.girconfig` or the types file it uses is invalid instead of failing.
 
 ## Module invariants
 

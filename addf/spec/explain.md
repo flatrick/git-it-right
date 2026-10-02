@@ -42,12 +42,13 @@
 
 <a id="req-explain-types-config"></a>
 **types-config.** `gir explain types` SHALL print `Allowed types (gir.types in .girconfig):` followed by the configured `gir.types` in their configured order, or the default types when no usable configuration is loaded.
+With a types file (see the config module), it SHALL print `Allowed types (from <path>):` followed by the file's types in file order.
 
 <a id="req-explain-types-summaries"></a>
-**types-summaries.** Each type on the `types` page SHALL have the first line of its cheatsheet section as its summary, or `changelog group: ` followed by its group title when no such section exists.
+**types-summaries.** Each type on the `types` page SHALL have its types-file `Description` as its summary when a types file is used; otherwise the first line of its cheatsheet section, or `changelog group: ` followed by its group title when no such section exists.
 
 <a id="req-explain-types-aliases"></a>
-**types-aliases.** `gir explain types` SHALL print `Auto-mapped aliases: ` followed by space-separated `alias->type` mappings for its aliases.
+**types-aliases.** `gir explain types` SHALL print `Auto-mapped aliases: ` followed by space-separated `alias->type` mappings for the aliases that apply.
 
 <a id="req-explain-types-footer"></a>
 **types-footer.** `gir explain types` SHALL end with `When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.`
