@@ -146,9 +146,7 @@ impl Config {
                 }
                 "gir.scopes" => cfg.scopes = list(value),
                 "gir.scoperequired" => cfg.scope_required = boolean(key, value)?,
-                "gir.subjectmax" => {
-                    cfg.subject_max = value.parse().map_err(|_| bad(key, value, "a number"))?
-                }
+                "gir.subjectmax" => cfg.subject_max = value.parse().map_err(|_| bad(key, value, "a number"))?,
                 "gir.allowmerge" => cfg.allow_merge = boolean(key, value)?,
                 "gir.allowrevert" => cfg.allow_revert = boolean(key, value)?,
                 "gir.desccase" => {
@@ -173,7 +171,11 @@ impl Config {
         let path = s.base.join(&s.value);
         let defs = read_types_file(&path).map_err(|e| format!("types file {} (gir.typesFile in {}): {e}", path.display(), s.origin))?;
         if types_set {
-            self.warnings.push(format!("gir.types in {FILE} is ignored; types come from {} (gir.typesFile in {})", path.display(), s.origin));
+            self.warnings.push(format!(
+                "gir.types in {FILE} is ignored; types come from {} (gir.typesFile in {})",
+                path.display(),
+                s.origin
+            ));
         }
         self.types = defs.iter().map(|d| d.ty.clone()).collect();
         self.types_file = Some(TypesFile { path, origin: s.origin, defs });
@@ -188,7 +190,16 @@ impl Config {
 
 /// `gir.typesFile` from git config (system, global, repository, `-c`); `None` when unset.
 fn git_config_setting(root: &Path) -> Result<Option<Setting>, String> {
-    let args = ["-C".as_ref(), root.as_os_str(), "config".as_ref(), "--show-origin".as_ref(), "-z".as_ref(), "--type=path".as_ref(), "--get".as_ref(), "gir.typesFile".as_ref()];
+    let args = [
+        "-C".as_ref(),
+        root.as_os_str(),
+        "config".as_ref(),
+        "--show-origin".as_ref(),
+        "-z".as_ref(),
+        "--type=path".as_ref(),
+        "--get".as_ref(),
+        "gir.typesFile".as_ref(),
+    ];
     let out = match git::run_raw::<&std::ffi::OsStr>(&args) {
         Ok(out) => out,
         Err(e) if e.is_empty() => return Ok(None),

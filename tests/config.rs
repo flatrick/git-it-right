@@ -86,7 +86,9 @@ fn merge_and_revert_are_allowed_by_default_and_can_be_disabled() {
 #[test]
 fn boolean_keys_accept_all_documented_spellings() {
     let repo = Repo::new();
-    for (value, expected) in [("true", true), ("yes", true), ("on", true), ("1", true), ("false", false), ("no", false), ("off", false), ("0", false)] {
+    for (value, expected) in
+        [("true", true), ("yes", true), ("on", true), ("1", true), ("false", false), ("no", false), ("off", false), ("0", false)]
+    {
         let cfg = load(&repo, &format!("[gir]\nscopeRequired = {value}\nallowMerge = {value}\nallowRevert = {value}\n"));
         assert_eq!(cfg.scope_required, expected, "scopeRequired={value}");
         assert_eq!(cfg.allow_merge, expected, "allowMerge={value}");
@@ -98,7 +100,15 @@ fn boolean_keys_accept_all_documented_spellings() {
 fn default_aliases_and_configured_override_map_to_types() {
     let repo = Repo::new();
     let defaults = Config::load_from(&repo.dir.join(".girconfig")).unwrap();
-    for (alias, target) in [("feature", "feat"), ("bugfix", "fix"), ("hotfix", "fix"), ("doc", "docs"), ("tests", "test"), ("refactoring", "refactor"), ("chores", "chore")] {
+    for (alias, target) in [
+        ("feature", "feat"),
+        ("bugfix", "fix"),
+        ("hotfix", "fix"),
+        ("doc", "docs"),
+        ("tests", "test"),
+        ("refactoring", "refactor"),
+        ("chores", "chore"),
+    ] {
         assert_eq!(defaults.alias_for(alias), Some(target), "default alias {alias}");
     }
     let cfg = load(&repo, "[gir]\ntypes = custom fix\n[gir \"alias\"]\nfeature = custom\nshortcut = fix\n");
@@ -120,7 +130,13 @@ fn hook_missing_is_accepted_without_changing_config_behavior() {
 #[test]
 fn invalid_values_report_key_value_expected_form_and_exit_two() {
     let repo = Repo::new();
-    for (key, value, expected) in [("scopeRequired", "maybe", "true/false"), ("allowMerge", "maybe", "true/false"), ("allowRevert", "maybe", "true/false"), ("subjectMax", "many", "a number"), ("descCase", "upper", "`any` or `lower`")] {
+    for (key, value, expected) in [
+        ("scopeRequired", "maybe", "true/false"),
+        ("allowMerge", "maybe", "true/false"),
+        ("allowRevert", "maybe", "true/false"),
+        ("subjectMax", "many", "a number"),
+        ("descCase", "upper", "`any` or `lower`"),
+    ] {
         repo.write(".girconfig", &format!("[gir]\n{key} = {value}\n"));
         let out = repo.gir(&["lint", "MSG"]);
         assert_eq!(out.status.code(), Some(2), "{key}: {}", stderr(&out));
@@ -215,7 +231,11 @@ fn types_file_from_git_config_resolves_against_its_file_and_girconfig_overrides_
     assert_eq!(lint_type(&repo, "global").status.code(), Some(0), "global value resolves next to the global config");
     assert_eq!(lint_type(&repo, "fix").status.code(), Some(1), "global types file replaces the defaults");
 
-    std::fs::write(repo.dir.join(".git").join("local-types.json"), r#"[{ "Name": "L", "Type": "local", "Description": "from .git/config" }]"#).unwrap();
+    std::fs::write(
+        repo.dir.join(".git").join("local-types.json"),
+        r#"[{ "Name": "L", "Type": "local", "Description": "from .git/config" }]"#,
+    )
+    .unwrap();
     repo.git(&["config", "--local", "gir.typesFile", "local-types.json"]);
     repo.write("nested/MSG", "local: add x\n");
     let from_subdir = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(repo.dir.join("nested")).args(["lint", "MSG"]).output().unwrap();
@@ -257,11 +277,17 @@ fn invalid_types_file_refuses_naming_file_origin_and_reason() {
         ("[1]".to_string(), "entry 1: expected an object"),
         (entry(r#""Name": "N", "Description": "D""#), "entry 1: `Type` is missing"),
         (entry(r#""Type": 3, "Name": "N", "Description": "D""#), "entry 1: `Type` must be a string"),
-        (entry(r#""Type": "fe at", "Name": "N", "Description": "D""#), "entry 1: `Type` is `fe at`, expected ASCII letters, digits and `-`"),
+        (
+            entry(r#""Type": "fe at", "Name": "N", "Description": "D""#),
+            "entry 1: `Type` is `fe at`, expected ASCII letters, digits and `-`",
+        ),
         (entry(r#""Type": "", "Name": "N", "Description": "D""#), "entry 1: `Type` is ``"),
         (entry(r#""Type": "feat", "Description": "D""#), "entry 1 (`feat`): `Name` is missing"),
         (entry(r#""Type": "feat", "Name": "N", "Description": null"#), "entry 1 (`feat`): `Description` must be a string"),
-        (r#"[{ "Type": "feat", "Name": "N", "Description": "D" }, { "Type": "feat", "Name": "N", "Description": "D" }]"#.to_string(), "entry 2 (`feat`): `Type` is already defined"),
+        (
+            r#"[{ "Type": "feat", "Name": "N", "Description": "D" }, { "Type": "feat", "Name": "N", "Description": "D" }]"#.to_string(),
+            "entry 2 (`feat`): `Type` is already defined",
+        ),
     ];
     for (json, reason) in cases {
         repo.write("types.json", &json);

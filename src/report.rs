@@ -1,10 +1,7 @@
 use crate::cc::{Fix, Outcome, Violation};
 
 pub fn fix_lines(fixes: &[Fix]) -> Vec<String> {
-    fixes
-        .iter()
-        .map(|f| format!("gir: fixed [{}] {} -> {}", f.rule, one_line(&f.from), one_line(&f.to)))
-        .collect()
+    fixes.iter().map(|f| format!("gir: fixed [{}] {} -> {}", f.rule, one_line(&f.from), one_line(&f.to))).collect()
 }
 
 /// At most three lines per violation: what, one example, where to read more.
@@ -24,17 +21,20 @@ pub fn json(outcomes: &[(Option<String>, &Outcome)]) -> String {
     let items: Vec<String> = outcomes
         .iter()
         .map(|(sha, o)| {
-            let fixes: Vec<String> = o
-                .fixes
-                .iter()
-                .map(|f| format!(r#"{{"rule":{},"from":{},"to":{}}}"#, s(f.rule), s(&f.from), s(&f.to)))
-                .collect();
+            let fixes: Vec<String> =
+                o.fixes.iter().map(|f| format!(r#"{{"rule":{},"from":{},"to":{}}}"#, s(f.rule), s(&f.from), s(&f.to))).collect();
             let violations: Vec<String> = o
                 .violations
                 .iter()
                 .map(|v| {
                     let hint = v.hint.as_deref().map_or("null".to_string(), s);
-                    format!(r#"{{"rule":{},"message":{},"hint":{},"explain":{}}}"#, s(v.rule), s(&v.message), hint, s(&format!("gir explain {}", v.rule)))
+                    format!(
+                        r#"{{"rule":{},"message":{},"hint":{},"explain":{}}}"#,
+                        s(v.rule),
+                        s(&v.message),
+                        hint,
+                        s(&format!("gir explain {}", v.rule))
+                    )
                 })
                 .collect();
             let sha = sha.as_deref().map_or("null".to_string(), s);

@@ -28,13 +28,22 @@ fn doctor_reports_check_lines_and_summary_counts() {
     let report = stdout(&out);
     let lines: Vec<&str> = report.lines().collect();
     let checks = &lines[..lines.len() - 1];
-    assert!(checks.iter().all(|line| {
-        let Some((status, rest)) = line.split_once(' ') else { return false };
-        matches!(status, "warn" | "info") && rest.starts_with(' ') && rest.trim_start().split_once(": ").is_some()
-    }), "check lines must carry a status, ID, and message: {report}");
+    assert!(
+        checks.iter().all(|line| {
+            let Some((status, rest)) = line.split_once(' ') else { return false };
+            matches!(status, "warn" | "info") && rest.starts_with(' ') && rest.trim_start().split_once(": ").is_some()
+        }),
+        "check lines must carry a status, ID, and message: {report}"
+    );
     let warnings = checks.iter().filter(|line| line.starts_with("warn ")).count();
     let summary = lines.last().unwrap();
-    assert_eq!(*summary, format!("gir doctor: 1 ok, {warnings} warnings, {} fixable with: gir doctor --fix   more: gir explain doctor", if cfg!(windows) { 13 } else { 12 }));
+    assert_eq!(
+        *summary,
+        format!(
+            "gir doctor: 1 ok, {warnings} warnings, {} fixable with: gir doctor --fix   more: gir explain doctor",
+            if cfg!(windows) { 13 } else { 12 }
+        )
+    );
     let fixed = repo.gir(&["doctor", "--fix"]);
     let fixed_report = stdout(&fixed);
     assert!(fixed_report.lines().any(|line| line.starts_with("fixed .gitattributes: ")), "{fixed_report}");
@@ -79,17 +88,28 @@ fn doctor_repairs_inactive_hooks_path_locally() {
 fn doctor_recommends_and_sets_each_unset_git_setting() {
     let repo = Repo::new();
     let settings = [
-        ("pull.ff", "only"), ("fetch.prune", "true"), ("push.autoSetupRemote", "true"),
-        ("rerere.enabled", "true"), ("merge.conflictStyle", "zdiff3"),
-        ("diff.algorithm", "histogram"), ("rebase.autoStash", "true"), ("rebase.updateRefs", "true"),
+        ("pull.ff", "only"),
+        ("fetch.prune", "true"),
+        ("push.autoSetupRemote", "true"),
+        ("rerere.enabled", "true"),
+        ("merge.conflictStyle", "zdiff3"),
+        ("diff.algorithm", "histogram"),
+        ("rebase.autoStash", "true"),
+        ("rebase.updateRefs", "true"),
     ];
     let report = stdout(&repo.gir(&["doctor"]));
     for (key, value) in settings {
-        assert!(report.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; `{value}` recommended"))), "missing {key}: {report}");
+        assert!(
+            report.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; `{value}` recommended"))),
+            "missing {key}: {report}"
+        );
     }
     let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
     for (key, value) in settings {
-        assert!(fixed.lines().any(|line| line.starts_with(&format!("fixed {key}: unset; `{value}` recommended"))), "not fixed {key}: {fixed}");
+        assert!(
+            fixed.lines().any(|line| line.starts_with(&format!("fixed {key}: unset; `{value}` recommended"))),
+            "not fixed {key}: {fixed}"
+        );
         assert_eq!(local_value(&repo, key).as_deref(), Some(value), "{key}");
     }
 }
@@ -133,12 +153,18 @@ fn doctor_suggests_missing_identity_and_default_branch_without_setting_them() {
     std::fs::write(&repo.global, "").unwrap();
     let report = stdout(&repo.gir(&["doctor"]));
     for key in ["user.name", "user.email"] {
-        assert!(report.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; run: git config --global {key} <value>"))), "{key}: {report}");
+        assert!(
+            report.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; run: git config --global {key} <value>"))),
+            "{key}: {report}"
+        );
     }
     assert!(report.contains("info  init.defaultBranch: unset; suggest: git config --global init.defaultBranch main"), "{report}");
     let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
     for key in ["user.name", "user.email"] {
-        assert!(fixed.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; run: git config --global {key} <value>"))), "{key}: {fixed}");
+        assert!(
+            fixed.lines().any(|line| line.starts_with(&format!("warn  {key}: unset; run: git config --global {key} <value>"))),
+            "{key}: {fixed}"
+        );
         assert_eq!(local_value(&repo, key), None, "{key} must remain unset locally");
     }
     assert!(fixed.contains("info  init.defaultBranch: unset; suggest: git config --global init.defaultBranch main"), "{fixed}");
@@ -196,7 +222,10 @@ fn doctor_reports_invalid_girconfig_without_editing_it() {
     let repo = Repo::new();
     repo.write(".girconfig", "[gir]\nsubjectMax = many\n");
     let report = stdout(&repo.gir(&["doctor"]));
-    assert!(report.lines().any(|line| line.starts_with("warn  .girconfig: ") && line.contains("gir.subjectmax") && line.contains("many")), "{report}");
+    assert!(
+        report.lines().any(|line| line.starts_with("warn  .girconfig: ") && line.contains("gir.subjectmax") && line.contains("many")),
+        "{report}"
+    );
     let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
     assert!(fixed.lines().any(|line| line.starts_with("warn  .girconfig: ") && line.contains("gir.subjectmax")), "{fixed}");
     assert_eq!(std::fs::read_to_string(repo.dir.join(".girconfig")).unwrap(), "[gir]\nsubjectMax = many\n");
@@ -247,14 +276,18 @@ fn doctor_does_not_warn_for_exact_tracked_ignore_probe() {
     repo.git(&["add", ".env"]);
     let report = stdout(&repo.gir(&["doctor"]));
     assert!(!report.contains(".gitignore: does not ignore: .env"), "{report}");
-    assert!(!report.lines().any(|line| line.starts_with("warn  .gitignore:") && line.split_whitespace().any(|part| part == ".env")), "{report}");
+    assert!(
+        !report.lines().any(|line| line.starts_with("warn  .gitignore:") && line.split_whitespace().any(|part| part == ".env")),
+        "{report}"
+    );
 }
 
 #[test]
 fn doctor_reports_missing_git_cliff_on_path() {
     let repo = Repo::new();
     let cliff = if cfg!(windows) { "git-cliff.exe" } else { "git-cliff" };
-    let dirs = std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()).filter(|dir| !dir.join(cliff).exists()).collect::<Vec<_>>();
+    let dirs =
+        std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()).filter(|dir| !dir.join(cliff).exists()).collect::<Vec<_>>();
     let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).env("PATH", std::env::join_paths(dirs).unwrap()).arg("doctor").output().unwrap();
     let report = stdout(&out);
     assert!(report.contains("info  git-cliff: not installed (optional: changelog + next version from commits)"), "{report}");
@@ -350,7 +383,11 @@ fn doctor_reports_invalid_utf8_gitattributes_without_replacing_it() {
     std::fs::write(repo.dir.join(".gitattributes"), original).unwrap();
     let out = repo.gir(&["doctor", "--fix"]);
     assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
-    assert!(stdout(&out).lines().any(|line| line == "info  .gitattributes: no `* text=auto` line; line endings are not normalised"), "{}", stdout(&out));
+    assert!(
+        stdout(&out).lines().any(|line| line == "info  .gitattributes: no `* text=auto` line; line endings are not normalised"),
+        "{}",
+        stdout(&out)
+    );
     assert_eq!(std::fs::read(repo.dir.join(".gitattributes")).unwrap(), original);
 }
 
@@ -674,7 +711,11 @@ fn doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name() {
     let repo = Repo::new();
     add_index_entries(&repo, "100644", &[b".githooks/hook\xe9"]);
     let report = stdout(&repo.gir(&["doctor"]));
-    assert_eq!(report_line(&report, "exec-bit"), Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\""), "{report}");
+    assert_eq!(
+        report_line(&report, "exec-bit"),
+        Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\""),
+        "{report}"
+    );
     let out = repo.gir(&["doctor", "--fix"]);
     assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
     assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755") && r.ends_with(b"hook\xe9")), "{:?}", index_modes(&repo));

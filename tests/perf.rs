@@ -14,7 +14,13 @@ fn commit_msg_hook_stays_within_budget() {
     let global = dir.join("gitconfig");
     std::fs::write(&global, "").unwrap();
     let git = |args: &[&str]| {
-        let ok = Command::new("git").args(args).current_dir(dir).env("GIT_CONFIG_GLOBAL", &global).env("GIT_CONFIG_NOSYSTEM", "1").status().unwrap();
+        let ok = Command::new("git")
+            .args(args)
+            .current_dir(dir)
+            .env("GIT_CONFIG_GLOBAL", &global)
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .status()
+            .unwrap();
         assert!(ok.success());
     };
     git(&["init", "-q"]);

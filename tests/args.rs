@@ -8,11 +8,7 @@ fn version_flags_print_crate_version() {
     for flag in ["--version", "-V"] {
         let out = repo.gir(&[flag]);
         assert_eq!(out.status.code(), Some(0), "{flag}: {}", stderr(&out));
-        assert_eq!(
-            String::from_utf8_lossy(&out.stdout),
-            format!("gir {}\n", env!("CARGO_PKG_VERSION")),
-            "{flag}"
-        );
+        assert_eq!(String::from_utf8_lossy(&out.stdout), format!("gir {}\n", env!("CARGO_PKG_VERSION")), "{flag}");
     }
 }
 
@@ -41,10 +37,7 @@ fn help_flags_print_usage_for_every_subcommand() {
     ] {
         let out = repo.gir(&args);
         assert_eq!(out.status.code(), Some(0), "{args:?}: {}", stderr(&out));
-        assert_eq!(
-            out.stdout, help.stdout,
-            "{args:?} must print usage on stdout"
-        );
+        assert_eq!(out.stdout, help.stdout, "{args:?} must print usage on stdout");
         assert!(out.stderr.is_empty(), "{args:?}: {}", stderr(&out));
     }
 }
@@ -72,30 +65,13 @@ fn usage_lists_commands_with_their_arguments_and_flags() {
 #[test]
 fn unaccepted_long_flags_report_the_command_and_exit_two() {
     let repo = Repo::new();
-    for (command, flag) in [
-        ("init", "--json"),
-        ("lint", "--force"),
-        ("fixup", "--fix"),
-        ("doctor", "--dry-run"),
-        ("explain", "--json"),
-        ("hook", "--force"),
-    ] {
+    for (command, flag) in
+        [("init", "--json"), ("lint", "--force"), ("fixup", "--fix"), ("doctor", "--dry-run"), ("explain", "--json"), ("hook", "--force")]
+    {
         let out = repo.gir(&[command, flag]);
-        assert_eq!(
-            out.status.code(),
-            Some(2),
-            "{command} {flag}: {}",
-            stderr(&out)
-        );
-        assert!(
-            stderr(&out).starts_with(&format!("gir: unknown option {flag} for `gir {command}`")),
-            "{}",
-            stderr(&out)
-        );
-        assert!(
-            out.stdout.is_empty(),
-            "{command} {flag} must not write stdout"
-        );
+        assert_eq!(out.status.code(), Some(2), "{command} {flag}: {}", stderr(&out));
+        assert!(stderr(&out).starts_with(&format!("gir: unknown option {flag} for `gir {command}`")), "{}", stderr(&out));
+        assert!(out.stdout.is_empty(), "{command} {flag} must not write stdout");
     }
 }
 
@@ -106,11 +82,7 @@ fn range_is_rejected_outside_lint_and_accepted_by_lint() {
     for command in ["init", "fixup", "doctor", "explain", "hook"] {
         let out = repo.gir(&[command, "--range", "HEAD..HEAD"]);
         assert_eq!(out.status.code(), Some(2), "{command}: {}", stderr(&out));
-        assert!(
-            stderr(&out).starts_with(&format!("gir: unknown option --range for `gir {command}`")),
-            "{}",
-            stderr(&out)
-        );
+        assert!(stderr(&out).starts_with(&format!("gir: unknown option --range for `gir {command}`")), "{}", stderr(&out));
     }
     let out = repo.gir(&["lint", "--range", "HEAD..HEAD"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
@@ -122,36 +94,20 @@ fn command_errors_print_gir_prefix_and_exit_two() {
     let repo = Repo::new();
     let missing = repo.gir(&["lint", "missing-message"]);
     assert_eq!(missing.status.code(), Some(2), "{}", stderr(&missing));
-    assert!(
-        stderr(&missing).starts_with("gir: cannot read missing-message:"),
-        "{}",
-        stderr(&missing)
-    );
+    assert!(stderr(&missing).starts_with("gir: cannot read missing-message:"), "{}", stderr(&missing));
     assert_eq!(stderr(&missing).lines().count(), 1, "{}", stderr(&missing));
 
     repo.write(".girconfig", "[gir]\n\tsubjectMax = invalid\n");
     let invalid = repo.gir(&["lint", "missing-message"]);
     assert_eq!(invalid.status.code(), Some(2), "{}", stderr(&invalid));
-    assert!(
-        stderr(&invalid).starts_with("gir: .girconfig: `gir.subjectmax` is `invalid`"),
-        "{}",
-        stderr(&invalid)
-    );
+    assert!(stderr(&invalid).starts_with("gir: .girconfig: `gir.subjectmax` is `invalid`"), "{}", stderr(&invalid));
     assert_eq!(stderr(&invalid).lines().count(), 1, "{}", stderr(&invalid));
 
     repo.write(".girconfig", "");
     let git = repo.gir(&["lint", "--range", "not-a-revision"]);
     assert_eq!(git.status.code(), Some(2), "{}", stderr(&git));
     assert!(stderr(&git).starts_with("gir: fatal:"), "{}", stderr(&git));
-    assert_eq!(
-        stderr(&git)
-            .lines()
-            .filter(|line| line.starts_with("gir:"))
-            .count(),
-        1,
-        "{}",
-        stderr(&git)
-    );
+    assert_eq!(stderr(&git).lines().filter(|line| line.starts_with("gir:")).count(), 1, "{}", stderr(&git));
 }
 
 #[test]
@@ -181,7 +137,9 @@ fn unknown_short_flags_and_bad_arguments_exit_two() {
 #[test]
 fn hook_takes_its_documented_arguments() {
     let repo = Repo::new();
-    for args in [vec!["hook", "commit-msg"], vec!["hook", "commit-msg", "a", "b"], vec!["hook", "pre-push"], vec!["hook", "post-merge", "x"]] {
+    for args in
+        [vec!["hook", "commit-msg"], vec!["hook", "commit-msg", "a", "b"], vec!["hook", "pre-push"], vec!["hook", "post-merge", "x"]]
+    {
         let out = repo.gir(&args);
         assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
         assert_eq!(stderr(&out), format!("gir: unknown hook `{}`\n", args[1]), "{args:?}");
@@ -263,14 +221,8 @@ fn closed_stdout_exits_141_without_output() {
     for (args, input) in cases {
         let (reader, writer) = std::io::pipe().unwrap();
         drop(reader);
-        let mut child = repo
-            .cmd(env!("CARGO_BIN_EXE_gir"))
-            .args(args)
-            .stdin(Stdio::piped())
-            .stdout(writer)
-            .stderr(Stdio::piped())
-            .spawn()
-            .unwrap();
+        let mut child =
+            repo.cmd(env!("CARGO_BIN_EXE_gir")).args(args).stdin(Stdio::piped()).stdout(writer).stderr(Stdio::piped()).spawn().unwrap();
         let _ = child.stdin.take().unwrap().write_all(input.as_bytes());
         let out = child.wait_with_output().unwrap();
         assert_eq!(stderr(&out), "", "{args:?}");

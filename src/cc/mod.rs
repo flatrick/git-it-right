@@ -79,14 +79,22 @@ pub fn check(raw: &str, cfg: &Config) -> Outcome {
     if subject.starts_with("Merge ") {
         out.kind = Kind::Merge;
         if !cfg.allow_merge {
-            out.violations.push(violation("merge-commit", "merge commits are disabled (gir.allowMerge=false)".into(), Some("git rebase <base> instead of merging".into())));
+            out.violations.push(violation(
+                "merge-commit",
+                "merge commits are disabled (gir.allowMerge=false)".into(),
+                Some("git rebase <base> instead of merging".into()),
+            ));
         }
         return out;
     }
     if subject.starts_with("Revert \"") {
         out.kind = Kind::Revert;
         if !cfg.allow_revert {
-            out.violations.push(violation("revert-commit", "git's default revert subject is disabled (gir.allowRevert=false)".into(), Some("revert: <original description>".into())));
+            out.violations.push(violation(
+                "revert-commit",
+                "git's default revert subject is disabled (gir.allowRevert=false)".into(),
+                Some("revert: <original description>".into()),
+            ));
         }
         return out;
     }
@@ -171,7 +179,11 @@ fn fix_header(h: &mut Header, cfg: &Config, fixes: &mut Vec<Fix>, violations: &m
         )),
         Some(scope) if !cfg.scopes.is_empty() => {
             for s in scope.split(',').filter(|s| !cfg.scopes.iter().any(|a| a == s)) {
-                violations.push(violation("scope-unknown", format!("`{s}` is not an allowed scope"), Some(format!("{}(<scope>): {}{}", h.ty, h.desc, scope_list(cfg)))));
+                violations.push(violation(
+                    "scope-unknown",
+                    format!("`{s}` is not an allowed scope"),
+                    Some(format!("{}(<scope>): {}{}", h.ty, h.desc, scope_list(cfg))),
+                ));
             }
         }
         _ => {}
@@ -183,7 +195,11 @@ fn fix_header(h: &mut Header, cfg: &Config, fixes: &mut Vec<Fix>, violations: &m
         h.desc = trimmed;
     }
     if h.desc.is_empty() {
-        violations.push(violation("desc-empty", "description after `: ` is empty".into(), Some(format!("{}: <what changed, imperative mood>", h.ty))));
+        violations.push(violation(
+            "desc-empty",
+            "description after `: ` is empty".into(),
+            Some(format!("{}: <what changed, imperative mood>", h.ty)),
+        ));
         return;
     }
     if cfg.desc_case == DescCase::Lower {

@@ -82,11 +82,20 @@ fn types_page_uses_configured_order_and_defaults_without_usable_config() {
     let configured = stdout(&repo.gir(&["explain", "types"]));
     assert!(configured.starts_with("Allowed types (gir.types in .girconfig):\n"), "types heading is missing: {configured}");
     let lines: Vec<_> = configured.lines().filter(|line| line.starts_with("  ")).collect();
-    assert_eq!(lines.iter().map(|line| line.split_whitespace().next().unwrap()).collect::<Vec<_>>(), ["widget", "fix", "feat"], "configured type order must be kept");
+    assert_eq!(
+        lines.iter().map(|line| line.split_whitespace().next().unwrap()).collect::<Vec<_>>(),
+        ["widget", "fix", "feat"],
+        "configured type order must be kept"
+    );
     repo.write(".girconfig", "[gir]\n\tsubjectMax = invalid\n");
     let fallback = stdout(&repo.gir(&["explain", "types"]));
-    let fallback_types: Vec<_> = fallback.lines().filter(|line| line.starts_with("  ")).map(|line| line.split_whitespace().next().unwrap()).collect();
-    assert_eq!(fallback_types, ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"], "invalid config must use default type order");
+    let fallback_types: Vec<_> =
+        fallback.lines().filter(|line| line.starts_with("  ")).map(|line| line.split_whitespace().next().unwrap()).collect();
+    assert_eq!(
+        fallback_types,
+        ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"],
+        "invalid config must use default type order"
+    );
 }
 
 #[test]
@@ -110,8 +119,16 @@ fn types_page_prints_alias_mappings_and_footer() {
     let out = repo.gir(&["explain", "types"]);
     let page = stdout(&out);
     assert_eq!(out.status.code(), Some(0), "types page should succeed: {}", stderr(&out));
-    assert!(page.contains("Auto-mapped aliases: feature->feat bugfix->fix hotfix->fix doc->docs tests->test refactoring->refactor chores->chore\n"), "aliases must be listed as mappings: {page}");
-    assert!(page.ends_with("When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.\n"), "types page must end with its navigation footer: {page}");
+    assert!(
+        page.contains(
+            "Auto-mapped aliases: feature->feat bugfix->fix hotfix->fix doc->docs tests->test refactoring->refactor chores->chore\n"
+        ),
+        "aliases must be listed as mappings: {page}"
+    );
+    assert!(
+        page.ends_with("When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.\n"),
+        "types page must end with its navigation footer: {page}"
+    );
     repo.write(".girconfig", "[gir \"alias\"]\n\trelease = feat\n");
     let configured = stdout(&repo.gir(&["explain", "types"]));
     assert!(configured.contains("release->feat"), "configured alias must appear in the types page: {configured}");

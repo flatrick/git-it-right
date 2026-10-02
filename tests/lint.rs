@@ -6,7 +6,8 @@ use std::process::{Output, Stdio};
 use common::{Repo, stderr};
 
 fn lint_stdin(repo: &Repo, args: &[&str], message: &str) -> Output {
-    let mut child = repo.cmd(env!("CARGO_BIN_EXE_gir")).args(args).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
+    let mut child =
+        repo.cmd(env!("CARGO_BIN_EXE_gir")).args(args).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
     child.stdin.take().unwrap().write_all(message.as_bytes()).unwrap();
     child.wait_with_output().unwrap()
 }

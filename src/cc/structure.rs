@@ -12,10 +12,7 @@ pub fn parse(text: &str) -> Structure {
         .into_iter()
         .find(|p| text.strip_prefix(p).is_some_and(|rest| rest.starts_with(' ')))
         .map(str::to_string);
-    Structure {
-        autosquash_prefix,
-        missing_blank_line: text.lines().nth(1).is_some_and(|l| !l.is_empty()),
-    }
+    Structure { autosquash_prefix, missing_blank_line: text.lines().nth(1).is_some_and(|l| !l.is_empty()) }
 }
 
 #[cfg(test)]
