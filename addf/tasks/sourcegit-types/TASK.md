@@ -15,6 +15,9 @@
 ## Owned artifacts
 
 -   `ledger.md` - the `sourcegit-types-20261002` thread, taken whole: the operator's answers that shaped this Task.
+-   `probe_origin.py` - Probe: what `git config --show-origin` reports for `gir.typesFile` set globally, through an include, locally, with `-c`, empty, and from a subdirectory and a linked worktree.
+-   `logs/probe-origin-20261002-1825.log` - Evidence: `probe_origin.py`, first version.
+-   `logs/probe-origin-20261002-1830.log` - Evidence: `probe_origin.py` with the subdirectory and worktree cases.
 
 ## Specification impact
 
@@ -102,10 +105,10 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 #### `p1-format`
 
 -   Claim: SourceGit's type definition file is a JSON array of objects with string fields `Name`, `Type`, `Description` and `PrefillShortDesc`, as in the example in issue #4.
--   State: `UNVERIFIED`
--   Scope: the issue's example; SourceGit's own source not yet read.
+-   State: `VERIFIED`
+-   Scope: SourceGit `master` at `a4ae633c51c922150ea113913c682a8213308560`, read 2026-10-02.
 -   Consequence if false: gir rejects files SourceGit writes, or accepts ones it does not.
--   Basis: pending check against SourceGit's source in `INVESTIGATE`.
+-   Basis: [Verification](#verification-p1-format).
 
 ### DEFINE gate
 
@@ -119,9 +122,23 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 `gir explain types` takes descriptions from `CHEATSHEET.md`.
 No JSON parser is a dependency yet.
 
+Config consumers: `src/main.rs` (`lint` and `hook` propagate `Config::load()` errors, `explain` uses `unwrap_or_default`), `fixup` (through `lint`'s rules), `src/cmd/init.rs` (`load_from` on the written `.girconfig`, then `cliff.toml`), `src/cmd/doctor.rs` (`load_from` error becomes a `warn` line).
+`Config::load_from` takes a `.girconfig` path; `gir.typesFile` from git config needs a second read that `load_from` does not do today.
+
+SourceGit (see `p1-format`): `ConventionalCommitType` has string properties `Name`, `Type`, `Description`, `PrefillShortDesc`, read with System.Text.Json defaults, so names are case-sensitive, unknown fields are ignored, and comments and trailing commas are syntax errors.
+SourceGit keeps the file's path in its own per-repository settings (`ConventionalTypesOverride`), not in git config, and on any read error silently uses its built-in types.
+
+`git config --show-origin --show-scope -z --get gir.typesFile` prints scope, origin and value, NUL-separated (`logs/probe-origin-20261002-1825.log`, `logs/probe-origin-20261002-1830.log`, git 2.56.0):
+
+-   A global or included value's origin is `file:` and the absolute path of the file that set it, including a file reached through `include.path`.
+-   A repository value's origin is `file:.git/config`, relative to the top level even when run from a subdirectory; from a linked worktree it is absolute.
+-   A `git -c` value's origin is `command line:`, with no file.
+-   `--type=path` expands `~/`; without it the value is returned verbatim.
+-   An empty value is returned as set, distinct from unset (exit `1`).
+
 ### Assumptions
 
--   NONE yet.
+-   NONE.
 
 ### Open questions
 
@@ -131,6 +148,10 @@ No JSON parser is a dependency yet.
 ### Deferred verification
 
 -   NONE.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: `p1-format` is verified, every consumer of `Config` is identified, and git's origin reporting, which the relative-path rule depends on, is observed.
 
 ## Investigate
 
@@ -146,7 +167,14 @@ No JSON parser is a dependency yet.
 
 ## Verify
 
-`NONE` yet.
+<a id="verification-p1-format"></a>
+### Verification: `p1-format`
+
+- Claim: [p1-format](#p1-format)
+- Method: read `src/Models/ConventionalCommitType.cs`, `src/App.JsonCodeGen.cs`, `src/Models/RepositorySettings.cs`, `src/ViewModels/RepositoryConfigure.cs` and `src/Views/CommitMessageToolBox.axaml.cs` in `sourcegit-scm/sourcegit` at `a4ae633` through the GitHub API.
+- Evidence considered: the model declares exactly the four `string` properties; it is deserialized as `List<ConventionalCommitType>` with no naming-policy or case-insensitivity option.
+- Conclusion: `VERIFIED`; the issue's example matches SourceGit's model.
+- Limitations: later SourceGit versions may add fields; c4 ignores unknown fields for that reason.
 
 ## Learn
 
