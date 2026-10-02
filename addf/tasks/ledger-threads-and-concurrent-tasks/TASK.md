@@ -168,7 +168,11 @@ Residual uncertainty: none known. Verification strategy: each success criterion 
 
 ## Implement
 
-`PENDING`
+-   `7554b3d` changes the docs, templates and layout: `CORE.md`, `skills/work-control.md`, `skills/stewardship.md`, `ADOPT.md`, `INDEX.md`, `templates/INDEX.md`, `templates/LEDGER.md` renamed to `templates/LEDGER-THREAD.md`, `templates/SELF-IMPROVEMENT.md`, `rules/self-improvement-log.md`; deletes the root `LEDGER.md`; adds `ledger/fixup-review-20261002.md` and the `SELF-IMPROVEMENT/` entry.
+-   `6a8bec8` changes `scripts/check-capsule` and its tests: `check_ledger` (root `LEDGER.md`, thread listing), the `TASK_LIMIT` check in `check_index`, and `ledger` in prose-mode placeholder checking. Two existing tests that wrote a root `LEDGER.md` now use `INDEX.md` and a thread instead.
+-   The commits are in that order so that each passes the checker it contains: the previous checker reports the new layout consistent.
+-   No deviation from Decide.
+-   Checkpoint results: the checker's test suite passed (63 tests) after the change, against a baseline of 59 passing before it; removing each new check in turn made exactly its test fail; `scripts/check-capsule` reports the repository consistent.
 
 ## Verify
 
