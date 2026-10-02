@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Reproduce `c1-reproduced` on the current build (a probe or acceptance script in this bundle, logs in `logs/`), checking each part rather than assuming it.
+**Resume at:** Reproduce `c1-reproduced` and `p1-git-ignores-non-executable-hook` on the current build, checking each part rather than assuming it.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
