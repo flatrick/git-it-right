@@ -15,7 +15,7 @@ impl Repo {
         let dir = tmp.path().join("repo");
         std::fs::create_dir(&dir).unwrap();
         let global = tmp.path().join("gitconfig");
-        std::fs::write(&global, "[user]\n\tname = T\n\temail = t@example.com\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n").unwrap();
+        std::fs::write(&global, "[user]\n\tname = T\n\temail = t@example.com\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n[maintenance]\n\tauto = false\n").unwrap();
         let repo = Repo { _tmp: tmp, dir, global };
         repo.git(&["init", "-q"]);
         repo
