@@ -17,8 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [doctor-fix-file-mode](tasks/doctor-fix-file-mode/TASK.md) -
-  gir doctor --fix makes fixed scripts executable on disk. State: `LEARN`.
+`NONE`.
 
 ## Ledger
 

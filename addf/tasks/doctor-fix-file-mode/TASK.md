@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Load `skills/stewardship.md` for the terminal checkpoint: fill Retention and promotion and Archive readiness, publish the `exec-bit` delta worded in Decide to `spec/doctor.md` to settle `c5-spec`, then transition to `COMPLETED`.
+**Resume at:** `NONE`
 
-**Open obligations:** `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -35,12 +35,13 @@
 -   `logs/ci-startup-failure-20261002.log` - Evidence: startup failure after the action policy became `local_only`, and the operator-authorized selected allowlist.
 -   `logs/ci-green-run-20261002.log` - Evidence: two further macOS-only test failures, their fixes at `e507d42` and `6813712`, and the all-green hosted run at `6813712`.
 -   `logs/ci-head-run-20261002.log` - Evidence: the all-green hosted run at `16997f1`, the branch head when the `VERIFY` gate was recorded.
+-   `logs/spec-publication-20261002.log` - Evidence: the published `exec-bit` requirement compared with the wording settled in Decide, and the code at `HEAD`.
 
 ## Specification impact
 
 - Current contract: `framework:spec/doctor.md#req-doctor-exec-bit`
 - Proposed delta: `exec-bit`: on systems with an executable bit, `--fix` SHALL also make each fixed file that exists in the working tree executable, without changing its content. Exact wording settled in `DECIDE`.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/doctor.md#req-doctor-exec-bit`
 
 ## Define
 
@@ -90,10 +91,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c5-spec`
 
 -   Claim: `spec/doctor.md#req-doctor-exec-bit` adds the on-disk part, and the delta is published at completion.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the specification does not describe `--fix`.
--   Basis: the delta is settled in Decide; publication belongs to the terminal checkpoint, which this sub-agent did not reach (see Verify).
+-   Basis: [Verification](#verification-c5-spec).
 
 <a id="c6-stops-for-decisions"></a>
 #### `c6-stops-for-decisions`
@@ -258,6 +259,15 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 - Conclusion: `VERIFIED`.
 - Limitations: Linux only.
 
+<a id="verification-c5-spec"></a>
+### Verification: `c5-spec`
+
+- Claim: [c5-spec](#c5-spec)
+- Method: in the terminal checkpoint, compare `spec/doctor.md#req-doctor-exec-bit` with the wording settled in Decide, and check that the code at `HEAD` still has both platform branches of the on-disk step.
+- Evidence considered: `logs/spec-publication-20261002.log`: the Decide wording appears verbatim at the end of `exec-bit`, the anchor is unique, and the earlier text of the requirement is unchanged. `src/cmd/doctor.rs` at `HEAD` calls `make_executable_on_disk` from the `Fix::Chmod` arm, with a `#[cfg(unix)]` body that uses `symlink_metadata` and a `#[cfg(not(unix))]` body.
+- Conclusion: `VERIFIED`.
+- Limitations: the spec text is checked against Decide and the code's structure; the behavior it describes is verified by `c2-fixed`, `c3-os-agnostic` and `c4-tests`.
+
 <a id="verification-c6-stops-for-decisions"></a>
 ### Verification: `c6-stops-for-decisions`
 
@@ -344,18 +354,35 @@ LEARN gate: `ESTABLISHED`: each material learning has a recorded disposition, an
 
 ## Retention and promotion
 
-`PENDING`
+Each Learning's disposition is recorded under Learn: two are enforced by tests and the test harness, the per-OS file name friction is recorded in `SELF-IMPROVEMENT/20261002T145522Z-filesystem-name-rules-differ-per-os.md` for the operator, and the delegation friction was already recorded. No other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-reproduced`, `c2-fixed`, `c3-os-agnostic`, `c4-tests`, `c5-spec`, `c6-stops-for-decisions`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is specified in `spec/doctor.md#req-doctor-exec-bit` and guarded by tests, and `c1` and `c6` describe this Task's start and execution.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-git-ignores-non-executable-hook`
+
+-   Claim: [p1-git-ignores-non-executable-hook](#p1-git-ignores-non-executable-hook)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the consequence it supports is now part of `exec-bit`, and `doctor_fix_lets_git_run_the_fixed_hook` checks it against the installed git on every CI system.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, `acceptance.py`, `criteria.py` and every log it cites under `logs/`; internal links are relative.
+References to source files, commits, GitHub runs, PR #5, `spec/doctor.md`, `rules/` and `SELF-IMPROVEMENT/` are supplemental; the CI results they point to are copied into `logs/`.
 
 ## Terminal record
 
 ### Summary
 
-`PENDING`
+`gir doctor --fix` now makes each fixed script executable on disk as well as in the index (`7ff434a`), so `git status` shows no unstaged mode change, `git add` keeps `100755` and git runs fixed hooks. Missing files, symlinks in place of scripts, content and unstaged edits are left alone, and nothing changes on Windows.
+Test fixtures were corrected for Windows (`3e69631`, `ba625c5`) and macOS (`58bea3b`, `e507d42`, `6813712`) along the way.
+The delta is published in `spec/doctor.md`: `exec-bit` gains the on-disk sentence.
 
 ### Gate basis
 
-`PENDING`
+All six success Claims are `VERIFIED` through the Verifications above; `c2-fixed` and `c4-tests` on Linux with git 2.56.0, `c3-os-agnostic` by inspection and hosted Windows CI, and hosted CI green on macOS, Windows and Ubuntu at `16997f1`. The delta is published in this checkpoint. No Claim is carried forward.
