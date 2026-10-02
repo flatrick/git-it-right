@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Confirm at the current `HEAD` that `p1-dash-dash-reproduces` still holds, then read `parse_hunks` and its callers in `src/cmd/fixup.rs`.
+**Resume at:** Confirm `p1-dash-dash-reproduces` at the current `HEAD`, then read `parse_hunks` and its callers in `src/cmd/fixup.rs`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-dash-dash-reproduces` blocks `UNDERSTAND`.
 
