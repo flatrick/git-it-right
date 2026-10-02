@@ -85,3 +85,6 @@ For each one, whether to fix it on this branch is still OPEN.
   This can happen when the hook is outside a sparse checkout's cone, or deleted locally.
   Possible fix: set the mode from the index entry (`git update-index --cacheinfo 100755,<object>,<path>`), which needs no working-tree file. Not tested.
 - D: Q14 -> taken by Task doctor-fix-missing-hook
+- Q: After `gir doctor --fix` sets a script's exec bit, does the file on disk match?
+  A: No, observed while verifying the Task `doctor-fix-missing-hook`, on both the old (`--chmod=+x`) and the new code: the index entry becomes `100755`, but the file stays `100644`. With `core.filemode=true`, `git status` then shows every fixed script as modified, and a later `git add` would stage `100644` again, undoing the fix.
+  Possible fix: also set the executable bit on the file when it exists (Unix only; Windows has no such bit). Not tested.

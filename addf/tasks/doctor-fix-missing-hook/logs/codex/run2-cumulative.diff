@@ -1,0 +1,237 @@
+diff --git a/src/cmd/doctor.rs b/src/cmd/doctor.rs
+index a050e66..6f81b77 100644
+--- a/src/cmd/doctor.rs
++++ b/src/cmd/doctor.rs
+@@ -1,4 +1,4 @@
+-use std::collections::BTreeMap;
++use std::collections::{BTreeMap, BTreeSet};
+ use std::path::Path;
+ 
+ use super::templates;
+@@ -16,7 +16,13 @@ enum Fix {
+     LocalConfig(&'static str, &'static str),
+     WriteFile(&'static str, &'static str),
+     AppendIgnore(Vec<&'static str>),
+-    Chmod(Vec<Vec<u8>>),
++    Chmod(Vec<ChmodPath>),
++}
++
++struct ChmodPath {
++    path: Vec<u8>,
++    object: Vec<u8>,
++    skip_worktree: bool,
+ }
+ 
+ struct Check {
+@@ -224,14 +230,26 @@ fn display_path(path: &[u8]) -> String {
+ }
+ 
+ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
+-    let staged = git::run_raw(&["ls-files", "-s", "-z"])?;
++    let staged = git::run_raw(&["ls-files", "-s", "-v", "-z"])?;
++    let unmerged: BTreeSet<&[u8]> = staged
++        .split(|&b| b == 0)
++        .filter_map(|record| {
++            let tab = record.iter().position(|&b| b == b'\t')?;
++            let stage = record[..tab].split(|&b| b == b' ').nth(3)?;
++            (stage != b"0").then_some(&record[tab + 1..])
++        })
++        .collect();
+     let mut by_lower: BTreeMap<Vec<u8>, Vec<&[u8]>> = BTreeMap::new();
+-    let mut not_exec: Vec<Vec<u8>> = Vec::new();
++    let mut not_exec = Vec::new();
+     let mut unsafe_names = Vec::new();
+     let mut previous = None;
+     for record in staged.split(|&b| b == 0) {
+         let Some(tab) = record.iter().position(|&b| b == b'\t') else { continue };
+         let (meta, path) = (&record[..tab], &record[tab + 1..]);
++        let mut fields = meta.split(|&b| b == b' ');
++        let tag = fields.next().unwrap_or_default();
++        let mode = fields.next().unwrap_or_default();
++        let object = fields.next().unwrap_or_default();
+         if previous.replace(path) == Some(path) {
+             continue;
+         }
+@@ -240,8 +258,8 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
+         if windows_unsafe(path) {
+             unsafe_names.push(display_path(path));
+         }
+-        if meta.starts_with(b"100644") && (path.ends_with(b".sh") || path.starts_with(b".githooks/")) {
+-            not_exec.push(path.to_vec());
++        if mode == b"100644" && !unmerged.contains(path) && (path.ends_with(b".sh") || path.starts_with(b".githooks/")) {
++            not_exec.push(ChmodPath { path: path.to_vec(), object: object.to_vec(), skip_worktree: tag == b"S" });
+         }
+     }
+     let collisions: Vec<String> = by_lower
+@@ -260,7 +278,7 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
+     }
+     if !not_exec.is_empty() {
+         index_ok = false;
+-        let names: Vec<String> = not_exec.iter().map(|p| display_path(p)).collect();
++        let names: Vec<String> = not_exec.iter().map(|p| display_path(&p.path)).collect();
+         out.push(check(Level::Warn, "exec-bit", format!("scripts not executable in git: {}", names.join(" ")), Some(Fix::Chmod(not_exec))));
+     }
+     if index_ok {
+@@ -290,9 +308,24 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
+             std::fs::write(&path, text).map_err(|e| format!("cannot write .gitignore: {e}"))
+         }
+         Fix::Chmod(paths) => {
+-            let mut args: Vec<std::ffi::OsString> = ["update-index", "--chmod=+x", "--"].map(Into::into).into();
+-            args.extend(paths.iter().map(|p| git::os_path(p)));
+-            git::run_raw(&args).map(drop)
++            let mut input = Vec::new();
++            let mut skipped = Vec::new();
++            for entry in paths {
++                input.extend_from_slice(b"100755 ");
++                input.extend_from_slice(&entry.object);
++                input.push(b'\t');
++                input.extend_from_slice(&entry.path);
++                input.push(0);
++                if entry.skip_worktree {
++                    skipped.extend_from_slice(&entry.path);
++                    skipped.push(0);
++                }
++            }
++            git::run_with_stdin_bytes(&["update-index", "-z", "--index-info"], &input)?;
++            if !skipped.is_empty() {
++                git::run_with_stdin_bytes(&["update-index", "-z", "--skip-worktree", "--stdin"], &skipped)?;
++            }
++            Ok(())
+         }
+     }
+ }
+diff --git a/src/git.rs b/src/git.rs
+index a51c30e..a9006c0 100644
+--- a/src/git.rs
++++ b/src/git.rs
+@@ -29,7 +29,11 @@ pub fn os_path(bytes: &[u8]) -> OsString {
+ }
+ 
+ pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
+-    output_with_stdin(Command::new("git").args(args), input.as_bytes())
++    run_with_stdin_bytes(args, input.as_bytes())
++}
++
++pub fn run_with_stdin_bytes(args: &[&str], input: &[u8]) -> Result<String, String> {
++    output_with_stdin(Command::new("git").args(args), input)
+ }
+ 
+ /// Runs git with inherited stdio so the user sees git's own output.
+diff --git a/tests/doctor.rs b/tests/doctor.rs
+index b991e88..fcbe2b0 100644
+--- a/tests/doctor.rs
++++ b/tests/doctor.rs
+@@ -503,12 +503,16 @@ fn doctor_reports_exec_bit_for_hook_names_git_quotes() {
+     );
+ }
+ 
+-/// Commits files with exactly these names, for `--fix`, which needs them in the working tree.
+-#[cfg(unix)]
++/// Commits files with exactly these names.
+ fn commit_files_named(repo: &Repo, names: &[&[u8]]) {
+-    use std::os::unix::ffi::OsStrExt;
+     for name in names {
+-        let path = repo.dir.join(std::ffi::OsStr::from_bytes(name));
++        #[cfg(unix)]
++        let path = {
++            use std::os::unix::ffi::OsStrExt;
++            repo.dir.join(std::ffi::OsStr::from_bytes(name))
++        };
++        #[cfg(not(unix))]
++        let path = repo.dir.join(std::str::from_utf8(name).unwrap());
+         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+         std::fs::write(path, "#!/bin/sh\n").unwrap();
+     }
+@@ -516,6 +520,92 @@ fn commit_files_named(repo: &Repo, names: &[&[u8]]) {
+     repo.git(&["commit", "-q", "-m", "chore: hooks"]);
+ }
+ 
++#[test]
++fn doctor_fix_sets_exec_bit_for_deleted_hook_without_restoring_file() {
++    let repo = Repo::new();
++    let hook = ".githooks/pre-commit";
++    commit_files_named(&repo, &[hook.as_bytes()]);
++    std::fs::remove_file(repo.dir.join(hook)).unwrap();
++
++    let out = repo.gir(&["doctor", "--fix"]);
++    let report = stdout(&out);
++    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
++    assert!(report.lines().last().is_some_and(|line| line.starts_with("gir doctor:")), "{report}");
++    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
++    assert!(!repo.dir.join(hook).exists());
++}
++
++#[test]
++fn doctor_fix_does_not_stage_unstaged_hook_edit() {
++    let repo = Repo::new();
++    let hook = ".githooks/pre-commit";
++    commit_files_named(&repo, &[hook.as_bytes()]);
++    repo.write(hook, "#!/bin/sh\necho edited\n");
++
++    let out = repo.gir(&["doctor", "--fix"]);
++    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
++    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
++    assert_eq!(repo.git(&["show", ":.githooks/pre-commit"]), "#!/bin/sh");
++    assert_eq!(repo.git(&["diff", "--name-only"]), hook);
++}
++
++#[test]
++fn doctor_fix_keeps_hooks_outside_sparse_cone_skipped() {
++    let repo = Repo::new();
++    let hooks = [".githooks/pre-commit", ".githooks/pre-push"];
++    commit_files_named(&repo, &[hooks[0].as_bytes(), hooks[1].as_bytes()]);
++    repo.git(&["sparse-checkout", "set", "--no-cone", "/*", "!/.githooks/"]);
++    for hook in hooks {
++        assert!(!repo.dir.join(hook).exists());
++    }
++
++    let out = repo.gir(&["doctor", "--fix"]);
++    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
++    let modes = index_modes(&repo);
++    let tagged = repo.git(&["ls-files", "-v"]);
++    for hook in hooks {
++        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{hook}").as_bytes())), "{modes:?}");
++        assert!(tagged.lines().any(|line| line == format!("S {hook}")), "{tagged}");
++        assert!(!repo.dir.join(hook).exists());
++    }
++}
++
++#[test]
++fn doctor_fix_sets_exec_bit_for_unchanged_hook() {
++    let repo = Repo::new();
++    let hook = ".githooks/pre-commit";
++    commit_files_named(&repo, &[hook.as_bytes()]);
++
++    let out = repo.gir(&["doctor", "--fix"]);
++    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
++    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
++    assert!(repo.dir.join(hook).exists());
++}
++
++#[test]
++fn doctor_fix_leaves_unmerged_hook_stages_untouched() {
++    let repo = Repo::new();
++    commit_files_named(&repo, &[b".githooks/h", b".githooks/other"]);
++    repo.git(&["switch", "-q", "-c", "other"]);
++    repo.commit_file(".githooks/h", "#!/bin/sh\necho other\n", "feat: other hook");
++    repo.git(&["switch", "-q", "main"]);
++    repo.commit_file(".githooks/h", "#!/bin/sh\necho main\n", "feat: main hook");
++    assert!(!repo.git_out(&["merge", "-q", "other"]).status.success(), "the merge must conflict");
++
++    let before = repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout;
++    assert_eq!(String::from_utf8_lossy(&before).lines().count(), 3, "{}", String::from_utf8_lossy(&before));
++    let report = stdout(&repo.gir(&["doctor"]));
++    assert!(report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/other")), "{report}");
++    assert!(!report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{report}");
++
++    let out = repo.gir(&["doctor", "--fix"]);
++    let fixed = stdout(&out);
++    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
++    assert!(!report_line(&fixed, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{fixed}");
++    assert_eq!(repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout, before);
++    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/other")));
++}
++
+ // Windows file names cannot contain a double quote or a backslash.
+ #[cfg(unix)]
+ #[test]

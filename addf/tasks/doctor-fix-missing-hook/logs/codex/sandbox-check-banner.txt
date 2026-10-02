@@ -1,0 +1,4 @@
+4:model: gpt-6-sol
+5:provider: openai
+6:approval: on-request
+7:sandbox: workspace-write [workdir, /tmp, $TMPDIR]

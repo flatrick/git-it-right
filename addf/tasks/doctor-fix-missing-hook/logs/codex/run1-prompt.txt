@@ -1,0 +1,34 @@
+You are working in a Rust repository (the `gir` CLI). Make one focused fix with tests. Do not commit, do not create branches, and do not edit anything under `addf/` or any Markdown file. Use `cargo ... --offline` for every cargo command.
+
+## The defect
+
+`gir doctor --fix` fixes the "exec-bit" check: tracked files with mode 100644 whose path ends in `.sh` or starts with `.githooks/` should become 100755 in the index. The fix is `Fix::Chmod` in `src/cmd/doctor.rs`, applied in `fn apply`, which runs `git update-index --chmod=+x -- <paths>`.
+
+That command needs each file in the working tree and re-reads it, which causes two bugs:
+1. If a flagged file was deleted from the working tree, git fails with `fatal: Unable to process path ...`, and `gir doctor --fix` exits 2 part-way, after applying earlier fixes and before later ones.
+2. If a flagged file has an unstaged local edit, `--fix` stages that edit.
+
+It must keep working for files outside a sparse checkout's cone (skip-worktree entries without files): today those work, and they must stay skip-worktree.
+
+## Required design (do not choose another)
+
+- When `index_checks` flags a path for exec-bit, also keep its object ID and whether it is skip-worktree. Read the index with `git ls-files -s -v -z` (the `-v` adds a one-letter tag before each record; `S` means skip-worktree) instead of the current `git ls-files -s -z`, and keep all other behavior of `index_checks` the same.
+- Change `Fix::Chmod` to hold, per path: the path bytes, the object ID, and the skip-worktree flag.
+- In `apply`, write one record per path to `git update-index -z --index-info` on stdin: the bytes `100755 <object>\t<path>\0`. Then, if any path was skip-worktree, write those paths, each followed by `\0`, to `git update-index -z --skip-worktree --stdin` on stdin.
+- Pass paths only on stdin, never as command-line arguments. Use the existing helpers in `src/git.rs` (for example `run_raw`, `run_with_stdin`, or a small byte-input variant next to them if needed); keep their style.
+- Paths are bytes (`Vec<u8>`) throughout `doctor.rs`; keep using `display_path` for report text. The report line must not change.
+
+## Tests
+
+Add integration tests to `tests/doctor.rs`, reusing its helpers (`add_index_entries`, `commit_files_named`, `index_modes`, `report_line`, `stdout`, `Repo`). Cover:
+1. A committed `.githooks/` hook that is then deleted from the working tree: `gir doctor --fix` must not print `fatal`, must finish with its `gir doctor:` summary line, and must set the hook's index mode to 100755; the file must stay absent.
+2. A committed hook with an unstaged local edit: after `--fix`, its index mode is 100755, `git show :<path>` still returns the committed content, and `git diff --name-only` still lists the file.
+3. Hooks outside a sparse checkout's cone (`git sparse-checkout set --no-cone "/*" "!/.githooks/"`): after `--fix`, mode 100755 and `git ls-files -v` still shows `S` for them.
+4. A hook present and unchanged in the working tree is still fixed (regression).
+
+Tests must behave the same on Windows and Linux (repository rule): use only file names Windows can hold, and no shell commands besides `git`.
+
+## Done means
+
+- `cargo build --offline`, `cargo test --offline` and `cargo clippy --offline --all-targets -- -D warnings` all pass. Run them and look at the results yourself.
+- Your reply lists every file you changed and the exact final lines of the test and clippy output. Do not claim anything you did not run.

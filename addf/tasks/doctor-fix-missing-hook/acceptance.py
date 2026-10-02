@@ -84,7 +84,7 @@ d = repo()
 Path(d, ".githooks/commit-msg").write_text("#!/bin/sh\n# local edit, not staged\n")
 out = run_fix(d, "a hook with an unstaged local edit")
 check(".githooks/commit-msg is 100755", mode(d, ".githooks/commit-msg") == "100755")
-check("the local edit stays unstaged", git(d, "diff", "--name-only").strip() == ".githooks/commit-msg", git(d, "diff", "--name-only"))
+check("the local edit stays unstaged", "+# local edit, not staged" in git(d, "diff", "--", ".githooks/commit-msg"), git(d, "diff", "--", ".githooks/commit-msg"))
 staged = sh(d, "git", "show", ":.githooks/commit-msg").stdout
 check("the staged content is the committed content", staged == b"#!/bin/sh\n", repr(staged))
 

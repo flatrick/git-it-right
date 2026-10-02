@@ -1,0 +1,7 @@
+`gir doctor` now excludes any path with a nonzero index stage from the exec-bit check. The new integration test confirms that `--fix` preserves all three conflict stages for `.githooks/h` while changing `.githooks/other` to `100755`.
+
+Files I changed in this run: [src/cmd/doctor.rs](/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14/src/cmd/doctor.rs) and [tests/doctor.rs](/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14/tests/doctor.rs). The existing change to `src/git.rs` remains untouched.
+
+`cargo build --offline`, `cargo test --offline`, and `cargo clippy --offline --all-targets -- -D warnings` all passed. For `tests/doctor.rs`:
+
+`test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s`

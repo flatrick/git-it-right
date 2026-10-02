@@ -1,0 +1,11 @@
+Changed [src/cmd/doctor.rs](/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14/src/cmd/doctor.rs), [src/git.rs](/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14/src/git.rs), and [tests/doctor.rs](/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14/tests/doctor.rs).
+
+The exec-bit fix now updates index entries using their existing object IDs, then restores skip-worktree flags. Four integration tests cover deleted, locally edited, sparse, and unchanged hooks. Before the fix, the deleted-hook test failed with `fatal: Unable to process path .githooks/pre-commit`.
+
+All requested checks passed. The final output lines were:
+
+- `cargo build --offline`: `Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s`
+- `cargo test --offline`: `test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s`
+- `cargo clippy --offline --all-targets -- -D warnings`: `Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.56s`
+
+No commit or branch was created.

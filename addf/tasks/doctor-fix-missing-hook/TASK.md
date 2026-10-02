@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Prepare Codex's throwaway clone, check cargo builds in its sandbox, then hand over the task.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -16,6 +16,15 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `acceptance.py` - Probe and acceptance: `gir doctor --fix` with a deleted hook, hooks outside a sparse checkout's cone, and a hook with an unstaged local edit.
+-   `logs/codex/` - Codex's prompts (`run1-prompt.txt`, `run2-prompt.txt`, `sandbox-check-prompt.txt`), its diffs (`run1.diff`, `run2-cumulative.diff`), its final answers, and the model banner (`sandbox-check-banner.txt`); the raw event streams stay in the gitignored `.scratch/codex-q14/`.
+-   `logs/probe-unmerged-hook-20261002-1345.log` - Evidence: `--fix` on a hook in an unresolved merge conflict, on Codex's first build and the build at the start.
+-   `logs/acceptance-fixed-20261002-1348.log` - Evidence: the first acceptance run on the change, with one wrong check (see Implement).
+-   `logs/acceptance-old-20261002-134930.log` - Evidence: `acceptance.py` on the build before the change.
+-   `logs/acceptance-fixed-20261002-134930.log` - Evidence: `acceptance.py` on the change (the tree committed as `246e837`).
+-   `logs/tests-on-start-20261002-134930.log` - Evidence: the new tests against the source before the change.
+-   `logs/test-final-20261002-1348.log` - Evidence: `cargo test --no-fail-fast` on the tree committed as `246e837`.
+-   `logs/clippy-20261002-1348.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/regression-doctor-names-20261002-1349.log` - Evidence: the `doctor-path-names` probe on the change.
 -   `logs/acceptance-head-3ab3c09-20261002-1339.log` - Evidence: `acceptance.py` at the Task's start.
 -   `logs/probe-cacheinfo-20261002-1339.log` - Evidence: `git update-index --cacheinfo` against `--chmod=+x` for a missing hook file.
 -   `logs/probe-cacheinfo-skipworktree-20261002-1339.log` - Evidence: `--cacheinfo` drops `skip-worktree`, and `--skip-worktree` restores it.
@@ -154,6 +163,10 @@ No further probe is needed for the design: the probes under Understand settled i
 -   Codex run 1 (`gpt-6-sol`, `codex exec -s workspace-write` in a throwaway clone at `ee01f29`, 177 seconds; prompt, events and diff in the gitignored `.scratch/codex-q14/`): changed `src/cmd/doctor.rs`, `src/git.rs` (`run_with_stdin_bytes`) and `tests/doctor.rs` (four tests), following Decide.
 -   Review of that diff found a case the design missed: for a hook with unresolved conflict entries, `--index-info` writes one stage-0 entry with the base version's object, so `--fix` resolves the conflict to the base content. The current build also resolves it, staging the working-tree file with its conflict markers (`logs/probe-unmerged-hook-20261002-1345.log`). The operator chose to skip such files in this Task (`ledger.md`).
 -   Codex's report listed the doc-tests `0 passed` line as its test result; it is not used as evidence (`c5-verified-here`).
+-   Codex run 2 (same model, sandbox and clone, 147 seconds; `logs/codex/run2-prompt.txt`): excluded paths with any non-zero index stage from the exec-bit check, and added `doctor_fix_leaves_unmerged_hook_stages_untouched`.
+-   The supervisor reviewed both diffs, applied the cumulative diff to this worktree unchanged with `git apply`, and committed it as `246e837` after the checks below.
+-   `acceptance.py` correction: its local-edit check used `git diff --name-only`, which also lists mode-only differences; it now checks that the edit is in `git diff`. That exposed a separate, older behavior: on `core.filemode=true`, `--fix` makes the index `100755` but leaves the file `100644`, so `git status` shows every fixed script modified and `git add` would revert the mode. Both the old `--chmod=+x` and the new code behave this way; recorded as Q15 in `ledger/fixup-review-20261002.md`, outside this Task.
+-   Tests added by Codex in `tests/doctor.rs`: `doctor_fix_sets_exec_bit_for_deleted_hook_without_restoring_file`, `doctor_fix_does_not_stage_unstaged_hook_edit`, `doctor_fix_keeps_hooks_outside_sparse_cone_skipped`, `doctor_fix_sets_exec_bit_for_unchanged_hook`, `doctor_fix_leaves_unmerged_hook_stages_untouched`; `commit_files_named` now also runs on Windows, for names Windows can hold. The first, second and fifth fail on the source before the change (`logs/tests-on-start-20261002-134930.log`); the sparse and unchanged-hook tests pass there too, since those cases already worked, and guard against regressions.
 
 ## Verify
 
