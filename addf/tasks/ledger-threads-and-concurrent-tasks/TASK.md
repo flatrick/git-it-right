@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Record the DEFINE gate from the operator's agreement in `ledger.md`, then transition to `UNDERSTAND`.
+**Resume at:** Settle `p1-single-task-assumption`: read every current addf file that mentions the Ledger, the active Task, or `INDEX.md`'s Task list, and record the result under Understand.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -100,6 +100,10 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 -   Scope: the framework root on this branch.
 -   Consequence if false: some rule still forbids or breaks concurrent Tasks after the amendment.
 -   Basis: pending check in `UNDERSTAND`.
+
+### DEFINE gate
+
+`ESTABLISHED`: on 2026-10-02 the operator explicitly agreed that the objective, scope and success criteria are right, as written here (`ledger.md`).
 
 ## Understand
 
