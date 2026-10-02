@@ -20,6 +20,8 @@ protect_breaking_commits = true
 sort_commits = "oldest"
 commit_parsers = [
   { message = "^(fixup|squash|amend)!", skip = true },
+  # This repository's own edit: addf commits are process records, not product changes.
+  { message = "^[a-z]+\\(addf\\)", skip = true },
   { message = "^feat(\\(|!|:)", group = "Features" },
   { message = "^fix(\\(|!|:)", group = "Bug Fixes" },
   { message = "^docs(\\(|!|:)", group = "Documentation" },
