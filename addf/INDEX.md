@@ -20,7 +20,7 @@ is available through its archived bundle, not through this index.
 - [diff-header-parsing](tasks/diff-header-parsing/TASK.md) -
   gir fixup reads `---`/`+++` only as file headers. State: `UNDERSTAND`.
 - [split-preserves-index](tasks/split-preserves-index/TASK.md) -
-  gir fixup --split leaves untouched index entries alone. State: `DEFINE`.
+  gir fixup --split leaves untouched index entries alone. State: `UNDERSTAND`.
 
 ## Ledger
 

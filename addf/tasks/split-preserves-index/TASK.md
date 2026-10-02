@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Wait for `diff-header-parsing` to terminalize only before `VERIFY`; meanwhile confirm at the current `HEAD` that `p1-split-drops-flags` still holds, then read `src/cmd/fixup/split.rs`.
+**Resume at:** Confirm `p1-split-drops-flags` at the current `HEAD`, then read `src/cmd/fixup/split.rs`; this Task's `VERIFY` waits for `diff-header-parsing` to terminalize.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-drops-flags` blocks `UNDERSTAND`; re-reading the spec after `diff-header-parsing` terminalizes blocks `VERIFY`.
 
