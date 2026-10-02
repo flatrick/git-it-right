@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then publish the delta and complete.
+**Resume at:** `NONE`
 
-**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -33,7 +33,7 @@
 
 - Current contract: `framework:spec/doctor.md#req-doctor-exec-bit`
 - Proposed delta: `exec-bit`: `--fix` SHALL set the flagged index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree, instead of naming the `git update-index --chmod=+x` command; a path with unresolved conflict entries SHALL NOT be flagged.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/doctor.md#req-doctor-exec-bit`
 
 ## Define
 
@@ -267,8 +267,9 @@ Codex's raw event streams in `.scratch/codex-q14/` are supplemental and not requ
 
 ### Summary
 
-`PENDING`
+`gir doctor --fix` sets the exec bit from each entry's existing object (`246e837`, implemented by Codex and verified here): a deleted hook no longer aborts `--fix`, unstaged edits stay unstaged, sparse hooks stay `skip-worktree`, and a hook in an unresolved merge conflict is no longer flagged or touched.
+The delta is published in `spec/doctor.md#req-doctor-exec-bit`. Q15 (fixed scripts stay `100644` on disk) is recorded in the thread.
 
 ### Gate basis
 
-`PENDING`
+All five success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0; the delta is published in this checkpoint. No Claim is carried forward.

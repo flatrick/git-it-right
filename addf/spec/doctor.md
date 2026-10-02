@@ -97,7 +97,7 @@
 **windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, a control character (a byte from 1 to 31), or bytes that are not valid UTF-8, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
 
 <a id="req-doctor-exec-bit"></a>
-**exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/`, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL run `git update-index --chmod=+x --` for those paths.
+**exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/` and without unresolved conflict entries, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL set those index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree.
 
 <a id="req-doctor-path-display"></a>
 **path-display.** `gir doctor` SHALL read indexed and listed paths as Git stores them, and its report lines SHALL show each path as stored, except that a path with a control character or bytes that are not valid UTF-8 SHALL be shown C-quoted as Git quotes it.
