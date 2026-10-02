@@ -119,7 +119,14 @@ No further probe is needed. Dispositions:
 
 ## Decide
 
-`PENDING`
+-   **Fix.** In `parse_hunks`, `in_header` starts `true`, and the `--- ` and `+++ b/` tests run only while `in_header` is true. Inside a hunk body every line is content, so `-- x` and `++ b/x` reach `changes` like any other line.
+-   **Rejected:** a separate `in_body` flag, which would track the same state twice; changing the unit test to add a `diff --git` line while keeping `in_header` starting `false`, which would leave the parser misreading header-less input.
+-   **Verification strategy.** Write the tests first and see them fail at the current code: unit tests in `src/cmd/fixup.rs` for a deleted `-- x` line, a deleted `-- /dev/null` line followed by another hunk, and an added `++ b/x` line after it; integration tests in `tests/fixup.rs` for probe cases 1, 2 and 4. Then rerun the probe, `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+-   Residual uncertainty: none known.
+
+### DECIDE gate
+
+`ESTABLISHED`: the change is three lines in one function, and each success Claim has a test planned.
 
 ## Implement
 
