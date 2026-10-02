@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [diff-header-parsing](tasks/diff-header-parsing/TASK.md) -
-  gir fixup reads `---`/`+++` only as file headers. State: `INVESTIGATE`.
+  gir fixup reads `---`/`+++` only as file headers. State: `DECIDE`.
 - [split-preserves-index](tasks/split-preserves-index/TASK.md) -
   gir fixup --split leaves untouched index entries alone. State: `UNDERSTAND`.
 
