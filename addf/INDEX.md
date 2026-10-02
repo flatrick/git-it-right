@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [fixup-fixes-acceptance](tasks/fixup-fixes-acceptance/TASK.md) -
-  acceptance of the fixup header and split-index fixes. State: `VERIFY`.
+  acceptance of the fixup header and split-index fixes. State: `LEARN`.
 
 ## Ledger
 
