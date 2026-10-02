@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Push the fixture correction to PR #5 and inspect the hosted macOS, Windows, and Ubuntu jobs.
+**Resume at:** Push this CI permission checkpoint to trigger a new PR run, then inspect the hosted macOS, Windows, and Ubuntu jobs.
 
 **Open obligations:** Correct the macOS non-UTF-8 test fixture and obtain a green hosted run (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
@@ -32,6 +32,7 @@
 -   `logs/windows-hooks-local-20261002-1311Z.log` - Evidence: the reported Windows hook-test failure, the Git-driven test change, and local checks.
 -   `logs/windows-manual-report-20261002-1320Z.log` - Evidence: the operator's report of passing Windows tests and `acceptance.py` at `c017481`; no raw output was archived.
 -   `logs/ci-first-run-20261002.log` - Evidence: hosted CI run at `b8175a8`, including passing Windows jobs and the macOS fixture failure.
+-   `logs/ci-startup-failure-20261002.log` - Evidence: startup failure after the action policy became `local_only`, and the operator-authorized selected allowlist.
 
 ## Specification impact
 
@@ -303,6 +304,10 @@ The operator subsequently made securing the public repository against untrusted 
 The prerequisite `public-ci-safeguards` Task completed and Actions ran PR #5 at `b8175a8` (`logs/ci-first-run-20261002.log`). Both Windows and both Ubuntu jobs passed. The macOS test job failed only `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name`: `commit_files_named` calls `std::fs::write` on a path with byte `0xe9`, and macOS returns `Illegal byte sequence` at `tests/doctor.rs:519`. Gir does not run in that test before the failure. The separate index-only non-UTF-8 doctor test passed on macOS.
 
 The test should place the non-UTF-8 name directly in Git's index, as the passing test does, and verify that `doctor --fix` changes its index mode without needing a working-tree file. This preserves the test's intent and avoids a macOS-invalid fixture. Return to `IMPLEMENT` for that correction. `VERIFY` is `NOT_SATISFIED` until the hosted run is green, despite `c3-os-agnostic` now being `VERIFIED`.
+
+### CI startup failure and action policy correction
+
+The push at `3dc8c4c` triggered [run 37017288831](https://github.com/flatrick/git-it-right/actions/runs/37017288831), which ended `startup_failure` before creating jobs. GitHub's action policy had changed from `all` during the first run to `local_only`; that policy excludes all three actions used by the workflow. The operator said this selection was a misunderstanding and authorized a correction. GitHub now reports `allowed_actions:selected`, with only `actions/checkout@v4`, `actions/setup-python@v5`, and `dtolnay/rust-toolchain@stable` allowed; it still reports approval for all external fork PRs and `main` protection (`logs/ci-startup-failure-20261002.log`). GitHub refused to rerun the startup-failed run, so a new branch push will test whether the policy caused it. `VERIFY` remains `NOT_SATISFIED` until a hosted run reaches the jobs and passes.
 
 ## Learn
 
