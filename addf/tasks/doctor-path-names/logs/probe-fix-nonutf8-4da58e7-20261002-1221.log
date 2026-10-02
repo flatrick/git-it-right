@@ -1,0 +1,20 @@
+gir doctor --fix on .githooks/hook<E9>: exit 2
+fixed core.hooksPath: hooks in .githooks/ are not active in this clone
+fixed pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+fixed fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+fixed push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+fixed rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+fixed merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+fixed diff.algorithm: unset; `histogram` recommended (more readable diffs)
+fixed rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+fixed rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+fixed rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  user.name: unset; run: git config --global user.name <value>
+warn  user.email: unset; run: git config --global user.email <value>
+info  init.defaultBranch: unset; suggest: git config --global init.defaultBranch main
+fixed .gitattributes: missing
+fixed .editorconfig: missing; editors will not agree on indentation and newlines
+fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir: error: .githooks/hook�: does not exist and --remove not passed
+fatal: Unable to process path .githooks/hook�
+
