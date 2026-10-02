@@ -171,7 +171,34 @@ SourceGit keeps the file's path in its own per-repository settings (`Conventiona
 
 ## Decide
 
-`NONE` yet.
+**Data.** `Config` keeps `types: Vec<String>` as the allowed list every consumer already reads, and gains `types_file: Option<TypesFile>`, where `TypesFile` holds the resolved path, where the setting came from, and `defs: Vec<TypeDef>`, each `TypeDef` holding `ty`, `name` and `description`. With a types file, `types` is the file's `Type` values in file order. `Config` also gains `warnings: Vec<String>`.
+
+**Loading.** `Config::load_at(root)` replaces `load_from(path)` for its three callers and the tests; `load()` calls it with the top level.
+1. Read `.girconfig` as today, also accepting `gir.typesFile`; when present, read it again with `--type=path`, relative to `root`.
+2. Otherwise, `git config --show-origin -z --type=path --get gir.typesFile`, from `root`. A `file:` origin makes a relative value relative to that file's directory (a relative origin is relative to `root`); any other origin, such as `command line:`, makes it relative to `root`.
+3. An empty value means no types file. Otherwise read and validate the file; any failure is `Err("types file <path> (gir.typesFile in <origin>): <reason>")`.
+4. With a types file, a `gir.types` from `.girconfig` is replaced and a warning is added naming both.
+
+**Validation**, in `config.rs` on a `serde_json::Value`: the top level is an array; each entry is an object whose `Type`, `Name` and `Description` are present strings; `Type` is nonempty ASCII letters, digits and `-`; no `Type` repeats. Errors name the entry by 1-based position and, when known, its `Type`. Other fields are ignored.
+
+**Consumers.**
+-   `alias_for` returns an alias only when its target is in `types`, with or without a types file.
+-   `gir explain types` heads the list `Allowed types (from <path>):` with a types file and prints each `Description` as the summary; it lists only aliases that apply.
+-   `main` prints each warning as `gir: warning: ...` for `lint`, `hook` and `explain`; `init` prints them; `doctor` reports a load error or warning as a `warn  .girconfig:` line, as today.
+-   `gir init` writes `# types = ...` in a new `.girconfig` when git config already names a types file, and generates `cliff.toml` from the effective types.
+
+**Rejected.**
+-   Changing `types` to `Vec<TypeDef>`: every consumer would change for data only `explain` reads.
+-   Printing warnings inside `load`: `doctor` could not turn them into report lines.
+-   Expanding `~/` in gir: git's `--type=path` already does it, the same way as for git's own path settings.
+
+**Verification strategy.** Integration tests in `tests/config.rs` and `tests/lint.rs` style, each in a temporary repository with `GIT_CONFIG_GLOBAL` pointing at a temporary file, covering c1 to c5; `cargo test` and `cargo clippy --all-targets -- -D warnings` for c6, with `tests/perf.rs` for hook latency.
+
+**Specification delta** (published at completion): `config.md` gains `types-file`, `types-file-location`, `types-file-invalid` and `types-file-overrides-types`; `config.md#req-config-aliases` adds that an alias whose target is not an allowed type does not apply; `explain.md#req-explain-types-config` and `#req-explain-types-summaries` cover a types file; `init.md#req-init-config-file` covers the commented `types` line.
+
+### DECIDE gate
+
+`ESTABLISHED`: each choice traces to an operator answer or a probe above, and every success criterion has a planned test.
 
 ## Implement
 
