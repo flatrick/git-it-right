@@ -14,3 +14,7 @@ No Ledger thread entries taken; the Task came from the operator's request after 
   A: Stop, record, report to the operator; a fix is a separate Task.
 - Q: Are the objective and success criteria viable and desirable?
   A: Agreed by the operator, as written in `TASK.md`.
+- Q: In `a3.2`, `a4.4` and `a4.5`, the stand-in `cfg.txt` is added on `topic`, so git refuses the rebase with or without gir. May it be committed on `main` instead?
+  A: Yes (2026-10-02), after asking what was being asked; the question had first been unclear.
+- Q: The copied review script `edge.py` uses `/dev/null` and a Linux-only default gir path. How should it meet the new rule `os-agnostic-code`?
+  A: Make it OS-agnostic: `os.devnull`, and `GIR_BIN` required with no machine-specific default.

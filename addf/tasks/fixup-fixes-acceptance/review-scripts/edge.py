@@ -1,8 +1,8 @@
 import os, subprocess, sys, tempfile, shutil
 
-GIR = os.environ.get("GIR_BIN", "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fixup-modes/target/debug/gir")
+GIR = os.environ["GIR_BIN"]
 ENV = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t", GIT_COMMITTER_NAME="t",
-           GIT_COMMITTER_EMAIL="t@t", GIR_INTERACTIVE="0", GIT_EDITOR="true", GIT_CONFIG_GLOBAL="/dev/null")
+           GIT_COMMITTER_EMAIL="t@t", GIR_INTERACTIVE="0", GIT_EDITOR="true", GIT_CONFIG_GLOBAL=os.devnull)
 
 
 def sh(cwd, *args, check=True, env=None):

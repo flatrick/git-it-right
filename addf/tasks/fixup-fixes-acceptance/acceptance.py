@@ -51,11 +51,12 @@ def scenario(title):
     print(f"\n## {title}")
 
 
-def repo():
+def repo(base=None):
     d = tempfile.mkdtemp(prefix="gir-accept-")
     git(d, "init", "-q", "-b", "main")
-    write(d, "base.txt", "base\n")
-    git(d, "add", "base.txt")
+    for path, text in {"base.txt": "base\n", **(base or {})}.items():
+        write(d, path, text)
+    git(d, "add", "-A")
     git(d, "commit", "-q", "-m", "chore: base")
     git(d, "switch", "-q", "-c", "topic")
     return d
@@ -170,9 +171,8 @@ check("out/c.txt is still skip-worktree", git(d, "ls-files", "-v", "out/c.txt").
 check("history is feat: a, feat: b, feat: c", subjects(d) == ["feat: c", "feat: b", "feat: a"], str(subjects(d)))
 
 scenario("a3.2 skip-worktree file with a private edit: split, rebase, then git add -A and git commit -a")
-d = repo()
+d = repo({"cfg.txt": "shared\n"})
 two_targets(d)
-commit(d, "cfg.txt", "shared\n", "feat: cfg")
 git(d, "update-index", "--skip-worktree", "cfg.txt")
 write(d, "cfg.txt", "private local edit\n")
 stage_two(d)
@@ -201,9 +201,8 @@ print("  note: git rebase refuses while an intent-to-add entry exists (unstaged 
 # ---------------------------------------------------------------- a4: setups the fix was not tested in
 
 scenario("a4.1 linked worktree with a skip-worktree file")
-d = repo()
+d = repo({"cfg.txt": "shared\n"})
 two_targets(d)
-commit(d, "cfg.txt", "shared\n", "feat: cfg")
 wt = d + "-wt"
 git(d, "worktree", "add", "-q", "-b", "wt", wt, "topic")
 git(wt, "update-index", "--skip-worktree", "cfg.txt")
@@ -232,10 +231,9 @@ check("rebase --autosquash succeeds", rebase(d))
 check("out/c.txt is still in HEAD", show(d, "HEAD:out/c.txt") == "c\n")
 
 scenario("a4.3 gir run from a subdirectory, skip-worktree file at the top")
-d = repo()
+d = repo({"cfg.txt": "shared\n"})
 commit(d, "sub/a.txt", "a\n", "feat: a")
 commit(d, "sub/b.txt", "b\n", "feat: b")
-commit(d, "cfg.txt", "shared\n", "feat: cfg")
 git(d, "update-index", "--skip-worktree", "cfg.txt")
 write(d, "cfg.txt", "private local edit\n")
 stage_two(d, "sub/")
@@ -246,9 +244,8 @@ check("status clean and flags kept", git(d, "status", "--short") == "" and git(d
 
 for mode, prefix in (("amend", "amend!"), ("squash", "squash!")):
     scenario(f"a4.{4 if mode == 'amend' else 5} gir {mode} --split with a skip-worktree file")
-    d = repo()
+    d = repo({"cfg.txt": "shared\n"})
     two_targets(d)
-    commit(d, "cfg.txt", "shared\n", "feat: cfg")
     git(d, "update-index", "--skip-worktree", "cfg.txt")
     write(d, "cfg.txt", "private local edit\n")
     stage_two(d)
@@ -258,12 +255,11 @@ for mode, prefix in (("amend", "amend!"), ("squash", "squash!")):
     check(f"two {prefix} commits", sorted(s.split(" ", 1)[0] for s in subjects(d, "-2")) == [prefix, prefix], str(subjects(d, "-2")))
     check("status clean and flags kept", git(d, "status", "--short") == "" and git(d, "ls-files", "-v") == flags, repr(view(d)))
     check("rebase --autosquash succeeds", rebase(d))
-    check("history is feat: a, feat: b, feat: cfg", subjects(d) == ["feat: cfg", "feat: b", "feat: a"], str(subjects(d)))
+    check("history is feat: a, feat: b", subjects(d) == ["feat: b", "feat: a"], str(subjects(d)))
 
 scenario("a4.6 the interactive picker's s, with a skip-worktree file")
-d = repo()
+d = repo({"cfg.txt": "shared\n"})
 two_targets(d)
-commit(d, "cfg.txt", "shared\n", "feat: cfg")
 git(d, "update-index", "--skip-worktree", "cfg.txt")
 write(d, "cfg.txt", "private local edit\n")
 stage_two(d)
