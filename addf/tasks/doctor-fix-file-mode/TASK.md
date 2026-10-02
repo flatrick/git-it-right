@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Fill `## Learn` (Technical and Process) with the material learning from this Task and its disposition, then record the `LEARN` gate.
+**Resume at:** Load `skills/stewardship.md` for the terminal checkpoint: fill Retention and promotion and Archive readiness, publish the `exec-bit` delta worded in Decide to `spec/doctor.md` to settle `c5-spec`, then transition to `COMPLETED`.
 
 **Open obligations:** `c5-spec` is published in the terminal checkpoint.
 
@@ -330,11 +330,17 @@ The selected allowlist resolved the startup failure: [run 37017909114](https://g
 
 ### Technical
 
-`PENDING`
+-   **An index mode is only half a mode change.** With `core.filemode=true`, git compares the index mode with the file on disk. A script set to `100755` only in the index shows as modified, `git add` stages `100644` again, and git ignores the hook (see Understand). Any change gir makes to an index mode must also be made on disk on Unix, without following symlinks. Disposition: covered by the `exec-bit` delta and the regression tests in `tests/doctor.rs`; no other change.
+-   **File name rules differ per OS, and Linux catches none of the differences.** Git refuses NTFS-unsafe names in the index on Windows unless `core.protectNTFS=false`. macOS refuses a working-tree file name that is not valid UTF-8. A test that needs such a name puts it only in the index; a test that must check the file out cannot run on macOS. Disposition: recorded as friction in `SELF-IMPROVEMENT/20261002T145522Z-filesystem-name-rules-differ-per-os.md`; whether `rules/os-agnostic-code.md` should name macOS is left to the operator.
+-   **Git's detached auto maintenance can write into a test repository after the command that started it has exited.** It left `.git/objects/maintenance.lock` behind after a setup commit, so a test that compares `.git` before and after a command saw a change gir did not make. Disposition: `6813712` sets `maintenance.auto=false` in the test harness's global Git config, which covers every test; no other change.
 
 ### Process
 
-`PENDING`
+-   **Every OS difference cost a round trip.** Each one was found by a manual Windows run or a hosted CI run, after the work was already in `VERIFY`, and each one sent the Task back to `IMPLEMENT`. Three of this Task's four passes through `IMPLEMENT` were these returns. Hosted CI on all three systems was unavailable until `public-ci-safeguards` completed. Disposition: the same friction entry as above; with CI now enabled, a push before `VERIFY` finds these differences earlier, and no framework change is proposed.
+-   **A Claim whose check needs a push could not be settled by a sub-agent that may not push.** Disposition: already recorded in `SELF-IMPROVEMENT/20261002T120526Z-delegated-claim-needs-unavailable-check.md`.
+-   **A commit landed after the CI run that `VERIFY` was waiting on.** The gate was recorded against the hosted run at the branch head (`16997f1`), not the run named in Resume at. Disposition: no change; a gate based on hosted CI names the run and its revision, as this one does.
+
+LEARN gate: `ESTABLISHED`: each material learning has a recorded disposition, and the friction entries hold the ones that concern the framework.
 
 ## Retention and promotion
 
