@@ -16,6 +16,8 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `probe_split_index.py` - Probe: a sparse checkout, a `skip-worktree` file with a local edit, and a `git add -N` file, each through a successful `--split` and one a `commit-msg` hook makes fail.
+-   `probe_temp_index.py` - Probe: the split loop run by hand against a temporary index (`GIT_INDEX_FILE`), with the real index hashed before and after.
+-   `logs/probe-temp-index-20261002-1020.log` - Evidence: that probe's output.
 -   `logs/probe-head-ae3d2ca-20261002-1019.log` - Evidence: the probe at `ae3d2ca`, before any change.
 
 ## Specification impact
@@ -107,7 +109,12 @@
 
 ## Investigate
 
-`PENDING`
+-   Whether a temporary index leaves the real one alone: resolved by `probe_temp_index.py` (`logs/probe-temp-index-20261002-1020.log`). For a sparse checkout in cone mode with a sparse index, in non-cone mode, a `skip-worktree` file with a local edit, and a `git add -N` file, `read-tree`, `apply --cached` and `commit --fixup` against `GIT_INDEX_FILE` left `.git/index` byte-for-byte unchanged, both when both commits succeeded and when a `commit-msg` hook refused the second. On success `HEAD`'s tree equals the staged tree and `git status` shows only the untouched entries; on failure `git reset --soft` alone restores `HEAD`.
+-   The `write-tree` assumption: consistent with the probe, where `ita` stays out of the commits; no decision depends on it further.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: the deciding uncertainty is resolved, and nothing is deferred.
 
 ## Decide
 
