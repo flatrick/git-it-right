@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Set `main` branch protection and all-external fork PR approval, then harden `.github/workflows/ci.yml` while Actions remains disabled.
+**Resume at:** Read back every safeguard and confirm the pushed workflow, then enable repository Actions and the `ci` workflow and observe PR #5.
 
-**Open obligations:** Live settings and workflow inspection block `UNDERSTAND`; repository settings and workflow changes block `IMPLEMENT`; readback, workflow checks, and safely enabling CI block `VERIFY`.
+**Open obligations:** Readback, workflow checks, safely enabling CI, and hosted run observation block `VERIFY`.
 
 ## Owned artifacts
 
