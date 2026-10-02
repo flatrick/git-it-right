@@ -568,8 +568,9 @@ fn split_ignores_apply_whitespace_and_textconv_settings() {
     );
 }
 
-// Windows file names are UTF-16 and cannot hold bytes that are not valid UTF-8.
-#[cfg(unix)]
+// Windows file names are UTF-16 and cannot hold bytes that are not valid UTF-8,
+// and macOS (APFS) refuses to create such names in the working tree.
+#[cfg(all(unix, not(target_os = "macos")))]
 #[test]
 fn split_traces_non_utf8_file_names() {
     use std::os::unix::ffi::OsStrExt;
