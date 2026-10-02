@@ -16,7 +16,9 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `acceptance.py` - Probe and acceptance: premise `p1` with git alone, then `gir doctor --fix` on a plain repository, a deleted hook, hooks outside a sparse checkout's cone, a script with an unstaged edit, and a script replaced by a symlink.
--   `logs/acceptance-start-98feea1-20261002-1359.log` - Evidence: `acceptance.py` on the build at this Task's start (`98feea1`).
+-   `logs/acceptance-start-98feea1-20261002-1359.log` - Evidence: `acceptance.py` on the build at this Task's start (`98feea1`), with the first status check (see Investigate).
+-   `logs/probe-chmod-after-fix-20261002-1400.log` - Evidence: the start build's `--fix`, then `chmod a+x` by hand on the fixed files.
+-   `logs/acceptance-start-98feea1-20261002-1401.log` - Evidence: `acceptance.py`, status check corrected, on the build at this Task's start.
 
 ## Specification impact
 
@@ -139,7 +141,17 @@ Observed on the build of `98feea1` (`logs/acceptance-start-98feea1-20261002-1359
 
 ## Investigate
 
-`PENDING`
+One probe settled the only design-relevant uncertainty, whether making the file executable after the index fix is enough (`logs/probe-chmod-after-fix-20261002-1400.log`, umask `0022`):
+
+-   After the start build's `--fix` and a manual `chmod a+x`, the files are `755`, `git status --porcelain` shows `M ` (the mode change staged by `--fix`, nothing unstaged), `git diff` is empty, `git add` keeps both entries `100755`, and the next commit runs the hook.
+-   `git` needs no index refresh or other extra step after the `chmod`.
+
+The probe also showed that `acceptance.py`'s status check was wrong: it expected `git status` to show nothing, but `--fix` stages the mode change by design, so the right expectation is `M ` (staged, nothing unstaged).
+The check now compares the whole porcelain line with `M  <path>`; the rerun on the start build gives the same 33 PASS, 13 FAIL (`logs/acceptance-start-98feea1-20261002-1401.log`).
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: no decision-relevant uncertainty remains; the remaining choices are design choices for `DECIDE`.
 
 ## Decide
 
@@ -165,7 +177,7 @@ Observed on the build of `98feea1` (`logs/acceptance-start-98feea1-20261002-1359
 
 - Claim: [c1-reproduced](#c1-reproduced)
 - Method: `acceptance.py` on the build of `98feea1`, `core.filemode=true`.
-- Evidence considered: `logs/acceptance-start-98feea1-20261002-1359.log`, section "plain repository": each of the three fixed scripts is `100755` in the index and `0o644` on disk, `git status --porcelain` shows `MM` for each, `git add` leaves `tools/run.sh` and `.githooks/pre-commit` at `100644`, and the following `git commit` prints the ignored-hook hint for both hooks and writes no marker.
+- Evidence considered: `logs/acceptance-start-98feea1-20261002-1359.log` and, with the corrected status check, `logs/acceptance-start-98feea1-20261002-1401.log`, section "plain repository": each of the three fixed scripts is `100755` in the index and `0o644` on disk, `git status --porcelain` shows `MM` for each, `git add` leaves `tools/run.sh` and `.githooks/pre-commit` at `100644`, and the following `git commit` prints the ignored-hook hint for both hooks and writes no marker.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
 

@@ -69,7 +69,7 @@ def executable(d, path):
 
 
 def status(d, path):
-    return git(d, "status", "--porcelain", "--", path).strip()
+    return git(d, "status", "--porcelain", "--", path).rstrip("\n")
 
 
 def run_fix(d, title):
@@ -113,7 +113,8 @@ for path in (".githooks/pre-commit", ".githooks/commit-msg", "tools/run.sh"):
         check(f"{path} is executable on disk", executable(d, path), oct(disk_mode(d, path)))
     else:
         check(f"{path} still exists on disk (Windows: nothing to change)", Path(d, path).is_file())
-    check(f"git status shows no change for {path}", status(d, path) == "", status(d, path))
+    s = status(d, path)
+    check(f"git status shows the mode change staged and nothing unstaged for {path}", s == f"M  {path}", s)
 check("tools/run.sh content is unchanged", Path(d, "tools/run.sh").read_bytes() == SCRIPT)
 check("the pre-commit hook content is unchanged", Path(d, ".githooks/pre-commit").read_bytes() == HOOK)
 check("README.md (not a script) is untouched in the index", mode(d, "README.md") == "100644")
