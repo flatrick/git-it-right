@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `probe_names.py` - Probe: how git writes six kinds of file name in diff headers and `--name-status`, and what `gir fixup --dry-run` does with each; names Windows cannot hold are skipped there.
+-   `logs/probe-head-8a2a60c-20261002-1145.log` - Evidence: that probe at the Task's start.
 
 ## Specification impact
 
@@ -79,10 +81,10 @@
 #### `p1-space-name-fails`
 
 -   Claim: At this Task's starting revision, `gir fixup` on a staged change to `my file.txt` reports `cannot tell which commit my file.txt belongs to`.
--   State: `UNVERIFIED`
--   Scope: Linux, git 2.56.0, this branch at the Task's first commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `8a2a60c`.
 -   Consequence if false: the defect needs re-establishing.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-space-name-fails).
 
 ### DEFINE gate
 
@@ -92,23 +94,35 @@
 
 ### Relevant context
 
-`PENDING`
+-   The probe (`logs/probe-head-8a2a60c-20261002-1145.log`) shows how git 2.56.0 writes names with `core.quotePath=false`. A name with a space ends its `---`/`+++` line with a tab. A name with a double quote, a backslash or a tab is C-quoted (`"a/say \\"hi\\".txt"`, `"a/back\\\\slash.txt"`, `"a/tab\\there.txt"`), with a trailing tab when it also has a space. `café.txt` is written as is and already works.
+-   `parse_hunks` (`src/cmd/fixup.rs`) keeps the trailing tab and only strips the outer quotes, without decoding escapes. Its new-file check matches only an unquoted `+++ b/`.
+-   `trace` then compares the parsed paths with `git diff --cached --name-status`, which quotes the same names. Even correct header parsing would still fail that comparison.
+-   `--split` reuses each hunk's header text unchanged, and `git apply` reads quoted headers itself, so the patch needs no change.
+-   Outside this Task: `src/cmd/doctor.rs` also reads names from `git ls-files` output without `-z`.
 
 ### Assumptions
 
--   `NONE` yet.
+-   A trailing tab on a `---`/`+++` line is always git's terminator: a name that itself contains a tab is quoted, so its tab is written as `\\t`. Source: the probe's `tab\\there.txt` case.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the defect reproduces, and both places that mis-read names are identified.
 
 ## Investigate
 
-`PENDING`
+No further probe is needed: the probe already shows git's exact output for every kind of name in scope.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`.
 
 ## Decide
 
@@ -120,7 +134,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-space-name-fails"></a>
+### Verification: `p1-space-name-fails`
+
+- Claim: [p1-space-name-fails](#p1-space-name-fails)
+- Method: `probe_names.py` with the build at `8a2a60c`.
+- Evidence considered: `logs/probe-head-8a2a60c-20261002-1145.log`: `'my file.txt'` gives `gir: cannot tell which commit my file.txt belongs to`, exit `2`; the three quoted names fail the same way.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 
