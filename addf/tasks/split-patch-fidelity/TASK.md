@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Verify each success Claim against the committed logs.
+**Resume at:** Record Learn, Retention and promotion and Archive readiness, then complete.
 
 **Open obligations:** The Windows branch of `os_path` is unverified until the operator's Windows testing (Deferred verification); it does not block completion, since no success Claim covers Windows.
 
