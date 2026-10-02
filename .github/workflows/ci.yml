@@ -49,7 +49,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Test the capsule checker
         run: python -m unittest discover -s addf/scripts/tests -v
       - name: Check the addf capsule
