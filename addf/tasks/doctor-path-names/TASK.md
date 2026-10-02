@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write the integration tests in `tests/doctor.rs`, see them fail, then read names as bytes in `doctor.rs`.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -16,6 +16,11 @@
 
 -   `ledger.md` - the questions that shaped this Task, with the operator's answers.
 -   `probe_doctor_names.py` - Probe: `gir doctor` (and `--fix` where relevant) on repositories with each kind of file name; Windows-impossible names are Unix-only.
+-   `logs/probe-fixed-20261002-1325.log` - Evidence: `probe_doctor_names.py` with the change (the build committed as `7068733`).
+-   `logs/test-final-20261002-1325-first-run.log` - Evidence: the first `cargo test` run, with two test-setup failures (see Implement).
+-   `logs/test-final-20261002-1325.log` - Evidence: `cargo test --no-fail-fast` on the tree committed as `7068733`.
+-   `logs/clippy-20261002-1325.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/tests-on-start-47e22c4-20261002-1325.log` - Evidence: the new tests in `tests/doctor.rs` against the source before the change (`47e22c4`).
 -   `logs/probe-head-4da58e7-20261002-1221.log` - Evidence: that probe at `4da58e7`.
 -   `logs/probe-fix-nonutf8-4da58e7-20261002-1221.log` - Evidence: the full `gir doctor --fix` output for a non-UTF-8 hook name at `4da58e7`.
 
@@ -151,7 +156,11 @@ The operator chose each open point (`ledger.md`).
 
 ## Implement
 
-`PENDING`
+-   `7068733` implements Decide: `file_checks` and `index_checks` read `ls-files ... -z` through `git::run_raw`; `windows_unsafe` takes bytes and adds control characters and bytes that are not UTF-8; `case-collision` keys on the lowercased name or, for undecodable names, the ASCII-lowercased bytes; `Fix::Chmod` holds byte paths passed through `git::os_path`; `display_path` C-quotes names with control characters or undecodable bytes. `os_path` moved from `src/cmd/fixup.rs` to `src/git.rs`; `fixup` and `split` now call `git::os_path`.
+-   The existing unit test `windows_reserved_names` changed only in passing names as bytes.
+-   New integration tests in `tests/doctor.rs`, with index entries added by `git update-index -z --index-info` so names Windows cannot hold as files are tested on every platform: `doctor_reports_exec_bit_for_hook_names_git_quotes`, `doctor_reports_windows_unsafe_names_as_stored`, `doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form`, `doctor_compares_names_as_stored_for_case_collisions`, `doctor_suggests_ignore_rules_for_a_non_ascii_marker_name`; and, Unix-only with real files, `doctor_fix_sets_exec_bit_on_hook_names_git_quotes` and `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name`. All seven fail before the change (`logs/tests-on-start-47e22c4-20261002-1325.log`).
+-   Deviation in the tests: the `--fix` checks first used index-only entries and failed (`logs/test-final-20261002-1325-first-run.log`), because `git update-index --chmod=+x` needs the file in the working tree. They now commit real files, which Windows cannot hold for these names, so they are Unix-only; the report checks stay on every platform.
+-   Found on the way, outside this Task: `gir doctor --fix` stops with a fatal error when a tracked hook file is missing from the working tree, for example outside a sparse checkout's cone. Recorded as Q14 in `ledger/fixup-review-20261002.md`.
 
 ## Verify
 

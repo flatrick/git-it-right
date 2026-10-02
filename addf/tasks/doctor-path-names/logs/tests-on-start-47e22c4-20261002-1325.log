@@ -1,0 +1,208 @@
+tests/doctor.rs with the new tests, run against the committed source at 47e22c4 (no change)
+   Compiling libc v0.2.189
+   Compiling rustix v1.1.5
+   Compiling unicase v2.9.0
+   Compiling getrandom v0.4.3
+   Compiling winnow v1.0.4
+   Compiling linux-raw-sys v0.12.1
+   Compiling lexopt v0.3.2
+   Compiling cfg-if v1.0.5
+   Compiling bitflags v2.13.2
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/pre-doctor)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.80s
+     Running tests/doctor.rs (target/debug/deps/doctor-3faa3420e8e9e1d1)
+
+running 34 tests
+test doctor_counts_clean_index_as_ok_without_index_warnings ... ok
+test doctor_compares_names_as_stored_for_case_collisions ... FAILED
+test doctor_appends_ignore_rules_without_losing_invalid_utf8_bytes ... ok
+test doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision ... ok
+test doctor_does_not_warn_for_exact_tracked_ignore_probe ... ok
+test doctor_does_not_replace_readable_gitattributes_without_auto_rule ... ok
+test doctor_appends_missing_ignore_rules_after_newline ... ok
+test doctor_fix_keeps_write_only_gitattributes ... ok
+test doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name ... FAILED
+test doctor_outside_git_repository_reports_error ... ok
+test doctor_checks_stack_and_local_directory_ignore_patterns_when_present ... ok
+test doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form ... FAILED
+test doctor_fix_sets_exec_bit_on_hook_names_git_quotes ... FAILED
+test doctor_reports_autocrlf_when_gitattributes_is_missing ... ok
+test doctor_missing_hooks_are_not_created_by_fix ... ok
+test doctor_preserves_nonempty_existing_recommendations ... ok
+test doctor_info_checks_do_not_cause_failure ... ok
+test doctor_repairs_inactive_hooks_path_locally ... ok
+test doctor_checks_each_stack_pattern_for_its_marker ... ok
+test doctor_recommends_and_sets_each_unset_git_setting ... ok
+test doctor_reports_exec_bit_for_hook_names_git_quotes ... FAILED
+test doctor_reports_case_collisions_without_renaming_index_entries ... ok
+test doctor_reports_missing_git_cliff_on_path ... ok
+test doctor_reports_invalid_utf8_gitattributes_without_replacing_it ... ok
+test doctor_reports_check_lines_and_summary_counts ... ok
+test doctor_reports_gitattributes_directory_as_unreadable ... ok
+test doctor_reports_windows_unsafe_names_as_stored ... FAILED
+test doctor_reports_invalid_girconfig_without_editing_it ... ok
+test doctor_suggests_ignore_rules_for_a_non_ascii_marker_name ... FAILED
+test doctor_reports_unreadable_gitattributes_and_does_not_fix_it ... ok
+test doctor_reports_windows_unsafe_index_names_without_renaming ... ok
+test doctor_writes_complete_gitattributes_and_editorconfig ... ok
+test doctor_respects_pull_rebase_without_setting_pull_ff ... ok
+test doctor_suggests_missing_identity_and_default_branch_without_setting_them ... ok
+
+failures:
+
+---- doctor_compares_names_as_stored_for_case_collisions stdout ----
+
+thread 'doctor_compares_names_as_stored_for_case_collisions' (188065) panicked at tests/doctor.rs:561:5:
+assertion `left == right` failed: warn  hooks: no .githooks/; run: gir init
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: "Q \"a\".txt" = "q \"a\".txt"
+warn  windows-names: cannot be checked out on Windows: "Q \"a\".txt" "q \"a\".txt"
+gir doctor: 0 ok, 14 warnings, 12 fixable with: gir doctor --fix   more: gir explain doctor
+
+  left: Some("warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: \"Q \\\"a\\\".txt\" = \"q \\\"a\\\".txt\"")
+ right: Some("warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: Q \"a\".txt = q \"a\".txt")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name stdout ----
+
+thread 'doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name' (188322) panicked at tests/doctor.rs:585:5:
+assertion `left == right` failed: warn  core.hooksPath: hooks in .githooks/ are not active in this clone
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+warn  exec-bit: scripts not executable in git: .githooks/hook�
+gir doctor: 0 ok, 13 warnings, 14 fixable with: gir doctor --fix   more: gir explain doctor
+
+  left: Some("warn  exec-bit: scripts not executable in git: .githooks/hook�")
+ right: Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\"")
+
+---- doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form stdout ----
+
+thread 'doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form' (188466) panicked at tests/doctor.rs:549:5:
+assertion `left == right` failed: warn  hooks: no .githooks/; run: gir init
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+warn  windows-names: cannot be checked out on Windows: "bell\a.txt" "tab\there.txt"
+gir doctor: 0 ok, 13 warnings, 12 fixable with: gir doctor --fix   more: gir explain doctor
+
+  left: Some("warn  windows-names: cannot be checked out on Windows: \"bell\\a.txt\" \"tab\\there.txt\"")
+ right: Some("warn  windows-names: cannot be checked out on Windows: \"bell\\a.txt\" \"caf\\351.txt\" \"tab\\there.txt\"")
+
+---- doctor_fix_sets_exec_bit_on_hook_names_git_quotes stdout ----
+
+thread 'doctor_fix_sets_exec_bit_on_hook_names_git_quotes' (188446) panicked at tests/doctor.rs:529:5:
+[[49, 48, 48, 54, 52, 52, 32, 49, 97, 50, 52, 56, 53, 50, 53, 49, 99, 51, 51, 97, 55, 48, 52, 51, 50, 51, 57, 52, 99, 57, 51, 102, 98, 56, 57, 51, 51, 48, 101, 102, 50, 49, 52, 98, 102, 99, 57, 32, 48, 9, 46, 103, 105, 116, 104, 111, 111, 107, 115, 47, 98, 97, 99, 107, 92, 115, 108, 97, 115, 104], [49, 48, 48, 54, 52, 52, 32, 49, 97, 50, 52, 56, 53, 50, 53, 49, 99, 51, 51, 97, 55, 48, 52, 51, 50, 51, 57, 52, 99, 57, 51, 102, 98, 56, 57, 51, 51, 48, 101, 102, 50, 49, 52, 98, 102, 99, 57, 32, 48, 9, 46, 103, 105, 116, 104, 111, 111, 107, 115, 47, 112, 114, 101, 32, 34, 120, 34]]
+
+---- doctor_reports_exec_bit_for_hook_names_git_quotes stdout ----
+
+thread 'doctor_reports_exec_bit_for_hook_names_git_quotes' (188979) panicked at tests/doctor.rs:499:5:
+assertion `left == right` failed: warn  hooks: no .githooks/; run: gir init
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+warn  windows-names: cannot be checked out on Windows: ".githooks/back\\slash" ".githooks/pre \"x\""
+warn  exec-bit: scripts not executable in git: .githooks/my hook
+gir doctor: 0 ok, 14 warnings, 13 fixable with: gir doctor --fix   more: gir explain doctor
+
+  left: Some("warn  exec-bit: scripts not executable in git: .githooks/my hook")
+ right: Some("warn  exec-bit: scripts not executable in git: .githooks/back\\slash .githooks/my hook .githooks/pre \"x\"")
+
+---- doctor_reports_windows_unsafe_names_as_stored stdout ----
+
+thread 'doctor_reports_windows_unsafe_names_as_stored' (189267) panicked at tests/doctor.rs:537:5:
+assertion `left == right` failed: warn  hooks: no .githooks/; run: gir init
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+warn  windows-names: cannot be checked out on Windows: "back\\slash.txt" "say \"hi\".txt"
+gir doctor: 0 ok, 13 warnings, 12 fixable with: gir doctor --fix   more: gir explain doctor
+
+  left: Some("warn  windows-names: cannot be checked out on Windows: \"back\\\\slash.txt\" \"say \\\"hi\\\".txt\"")
+ right: Some("warn  windows-names: cannot be checked out on Windows: back\\slash.txt say \"hi\".txt")
+
+---- doctor_suggests_ignore_rules_for_a_non_ascii_marker_name stdout ----
+
+thread 'doctor_suggests_ignore_rules_for_a_non_ascii_marker_name' (189344) panicked at tests/doctor.rs:574:5:
+warn  hooks: no .githooks/; run: gir init
+warn  pull.ff: unset; `only` recommended (pull never creates surprise merge commits)
+warn  fetch.prune: unset; `true` recommended (deleted remote branches disappear locally)
+warn  push.autoSetupRemote: unset; `true` recommended (first push of a branch sets its upstream)
+warn  rerere.enabled: unset; `true` recommended (git remembers conflict resolutions)
+warn  merge.conflictStyle: unset; `zdiff3` recommended (conflict markers show the common ancestor)
+warn  diff.algorithm: unset; `histogram` recommended (more readable diffs)
+warn  rebase.autoSquash: unset; `true` recommended (fixup!/squash! commits fold in on rebase)
+warn  rebase.autoStash: unset; `true` recommended (rebase works with a dirty tree)
+warn  rebase.updateRefs: unset; `true` recommended (stacked branches follow a rebase)
+warn  .gitattributes: missing
+info  .editorconfig: missing; editors will not agree on indentation and newlines
+warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+gir doctor: 1 ok, 12 warnings, 12 fixable with: gir doctor --fix   more: gir explain doctor
+
+
+
+failures:
+    doctor_compares_names_as_stored_for_case_collisions
+    doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name
+    doctor_fix_sets_exec_bit_on_hook_names_git_quotes
+    doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form
+    doctor_reports_exec_bit_for_hook_names_git_quotes
+    doctor_reports_windows_unsafe_names_as_stored
+    doctor_suggests_ignore_rules_for_a_non_ascii_marker_name
+
+test result: FAILED. 27 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+error: test failed, to rerun pass `--test doctor`
+error: 1 target failed:
+    `--test doctor`
