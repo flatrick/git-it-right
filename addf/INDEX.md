@@ -21,7 +21,8 @@ is available through its archived bundle, not through this index.
 
 ## Ledger
 
-`NONE`. `LEDGER.md` holds no entries.
+- [Ledger](LEDGER.md) - ten edge cases in `gir fixup` and `--split` from a
+  code review of `feat/fixup-modes`; whether to fix each is open.
 
 ## Skills
 
