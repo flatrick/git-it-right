@@ -118,7 +118,17 @@
 
 ## Decide
 
-`PENDING`
+-   **Temporary index.** `--split` builds every round in a temporary index file inside the git directory and never writes the real one. `read-tree`, `apply --cached` and `commit` run with `GIT_INDEX_FILE` set to it.
+-   **`git::TempIndex`.** A small type in `src/git.rs` owns the file: it names it `gir-split-index-<pid>` in `git rev-parse --absolute-git-dir`, offers `run`, `run_with_stdin` and `passthrough` that set `GIT_INDEX_FILE`, and deletes the file when dropped, on success and failure alike. The existing three functions share one private builder with it, so there is no copied process-handling code.
+-   **Final check.** The check that the split adds up compares `HEAD^{tree}` with the staged tree; comparing `write-tree` of the untouched real index would always pass.
+-   **Rollback.** `git reset --soft <orig>` only; the `read-tree <goal>` that rebuilt the index goes away. The message stays `; restored HEAD and the index`, because the index is as staged.
+-   **Spec delta.** `split`: also leaving the index unchanged. `split-rollback`: leave the index as it was before the command instead of resetting it to the staged tree.
+-   **Rejected:** `std::env::set_var` around the loop, which is `unsafe` in edition 2024 and leaks process-global state; resetting only the hunks' paths with `git reset <orig> -- <paths>`, which still rewrites those entries and needs care with intent-to-add; plumbing (`write-tree`, `commit-tree`, `update-ref`), which would skip the user's commit hooks and editor that `git commit` runs today.
+-   **Verification strategy.** Tests first in `tests/fixup_modes.rs`: for a sparse checkout, a `skip-worktree` file with a local edit and a `git add -N` file, a successful split and a hook-refused split each leave `git status` (apart from the committed paths), `git ls-files -v` and the bytes of `.git/index` as before. Then rerun `probe_split_index.py`, `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design is probed, and each success Claim has a planned test.
 
 ## Implement
 
