@@ -118,7 +118,15 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Investigate
 
-Pending.
+- GitHub's branch protection API accepts `allow_force_pushes:false` and `allow_deletions:false`; `enforce_admins:true` applies the restrictions to administrators. The four required fields allow `null` for checks, PR reviews, and push restrictions, so no unavailable CI check needs to block `main`.
+- GitHub's fork approval API accepts `all_external_contributors`, the policy the operator selected. It applies to workflow runs from fork PRs; the existing workflow has no other externally writable trigger.
+- GitHub reports `permissions.admin:true` for the authenticated account. The actual setting calls will confirm that the token permits updates.
+- Enabling Actions has two controls: the repository Actions permission and the `ci` workflow's `disabled_manually` state. Both remain off until protection, fork approval, and the revised workflow are verified.
+- The repository has no self-hosted runners, and the workflow has no artifact upload or cache action. The current matrix uses standard hosted runners, whose use in public repositories GitHub says is free. The plausible misuse is unwanted run churn; approval for every external fork PR is the direct control.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: the API fields, the two enable controls, and the current run path are known. Actual write permission is checked during implementation, with a failed update leaving Actions disabled.
 
 ## Decide
 
