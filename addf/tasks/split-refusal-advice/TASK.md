@@ -135,7 +135,11 @@
 
 ## Investigate
 
-`PENDING`
+No probe is needed: `acceptance.py` reproduces every case, and the one assumption (`update-index --cacheinfo`) is checked by the same script once implemented.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`.
 
 ## Decide
 
