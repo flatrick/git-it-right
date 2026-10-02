@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** At the new branch head, have the operator rerun the Windows doctor and hook tests, then the full Windows suite and acceptance script. If any fail, use the captured output. Windows CI remains unavailable while workflow `ci` is disabled.
+**Resume at:** The operator reports passing Windows tests and acceptance at `c017481`. Keep Actions disabled while securing the public repository and protecting `main`; then obtain hosted Windows CI and complete `c3-os-agnostic` verification.
 
-**Open obligations:** The two reported Windows hook tests and four reported doctor tests need a rerun after their corrections (blocks `VERIFY`); `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** `c3-os-agnostic` still needs hosted Windows CI after the public repository and `main` are protected (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -30,6 +30,7 @@
 -   `logs/verification-checkpoint-20261002-1235Z.log` - Evidence: draft PR #5, the disabled CI workflow, and the local verification checks at `7926f97`.
 -   `logs/windows-fixture-local-20261002-1255Z.log` - Evidence: the reported Windows failures, the focused fixture change, and local checks.
 -   `logs/windows-hooks-local-20261002-1311Z.log` - Evidence: the reported Windows hook-test failure, the Git-driven test change, and local checks.
+-   `logs/windows-manual-report-20261002-1320Z.log` - Evidence: the operator's report of passing Windows tests and `acceptance.py` at `c017481`; no raw output was archived.
 
 ## Specification impact
 
@@ -232,10 +233,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 ### Verification: `c3-os-agnostic`
 
 - Claim: [c3-os-agnostic](#c3-os-agnostic)
-- Method: inspection of the change; a search for the installed targets that could compile the Windows branch here.
-- Evidence considered: `logs/inspection-windows-branch-20261002-1404.log`: `make_executable_on_disk` has a `#[cfg(unix)]` body and a `#[cfg(not(unix))]` body that only returns `Ok(())`, so on Windows `--fix` runs the same index update as before and nothing more; the one test that runs on Windows, `doctor_fix_leaves_no_unstaged_change_for_fixed_scripts`, exercises that branch there; every Unix-only test carries a one-line reason. Only `x86_64-unknown-linux-gnu` is installed, so the Windows branch was not compiled here, and CI runs only after a push, which this sub-agent may not do.
-- Conclusion: `UNVERIFIED`. The inspection part of the Scope supports the Claim; the CI part is not observed.
-- Limitations: inferred, not observed: that the Windows branch compiles without warnings under clippy and that the cross-platform test passes on Windows (it relies on git setting `core.filemode=false` there).
+- Method: inspection of the change; a search for installed targets; the operator's manual Windows test and acceptance report.
+- Evidence considered: `logs/inspection-windows-branch-20261002-1404.log`: `make_executable_on_disk` has a `#[cfg(unix)]` body and a `#[cfg(not(unix))]` body that only returns `Ok(())`, so on Windows `--fix` runs the same index update as before and nothing more; the cross-platform doctor test exercises that branch. Only `x86_64-unknown-linux-gnu` is installed here. `logs/windows-manual-report-20261002-1320Z.log`: the operator reports all Windows tests passing and `acceptance.py` ending with 32 PASS, 0 FAIL at `c017481`. GitHub has no hosted CI run because workflow `ci` is `disabled_manually`.
+- Conclusion: `UNVERIFIED`. Inspection and the operator's manual result support the Claim, but the required Windows CI part of its Scope is not observed.
+- Limitations: the manual run's raw output and Windows environment details were not archived; Windows clippy and hosted CI are not observed.
 
 <a id="verification-c4-tests"></a>
 ### Verification: `c4-tests`
@@ -281,7 +282,13 @@ The operator also reported that `installed_hooks_warn_when_gir_is_missing` and `
 
 ### Verification after hook-test correction
 
-`ba625c5` changes the two affected tests to drive the installed hooks through Git. All seven hook tests, the full Linux suite, and clippy pass (`logs/windows-hooks-local-20261002-1311Z.log`). The Windows tests have not been rerun. The VERIFY gate remains `NOT_SATISFIED` until the Windows observations and CI establish `c3-os-agnostic`.
+`ba625c5` changes the two affected tests to drive the installed hooks through Git. All seven hook tests, the full Linux suite, and clippy pass (`logs/windows-hooks-local-20261002-1311Z.log`). At this checkpoint the Windows tests had not been rerun, and the VERIFY gate remained `NOT_SATISFIED`.
+
+### Manual Windows report
+
+The operator reports that all tests now pass on Windows and that `acceptance.py` ends with 32 PASS, 0 FAIL at `c017481` (`logs/windows-manual-report-20261002-1320Z.log`). This settles the requested manual rerun as reported. Hosted Windows CI remains absent, so `c3-os-agnostic` stays `UNVERIFIED` and the VERIFY gate stays `NOT_SATISFIED`.
+
+The operator subsequently made securing the public repository against untrusted workflow runs and protecting `main` against force pushes or deletion prerequisites to enabling Actions. Hosted CI remains blocked on those safeguards; this Task stays in VERIFY.
 
 ## Learn
 
