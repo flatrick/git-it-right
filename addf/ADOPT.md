@@ -135,7 +135,7 @@ Resolve every `framework:` reference from the selected root. Resolve a
 `history:` reference only when its destination archive exists. The destination
 specification must not depend on `history:` for current requirements.
 
-If Python 3.9 or newer is available, run the copied optional checker after
+If Python 3.11 or newer is available, run the copied optional checker after
 filling the destination's instance files:
 
 ```console

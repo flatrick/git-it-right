@@ -54,7 +54,7 @@ navigating into `.archive/`.
 placeholder, and Index structure remains mechanically coherent across changes.
 
 **Integration steps:** when the optional checker exists beneath the selected
-framework root, run its public CLI and test suite with Python 3.9 or newer. A
+framework root, run its public CLI and test suite with Python 3.11 or newer. A
 GitHub Actions repository can use a Linux and Windows matrix with these steps:
 
 ```console
