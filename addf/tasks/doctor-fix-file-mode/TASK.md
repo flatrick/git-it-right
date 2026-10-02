@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** The operator reports passing Windows tests and acceptance at `c017481`. Keep Actions disabled while securing the public repository and protecting `main`; then obtain hosted Windows CI and complete `c3-os-agnostic` verification.
+**Resume at:** Hosted Windows CI passed. The macOS job failed in the non-UTF-8 test fixture before gir runs. Correct that fixture by inserting the name into Git's index without creating a macOS working-tree file, then rerun CI.
 
-**Open obligations:** `c3-os-agnostic` still needs hosted Windows CI after the public repository and `main` are protected (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** Correct the macOS non-UTF-8 test fixture and obtain a green hosted run (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -31,6 +31,7 @@
 -   `logs/windows-fixture-local-20261002-1255Z.log` - Evidence: the reported Windows failures, the focused fixture change, and local checks.
 -   `logs/windows-hooks-local-20261002-1311Z.log` - Evidence: the reported Windows hook-test failure, the Git-driven test change, and local checks.
 -   `logs/windows-manual-report-20261002-1320Z.log` - Evidence: the operator's report of passing Windows tests and `acceptance.py` at `c017481`; no raw output was archived.
+-   `logs/ci-first-run-20261002.log` - Evidence: hosted CI run at `b8175a8`, including passing Windows jobs and the macOS fixture failure.
 
 ## Specification impact
 
@@ -68,10 +69,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c3-os-agnostic`
 
 -   Claim: Windows has no executable bit: the on-disk step is Unix-only, written with both platform branches per `rules/os-agnostic-code.md`, and nothing changes on Windows.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch; the Windows branch by inspection and CI.
 -   Consequence if false: the change breaks or misbehaves on Windows.
--   Basis: [Verification](#verification-c3-os-agnostic): both branches exist and the Windows one is a no-op by inspection; the Windows CI part of the Scope needs a push and is not observed.
+-   Basis: [Verification](#verification-c3-os-agnostic).
 
 <a id="c4-tests"></a>
 #### `c4-tests`
@@ -234,10 +235,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 ### Verification: `c3-os-agnostic`
 
 - Claim: [c3-os-agnostic](#c3-os-agnostic)
-- Method: inspection of the change; a search for installed targets; the operator's manual Windows test and acceptance report.
-- Evidence considered: `logs/inspection-windows-branch-20261002-1404.log`: `make_executable_on_disk` has a `#[cfg(unix)]` body and a `#[cfg(not(unix))]` body that only returns `Ok(())`, so on Windows `--fix` runs the same index update as before and nothing more; the cross-platform doctor test exercises that branch. Only `x86_64-unknown-linux-gnu` is installed here. `logs/windows-manual-report-20261002-1320Z.log`: the operator reports all Windows tests passing and `acceptance.py` ending with 32 PASS, 0 FAIL at `c017481`. GitHub has no hosted CI run because workflow `ci` is `disabled_manually`.
-- Conclusion: `UNVERIFIED`. Inspection and the operator's manual result support the Claim, but the required Windows CI part of its Scope is not observed.
-- Limitations: the manual run's raw output and Windows environment details were not archived; Windows clippy and hosted CI are not observed.
+- Method: inspect both platform branches; consider the operator's manual Windows test and acceptance report; inspect hosted Windows CI.
+- Evidence considered: `logs/inspection-windows-branch-20261002-1404.log` shows the Windows body of `make_executable_on_disk` is a no-op. `logs/windows-manual-report-20261002-1320Z.log` records the operator's report of passing Windows tests and `acceptance.py` with 32 PASS, 0 FAIL at `c017481`. `logs/ci-first-run-20261002.log` records hosted `test (windows-latest)` and `capsule (windows-latest)` passing at `b8175a8`; the test job includes clippy and the full Rust suite.
+- Conclusion: `VERIFIED` for the stated Windows inspection and CI scope.
+- Limitations: the manual run's raw output was not archived; the hosted run tests this branch at `b8175a8`.
 
 <a id="verification-c4-tests"></a>
 ### Verification: `c4-tests`
@@ -290,6 +291,12 @@ The operator also reported that `installed_hooks_warn_when_gir_is_missing` and `
 The operator reports that all tests now pass on Windows and that `acceptance.py` ends with 32 PASS, 0 FAIL at `c017481` (`logs/windows-manual-report-20261002-1320Z.log`). This settles the requested manual rerun as reported. Hosted Windows CI remains absent, so `c3-os-agnostic` stays `UNVERIFIED` and the VERIFY gate stays `NOT_SATISFIED`.
 
 The operator subsequently made securing the public repository against untrusted workflow runs and protecting `main` against force pushes or deletion prerequisites to enabling Actions. Hosted CI remains blocked on those safeguards; this Task stays in VERIFY.
+
+### Hosted CI and macOS fixture reassessment
+
+The prerequisite `public-ci-safeguards` Task completed and Actions ran PR #5 at `b8175a8` (`logs/ci-first-run-20261002.log`). Both Windows and both Ubuntu jobs passed. The macOS test job failed only `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name`: `commit_files_named` calls `std::fs::write` on a path with byte `0xe9`, and macOS returns `Illegal byte sequence` at `tests/doctor.rs:519`. Gir does not run in that test before the failure. The separate index-only non-UTF-8 doctor test passed on macOS.
+
+The test should place the non-UTF-8 name directly in Git's index, as the passing test does, and verify that `doctor --fix` changes its index mode without needing a working-tree file. This preserves the test's intent and avoids a macOS-invalid fixture. Return to `IMPLEMENT` for that correction. `VERIFY` is `NOT_SATISFIED` until the hosted run is green, despite `c3-os-agnostic` now being `VERIFIED`.
 
 ## Learn
 
