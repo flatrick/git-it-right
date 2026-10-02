@@ -19,6 +19,11 @@
 -   `logs/acceptance-start-98feea1-20261002-1359.log` - Evidence: `acceptance.py` on the build at this Task's start (`98feea1`), with the first status check (see Investigate).
 -   `logs/probe-chmod-after-fix-20261002-1400.log` - Evidence: the start build's `--fix`, then `chmod a+x` by hand on the fixed files.
 -   `logs/acceptance-start-98feea1-20261002-1401.log` - Evidence: `acceptance.py`, status check corrected, on the build at this Task's start.
+-   `logs/tests-on-start-98feea1-20261002-1402.log` - Evidence: the new tests against the source at `98feea1`.
+-   `logs/test-final-20261002-1402.log` - Evidence: `cargo test --no-fail-fast` on the tree committed as `7ff434a`.
+-   `logs/clippy-20261002-1402.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/acceptance-old-20261002-1403.log` - Evidence: `acceptance.py` on the build of `98feea1`.
+-   `logs/acceptance-fixed-20261002-1403.log` - Evidence: `acceptance.py` on the build of the tree committed as `7ff434a`.
 
 ## Specification impact
 
@@ -173,7 +178,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 
 ## Implement
 
-`PENDING`
+-   Tests first, appended to `tests/doctor.rs`: `doctor_fix_leaves_no_unstaged_change_for_fixed_scripts` (all platforms; on Windows it exercises the no-op branch), and, `#[cfg(unix)]` with a one-line reason each, `doctor_fix_makes_fixed_scripts_executable_on_disk` (also `git add` keeps `100755`, and a non-script stays non-executable), `doctor_fix_lets_git_run_the_fixed_hook`, `doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged` and `doctor_fix_does_not_change_the_target_of_a_symlink_in_place_of_a_script`; plus a `disk_mode` helper.
+-   Against the source at `98feea1` (`git archive` into a scratch directory, this test file copied in), the first four fail and the symlink guard passes, as planned: 40 passed, 4 failed (`logs/tests-on-start-98feea1-20261002-1402.log`).
+-   `src/cmd/doctor.rs`: `apply`'s `Fix::Chmod` arm now ends with `make_executable_on_disk(root, paths)`, with a `#[cfg(unix)]` body as in Decide and a `#[cfg(not(unix))]` body that returns `Ok(())`.
+-   Committed as `7ff434a` after the checks under Verify; the committed tree is the tree those checks ran on (`git status` was clean apart from the new logs).
 
 ## Verify
 

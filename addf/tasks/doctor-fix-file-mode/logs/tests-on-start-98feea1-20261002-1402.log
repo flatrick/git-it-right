@@ -1,0 +1,113 @@
+tests/doctor.rs from the working tree, source at 98feea1
+   Compiling libc v0.2.189
+   Compiling winnow v1.0.4
+   Compiling getrandom v0.4.3
+   Compiling rustix v1.1.5
+   Compiling unicase v2.9.0
+   Compiling cfg-if v1.0.5
+   Compiling lexopt v0.3.2
+   Compiling bitflags v2.13.2
+   Compiling linux-raw-sys v0.12.1
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/old-src)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.88s
+     Running tests/doctor.rs (target/debug/deps/doctor-3faa3420e8e9e1d1)
+
+running 44 tests
+test doctor_counts_clean_index_as_ok_without_index_warnings ... ok
+test doctor_compares_names_as_stored_for_case_collisions ... ok
+test doctor_appends_ignore_rules_without_losing_invalid_utf8_bytes ... ok
+test doctor_does_not_report_the_stages_of_an_unmerged_path_as_a_case_collision ... ok
+test doctor_does_not_warn_for_exact_tracked_ignore_probe ... ok
+test doctor_does_not_replace_readable_gitattributes_without_auto_rule ... ok
+test doctor_appends_missing_ignore_rules_after_newline ... ok
+test doctor_checks_stack_and_local_directory_ignore_patterns_when_present ... ok
+test doctor_fix_does_not_change_the_target_of_a_symlink_in_place_of_a_script ... ok
+test doctor_fix_does_not_stage_unstaged_hook_edit ... ok
+test doctor_fix_keeps_write_only_gitattributes ... ok
+test doctor_fix_keeps_hooks_outside_sparse_cone_skipped ... ok
+test doctor_fix_leaves_no_unstaged_change_for_fixed_scripts ... FAILED
+test doctor_fix_lets_git_run_the_fixed_hook ... FAILED
+test doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged ... FAILED
+test doctor_fix_makes_fixed_scripts_executable_on_disk ... FAILED
+test doctor_fix_sets_exec_bit_for_deleted_hook_without_restoring_file ... ok
+test doctor_checks_each_stack_pattern_for_its_marker ... ok
+test doctor_fix_sets_exec_bit_for_unchanged_hook ... ok
+test doctor_outside_git_repository_reports_error ... ok
+test doctor_fix_leaves_unmerged_hook_stages_untouched ... ok
+test doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form ... ok
+test doctor_fix_sets_exec_bit_on_hook_names_git_quotes ... ok
+test doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name ... ok
+test doctor_reports_autocrlf_when_gitattributes_is_missing ... ok
+test doctor_missing_hooks_are_not_created_by_fix ... ok
+test doctor_info_checks_do_not_cause_failure ... ok
+test doctor_preserves_nonempty_existing_recommendations ... ok
+test doctor_reports_exec_bit_for_hook_names_git_quotes ... ok
+test doctor_recommends_and_sets_each_unset_git_setting ... ok
+test doctor_repairs_inactive_hooks_path_locally ... ok
+test doctor_reports_case_collisions_without_renaming_index_entries ... ok
+test doctor_reports_check_lines_and_summary_counts ... ok
+test doctor_reports_missing_git_cliff_on_path ... ok
+test doctor_reports_invalid_utf8_gitattributes_without_replacing_it ... ok
+test doctor_reports_windows_unsafe_names_as_stored ... ok
+test doctor_reports_gitattributes_directory_as_unreadable ... ok
+test doctor_reports_invalid_girconfig_without_editing_it ... ok
+test doctor_suggests_ignore_rules_for_a_non_ascii_marker_name ... ok
+test doctor_reports_unreadable_gitattributes_and_does_not_fix_it ... ok
+test doctor_reports_windows_unsafe_index_names_without_renaming ... ok
+test doctor_writes_complete_gitattributes_and_editorconfig ... ok
+test doctor_respects_pull_rebase_without_setting_pull_ff ... ok
+test doctor_suggests_missing_identity_and_default_branch_without_setting_them ... ok
+
+failures:
+
+---- doctor_fix_leaves_no_unstaged_change_for_fixed_scripts stdout ----
+
+thread 'doctor_fix_leaves_no_unstaged_change_for_fixed_scripts' (236804) panicked at tests/doctor.rs:693:5:
+assertion `left == right` failed
+  left: ".githooks/pre-commit\ntools/run.sh"
+ right: ""
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- doctor_fix_lets_git_run_the_fixed_hook stdout ----
+
+thread 'doctor_fix_lets_git_run_the_fixed_hook' (236826) panicked at tests/doctor.rs:735:5:
+hint: The '.githooks/pre-commit' hook was ignored because it's not set as executable.
+hint: You can disable this warning with `git config set advice.ignoredHook false`.
+
+
+---- doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged stdout ----
+
+thread 'doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged' (236929) panicked at tests/doctor.rs:753:5:
+diff --git a/tools/run.sh b/tools/run.sh
+old mode 100755
+new mode 100644
+index 1a24852..4a3e31b
+--- a/tools/run.sh
++++ b/tools/run.sh
+@@ -1 +1,2 @@
+ #!/bin/sh
++echo edited
+
+---- doctor_fix_makes_fixed_scripts_executable_on_disk stdout ----
+
+thread 'doctor_fix_makes_fixed_scripts_executable_on_disk' (236960) panicked at tests/doctor.rs:712:9:
+assertion `left != right` failed: .githooks/pre-commit: 644
+  left: 0
+ right: 0
+
+
+failures:
+    doctor_fix_leaves_no_unstaged_change_for_fixed_scripts
+    doctor_fix_lets_git_run_the_fixed_hook
+    doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged
+    doctor_fix_makes_fixed_scripts_executable_on_disk
+
+test result: FAILED. 40 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+error: test failed, to rerun pass `--test doctor`
+error: 1 target failed:
+    `--test doctor`

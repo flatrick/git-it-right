@@ -1,0 +1,78 @@
+FIXED: build of the working tree at ec38dec plus the uncommitted change to src/cmd/doctor.rs
+git: git version 2.56.0; platform: linux; gir: /tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/gir-fixed
+
+## premise p1: git and a hook that is not executable on disk (no gir involved)
+  $ git commit with .githooks/pre-commit at mode 0o644 -> exit 0
+    hint: The '.githooks/pre-commit' hook was ignored because it's not set as executable.
+    hint: You can disable this warning with `git config set advice.ignoredHook false`.
+    hint: The '.githooks/commit-msg' hook was ignored because it's not set as executable.
+    hint: You can disable this warning with `git config set advice.ignoredHook false`.
+  PASS p1: the commit succeeds
+  PASS p1: the hook did not run
+  PASS p1: git says it ignored the hook
+  PASS p1 control: the same hook made executable does run
+
+## plain repository, core.filemode=true
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS .githooks/pre-commit is 100755 in the index
+  PASS .githooks/pre-commit is executable on disk
+  PASS git status shows the mode change staged and nothing unstaged for .githooks/pre-commit
+  PASS .githooks/commit-msg is 100755 in the index
+  PASS .githooks/commit-msg is executable on disk
+  PASS git status shows the mode change staged and nothing unstaged for .githooks/commit-msg
+  PASS tools/run.sh is 100755 in the index
+  PASS tools/run.sh is executable on disk
+  PASS git status shows the mode change staged and nothing unstaged for tools/run.sh
+  PASS tools/run.sh content is unchanged
+  PASS the pre-commit hook content is unchanged
+  PASS README.md (not a script) is untouched in the index
+  PASS README.md (not a script) is not executable on disk
+  PASS git add keeps tools/run.sh 100755
+  PASS git add keeps .githooks/pre-commit 100755
+  $ git commit -> exit 0 
+  PASS git runs the fixed pre-commit hook
+
+## a hook deleted from the working tree
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS .githooks/pre-commit is 100755 in the index
+  PASS the deleted file was not restored
+  PASS tools/run.sh (present) is executable on disk
+
+## hooks outside a sparse checkout's cone
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS .githooks/pre-commit is 100755 in the index
+  PASS .githooks/ is still not in the working tree
+  PASS hooks are still skip-worktree
+  PASS tools/run.sh (present) is executable on disk
+
+## a script with an unstaged local edit
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS tools/run.sh is 100755 in the index
+  PASS the file on disk still holds the edit, byte for byte
+  PASS the local edit stays unstaged
+  PASS git diff shows no mode change
+  PASS the staged content is the committed content
+  PASS tools/run.sh is executable on disk
+
+## a tracked script replaced by a symlink in the working tree
+  $ gir doctor --fix -> exit 1
+    fixed exec-bit: scripts not executable in git: .githooks/commit-msg .githooks/pre-commit tools/run.sh
+  PASS no fatal error
+  PASS finished with the summary line
+  PASS tools/run.sh is 100755 in the index
+  PASS the symlink's target was not made executable
+  PASS tools/run.sh is still a symlink
+
+46 PASS, 0 FAIL
