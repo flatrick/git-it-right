@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Write a Verification for each of c1 to c6 from the Implement checkpoints; c6 on Windows and macOS needs hosted CI, which needs the operator to push.
+**Resume at:** Get the operator's review of the four Implement deviations and the `fixup` narrowing of c3; then gate VERIFY.
 
-**Open obligations:** `c6-no-regression` on Windows and macOS (blocks `VERIFY`). Operator review of the Implement deviations (blocks `VERIFY`).
+**Open obligations:** Operator review of the Implement deviations and the c3 narrowing (blocks `VERIFY`).
 
 ## Owned artifacts
 
@@ -26,6 +26,9 @@
 -   `logs/test-full-20261002-1936.log` - Evidence: `cargo test --no-fail-fast` on that tree.
 -   `logs/test-perf-20261002-1936.log` - Evidence: the hook latency test with its timing line.
 -   `logs/clippy-20261002-1935.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/ci-capsule-failed-37039199722-20261002.log` - Evidence: the failed `capsule` jobs of hosted run 37039199722 at `b67d564`.
+-   `logs/capsule-20261002-2010.log` - Evidence: `check-capsule` locally after the index fix.
+-   `logs/ci-run-37039567751-20261002.log` - Evidence: hosted run 37039567751 at `4f5cf6a`, all jobs passing.
 
 ## Specification impact
 
@@ -45,55 +48,55 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 #### `c1-setting`
 
 -   Claim: `gir.typesFile` is honored when set in `.girconfig` and when set only in git config (global or repository); when both set it, the `.girconfig` value is used; a relative value resolves against the directory of the file that set it; an empty value in `.girconfig` turns off the git config value.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: a user cannot share one file across repositories, or a repository cannot override it.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-setting).
 
 <a id="c2-replaces"></a>
 #### `c2-replaces`
 
 -   Claim: With a valid types file, `gir lint` accepts exactly the file's `Type` values and rejects every other type, including defaults the file leaves out and aliases to them; `gir explain types` lists the file's types with their `Description`; `gir init` generates `cliff.toml` parsers for the file's types and writes a new `.girconfig`'s `types` line commented out.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: gir and SourceGit disagree on allowed types.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-replaces).
 
 <a id="c3-invalid-refuses"></a>
 #### `c3-invalid-refuses`
 
 -   Claim: A configured types file that is missing, unreadable, not valid JSON, not an array, has an entry missing `Type`, `Name` or `Description` or with a non-string value for one, an empty or malformed `Type`, or a duplicate `Type`, makes `gir lint`, `gir hook` and `gir init` exit `2` before doing anything, with a message naming the file's path, where the setting came from, and the reason (with line and column for a JSON syntax error); `gir explain` instead falls back to the defaults and `gir doctor` prints the error as a `warn` line.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: gir acts on a types list the user did not intend, or the user cannot find what to fix.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-invalid-refuses).
 
 <a id="c4-ignored-fields"></a>
 #### `c4-ignored-fields`
 
 -   Claim: `PrefillShortDesc` and unknown fields are accepted and ignored; `Name` is parsed and kept on each type in gir's configuration though nothing displays it yet.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: a SourceGit file with extra fields breaks gir, or the future type picker has no names.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-ignored-fields).
 
 <a id="c5-both-set-warns"></a>
 #### `c5-both-set-warns`
 
 -   Claim: When `gir.types` is set in `.girconfig` and a types file is configured, the file's types are used and gir prints a warning naming both to stderr.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: a user silently gets a different type list from the one they wrote.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c5-both-set-warns).
 
 <a id="c6-no-regression"></a>
 #### `c6-no-regression`
 
 -   Claim: Without `gir.typesFile`, gir behaves as before: `cargo test` and `cargo clippy --all-targets -- -D warnings` pass.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch, Linux; Windows and macOS through CI.
 -   Consequence if false: existing users break.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c6-no-regression).
 
 ### Constraints
 
@@ -236,6 +239,60 @@ Checkpoints:
 - Evidence considered: the model declares exactly the four `string` properties; it is deserialized as `List<ConventionalCommitType>` with no naming-policy or case-insensitivity option.
 - Conclusion: `VERIFIED`; the issue's example matches SourceGit's model.
 - Limitations: later SourceGit versions may add fields; c4 ignores unknown fields for that reason.
+
+<a id="verification-c1-setting"></a>
+### Verification: `c1-setting`
+
+- Claim: [c1-setting](#c1-setting)
+- Method: `types_file_from_git_config_resolves_against_its_file_and_girconfig_overrides_it` and `types_file_from_command_line_config_resolves_against_repo_root` in `tests/config.rs`; `acceptance.py` with a global `~/` value.
+- Evidence considered: a global relative value resolves next to the global config; a repository value resolves next to `.git/config`, run from a subdirectory; `.girconfig` wins; an empty `.girconfig` value restores the defaults; a `-c` value resolves against the root. Mutating the base to the root fails the test (`.scratch/mutation-base-20261002-1930.log`, not committed). `acceptance.py` 14 PASS (`logs/acceptance-20261002-1940.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+<a id="verification-c2-replaces"></a>
+### Verification: `c2-replaces`
+
+- Claim: [c2-replaces](#c2-replaces)
+- Method: `types_file_replaces_types_keeps_names_and_drops_aliases_to_left_out_types` and `init_comments_out_types_when_git_config_names_a_types_file`; `acceptance.py` with the issue's file.
+- Evidence considered: only the file's types lint; `fix` and `hotfix` are rejected; `explain types` shows the file and its descriptions; `init` writes `# types` and `cliff.toml` parsers for the file's types. Removing the alias filter fails the test (`.scratch/mutation-alias-20261002-1928.log`, not committed).
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+<a id="verification-c3-invalid-refuses"></a>
+### Verification: `c3-invalid-refuses`
+
+- Claim: [c3-invalid-refuses](#c3-invalid-refuses)
+- Method: `invalid_types_file_refuses_naming_file_origin_and_reason`: a missing file and eleven malformed contents through `lint` and `hook commit-msg`, with `explain` and `doctor` on each; `init` refusal through `Config::load_at`, shared with `lint`.
+- Evidence considered: each exits `2` with `gir: types file <path> (gir.typesFile in .girconfig): <reason>`, including line and column for a syntax error; `explain` prints the defaults; `doctor` prints the reason. `acceptance.py` shows the same for a value from the global config.
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+<a id="verification-c4-ignored-fields"></a>
+### Verification: `c4-ignored-fields`
+
+- Claim: [c4-ignored-fields](#c4-ignored-fields)
+- Method: `TYPES_JSON` in `tests/config.rs` carries `PrefillShortDesc` and an unknown `Extra` field; the issue's file carries `PrefillShortDesc` throughout.
+- Evidence considered: both load; `Name` values are read back from `Config::types_file`.
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+<a id="verification-c5-both-set-warns"></a>
+### Verification: `c5-both-set-warns`
+
+- Claim: [c5-both-set-warns](#c5-both-set-warns)
+- Method: `types_file_overrides_girconfig_types_with_a_warning`.
+- Evidence considered: the file's `wip` lints, `.girconfig`'s `alpha` is rejected, and stderr carries `gir: warning: gir.types in .girconfig is ignored; types come from ...`.
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+<a id="verification-c6-no-regression"></a>
+### Verification: `c6-no-regression`
+
+- Claim: [c6-no-regression](#c6-no-regression)
+- Method: `cargo test --no-fail-fast` and `cargo clippy --all-targets -- -D warnings` locally; hosted CI run [37039567751](https://github.com/flatrick/git-it-right/actions/runs/37039567751) at `4f5cf6a` (`logs/ci-run-37039567751-20261002.log`).
+- Evidence considered: all test binaries pass (`logs/test-full-20261002-1936.log` on Linux; hook median 6 ms against 750 ms, `logs/test-perf-20261002-1936.log`); clippy is clean (`logs/clippy-20261002-1935.log`); CI passes `test` on Ubuntu, macOS and Windows and `capsule` on Ubuntu and Windows. The previous run, at `b67d564`, passed `test` on all three and failed `capsule` on an index entry the checker could not read (`logs/ci-capsule-failed-37039199722-20261002.log`), fixed in `4f5cf6a` (`logs/capsule-20261002-2010.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
 
 ## Learn
 
