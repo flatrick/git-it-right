@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Read how `Config` is loaded and consumed (`src/config.rs`, `src/main.rs`, `src/cmd/init.rs`, `src/cmd/doctor.rs`, `src/explain.rs`) and how `git config --show-origin` reports where a value was set.
+**Resume at:** Measure what `serde_json` adds to the release binary and the dependency tree, against a hand-written parser; then take the parser choice and the `git -c` question to the operator.
 
-**Open obligations:** Premise `p1-format` (blocks `INVESTIGATE`). Open questions on the JSON parser and `git -c` values (block `DECIDE`).
+**Open obligations:** Open questions on the JSON parser and `git -c` values (block `INVESTIGATE`).
 
 ## Owned artifacts
 

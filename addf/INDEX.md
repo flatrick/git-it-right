@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [sourcegit-types](tasks/sourcegit-types/TASK.md) - gir reads SourceGit's
-  Conventional Commit type definition file; `UNDERSTAND`.
+  Conventional Commit type definition file; `INVESTIGATE`.
 
 ## Ledger
 
