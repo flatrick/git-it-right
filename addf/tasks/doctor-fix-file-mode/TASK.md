@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Push this CI permission checkpoint to trigger a new PR run, then inspect the hosted macOS, Windows, and Ubuntu jobs.
+**Resume at:** Record the `VERIFY` gate result from [run 37020537546](https://github.com/flatrick/git-it-right/actions/runs/37020537546) (`logs/ci-green-run-20261002.log`), then transition to `LEARN`.
 
-**Open obligations:** Correct the macOS non-UTF-8 test fixture and obtain a green hosted run (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -33,6 +33,7 @@
 -   `logs/windows-manual-report-20261002-1320Z.log` - Evidence: the operator's report of passing Windows tests and `acceptance.py` at `c017481`; no raw output was archived.
 -   `logs/ci-first-run-20261002.log` - Evidence: hosted CI run at `b8175a8`, including passing Windows jobs and the macOS fixture failure.
 -   `logs/ci-startup-failure-20261002.log` - Evidence: startup failure after the action policy became `local_only`, and the operator-authorized selected allowlist.
+-   `logs/ci-green-run-20261002.log` - Evidence: two further macOS-only test failures, their fixes at `e507d42` and `6813712`, and the all-green hosted run at `6813712`.
 
 ## Specification impact
 
@@ -308,6 +309,15 @@ The test should place the non-UTF-8 name directly in Git's index, as the passing
 ### CI startup failure and action policy correction
 
 The push at `3dc8c4c` triggered [run 37017288831](https://github.com/flatrick/git-it-right/actions/runs/37017288831), which ended `startup_failure` before creating jobs. GitHub's action policy had changed from `all` during the first run to `local_only`; that policy excludes all three actions used by the workflow. The operator said this selection was a misunderstanding and authorized a correction. GitHub now reports `allowed_actions:selected`, with only `actions/checkout@v4`, `actions/setup-python@v5`, and `dtolnay/rust-toolchain@stable` allowed; it still reports approval for all external fork PRs and `main` protection (`logs/ci-startup-failure-20261002.log`). GitHub refused to rerun the startup-failed run, so a new branch push will test whether the policy caused it. `VERIFY` remains `NOT_SATISFIED` until a hosted run reaches the jobs and passes.
+
+### Hosted CI green
+
+The selected allowlist resolved the startup failure: [run 37017909114](https://github.com/flatrick/git-it-right/actions/runs/37017909114) at `57801fb` reached every job. The macOS doctor suite passed, including `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name`, which verifies the `58bea3b` fixture correction on the failing system. Two further macOS-only failures followed, both in tests outside this Task's change (`logs/ci-green-run-20261002.log`):
+
+-   `split_traces_non_utf8_file_names` in `tests/fixup_modes.rs` wrote a working-tree file named with byte `0xe9`, which macOS rejects. The test rebases, which checks the file out, so an index-only fixture cannot replace it. `e507d42` limits it to Unix systems other than macOS; Linux still runs it.
+-   `explain_does_not_change_repository_files_or_git_config` saw `.git/objects/maintenance.lock` from Git's detached auto maintenance after the test's setup commit, before `gir explain` ran. `6813712` sets `maintenance.auto=false` in the test harness's global Git config, so no background Git process changes a test repository.
+
+[Run 37020537546](https://github.com/flatrick/git-it-right/actions/runs/37020537546) at `6813712` passed every job: `test` on macOS, Windows and Ubuntu, and `capsule` on Windows and Ubuntu. On macOS, clippy, `cargo test`, hook latency and commit-message lint all passed. The hosted run that `VERIFY` waited on is green; the gate result is not yet recorded.
 
 ## Learn
 
