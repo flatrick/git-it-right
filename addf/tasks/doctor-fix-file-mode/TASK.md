@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `acceptance.py` - Probe and acceptance: premise `p1` with git alone, then `gir doctor --fix` on a plain repository, a deleted hook, hooks outside a sparse checkout's cone, a script with an unstaged edit, and a script replaced by a symlink.
+-   `logs/acceptance-start-98feea1-20261002-1359.log` - Evidence: `acceptance.py` on the build at this Task's start (`98feea1`).
 
 ## Specification impact
 
@@ -34,10 +36,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c1-reproduced`
 
 -   Claim: On the build at this Task's start, after `gir doctor --fix` a fixed script is `100755` in the index but not executable on disk; `git status` shows it modified; `git add` stages `100644` again; and git does not run the hook. Each part is observed, not assumed.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the fix targets a defect that is not there, or misses part of it.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-reproduced).
 
 <a id="c2-fixed"></a>
 #### `c2-fixed`
@@ -97,10 +99,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `p1-git-ignores-non-executable-hook`
 
 -   Claim: With `core.hooksPath` pointing at `.githooks/`, git does not run a hook file that is not executable on disk, and says so.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0.
 -   Consequence if false: Q15's impact is only a dirty `git status`, not hooks failing to run.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-git-ignores-non-executable-hook).
 
 ### DEFINE gate
 
@@ -110,19 +112,30 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 
 ### Relevant context
 
-`PENDING`
+Observed on the build of `98feea1` (`logs/acceptance-start-98feea1-20261002-1359.log`, 33 PASS, 13 FAIL; each FAIL is a part of the defect):
+
+-   **p1 holds.** With `core.hooksPath=.githooks` and the hook at mode `0644` on disk, `git commit` succeeds, does not run the hook, and prints `hint: The '.githooks/pre-commit' hook was ignored because it's not set as executable.`; the same hook at `0755` runs.
+-   **Every part of c1 reproduces** with `core.filemode=true` (git's default on Linux): after `--fix` each fixed script is `100755` in the index and `0644` on disk; `git status --porcelain` shows `MM` for it; `git add` stages `100644` again; and the next commit ignores the fixed hook with the same hint.
+-   **The same holds with an unstaged edit:** the edit stays unstaged, but `git diff` also shows `old mode 100755` / `new mode 100644`.
+-   **Missing files are already handled:** a deleted hook stays absent and hooks outside a sparse checkout's cone stay absent and `skip-worktree`; the present `tools/run.sh` in those repositories stays `0644`.
+-   **A tracked script replaced by a symlink** in the working tree is flagged (the index still says `100644`); the current build does not touch the symlink's target, which the change must keep.
+-   `Fix::Chmod` in `src/cmd/doctor.rs` already carries each flagged path's bytes and `skip_worktree`; `apply` gets the repository root, so the on-disk step can work from those.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `c3-os-agnostic` on Windows: no Windows machine or Windows Rust target is available here, and pushing to CI is outside this Task's authority; the Windows branch is checked by inspection (Claim's scope), and CI on Windows is not observed.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: p1 and every part of c1 are observed on the start build, and the code path the change touches is identified.
 
 ## Investigate
 
@@ -138,7 +151,23 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-git-ignores-non-executable-hook"></a>
+### Verification: `p1-git-ignores-non-executable-hook`
+
+- Claim: [p1-git-ignores-non-executable-hook](#p1-git-ignores-non-executable-hook)
+- Method: `acceptance.py`'s p1 section: git alone, with `core.hooksPath=.githooks`, a committed `pre-commit` hook at mode `0644` on disk that writes a marker file, then the same hook at `0755` as a control.
+- Evidence considered: `logs/acceptance-start-98feea1-20261002-1359.log`: the commit exits `0`, no marker is written, and git prints `hint: The '.githooks/pre-commit' hook was ignored because it's not set as executable.`; with `0755` the marker is written.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0; `advice.ignoredHook` at its default.
+
+<a id="verification-c1-reproduced"></a>
+### Verification: `c1-reproduced`
+
+- Claim: [c1-reproduced](#c1-reproduced)
+- Method: `acceptance.py` on the build of `98feea1`, `core.filemode=true`.
+- Evidence considered: `logs/acceptance-start-98feea1-20261002-1359.log`, section "plain repository": each of the three fixed scripts is `100755` in the index and `0o644` on disk, `git status --porcelain` shows `MM` for each, `git add` leaves `tools/run.sh` and `.githooks/pre-commit` at `100644`, and the following `git commit` prints the ignored-hook hint for both hooks and writes no marker.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 
