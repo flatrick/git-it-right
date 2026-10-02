@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-space-name-fails` blocks `UNDERSTAND`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -40,37 +40,37 @@
 #### `c1-space-in-name`
 
 -   Claim: For a file whose name contains a space (git ends its `---`/`+++` header line with a tab), `gir fixup` without a commit argument selects the commit that last changed the staged line.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: files with spaces in their names cannot be fixed up automatically.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-space-in-name).
 
 <a id="c2-quoted-name"></a>
 #### `c2-quoted-name`
 
 -   Claim: For a file whose name git quotes in diff headers (one containing a double quote, a backslash or a tab), `gir fixup` selects the right commit, and `gir fixup --split` on such a file creates one commit per target with the right content.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: such files cannot be fixed up or split.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-quoted-name).
 
 <a id="c3-end-to-end"></a>
 #### `c3-end-to-end`
 
 -   Claim: For both kinds of name, `gir fixup` and `gir fixup --split` followed by `git rebase --autosquash` give the intended history, and the build at the start of this Task fails the same checks.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the fix looks right in `--dry-run` but the folded history is wrong.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-end-to-end).
 
 <a id="c4-regression-tests"></a>
 #### `c4-regression-tests`
 
 -   Claim: Integration tests cover `c1-space-in-name` and `c2-quoted-name`, they fail on the code at this Task's start, and `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-regression-tests).
 
 ### Constraints
 
@@ -158,6 +158,44 @@ No further probe is needed: the probe already shows git's exact output for every
 - Evidence considered: `logs/probe-head-8a2a60c-20261002-1145.log`: `'my file.txt'` gives `gir: cannot tell which commit my file.txt belongs to`, exit `2`; the three quoted names fail the same way.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-c1-space-in-name"></a>
+### Verification: `c1-space-in-name`
+
+- Claim: [c1-space-in-name](#c1-space-in-name)
+- Method: `probe_names.py` before and after the fix; `file_name_with_a_space_is_traced_and_split`.
+- Evidence considered: `logs/probe-fixed-20261002-1146.log`: `'my file.txt'` selects `feat: add file`, where `logs/probe-head-8a2a60c-20261002-1145.log` refused. `logs/test-final-20261002-1146.log`: the integration test passes, and it fails on the unfixed source (`logs/tests-on-start-d6b61b1-20261002-1147.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. The test also runs on Windows in CI, not observed here.
+
+<a id="verification-c2-quoted-name"></a>
+### Verification: `c2-quoted-name`
+
+- Claim: [c2-quoted-name](#c2-quoted-name)
+- Method: `probe_names.py` before and after the fix; `quoted_file_names_are_traced_and_split` and the two unit tests.
+- Evidence considered: `logs/probe-fixed-20261002-1146.log`: `say "hi".txt`, `back\slash.txt` and `tab\there.txt` each select `feat: add file`, where before all three were refused. `logs/test-final-20261002-1146.log`: the integration test (four names, including one with a space and quotes) and both unit tests pass; the integration test fails on the unfixed source (`logs/tests-on-start-d6b61b1-20261002-1147.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Unix only by nature: Windows cannot hold these names, so the integration test is `#[cfg(unix)]`; the unit tests run on every platform.
+
+<a id="verification-c3-end-to-end"></a>
+### Verification: `c3-end-to-end`
+
+- Claim: [c3-end-to-end](#c3-end-to-end)
+- Method: both integration tests run `gir fixup --dry-run`, then `gir fixup --split`, then `git rebase -i --autosquash main`, and check the history and both commits' file contents; run on the fixed and the unfixed source.
+- Evidence considered: `logs/test-final-20261002-1146.log` (both pass); `logs/tests-on-start-d6b61b1-20261002-1147.log` (both fail on the unfixed source).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c4-regression-tests"></a>
+### Verification: `c4-regression-tests`
+
+- Claim: [c4-regression-tests](#c4-regression-tests)
+- Method: read the tests in `4f0fd88`; ran them on the unfixed source; ran the full suite and clippy.
+- Evidence considered: `logs/tests-on-start-d6b61b1-20261002-1147.log`; `logs/test-final-20261002-1146.log` (211 passed, 0 failed); `logs/clippy-20261002-1146.log` (no warnings).
+- Conclusion: `VERIFIED`.
+- Limitations: run on Linux only here.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ## Learn
 
