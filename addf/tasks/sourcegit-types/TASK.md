@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write the Decide section: data shape, loading order, validation, consumers, rejected alternatives, verification strategy and specification delta.
+**Resume at:** Add `serde_json` and the types-file loading to `src/config.rs`, then the consumers, then the tests, per Decide.
 
 **Open obligations:** `NONE`.
 
