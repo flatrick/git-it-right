@@ -49,3 +49,5 @@ See `skills/work-control.md`'s Ledger section for the full contract, including h
   Measured before asking: four transitive crates and about 38 KB on a release build, with line and column in syntax errors.
 - Q17: What does a relative `gir.typesFile` set with `git -c` resolve against?
 - A17: The repository root, as a `.girconfig` value does.
+- Q18: Does the operator accept the choices made without asking: `fixup` dropped from c3, an empty array rejected, a leading byte order mark skipped, and aliases applying only to allowed targets even without a types file?
+- A18: Yes, all four.
