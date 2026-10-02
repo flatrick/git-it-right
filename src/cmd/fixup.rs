@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::ffi::{OsStr, OsString};
 
 use crate::git;
 use crate::pick::{self, Choice};
@@ -197,22 +198,22 @@ fn find_base() -> Option<String> {
 
 #[derive(Debug)]
 struct Hunk {
-    path: String,
+    path: Vec<u8>,
     lines: Vec<u32>,
     insertion: bool,
     /// The file's `diff --git` header lines, for rebuilding a patch.
-    header: String,
+    header: Vec<u8>,
     /// The `@@` ranges as git writes them for `-U0`: a zero count's start is the line before.
     old_start: u32,
     old_count: u32,
     new_count: u32,
-    /// The hunk's `-`, `+` and `\` lines.
-    changes: String,
+    /// The hunk's `-`, `+` and `\` lines, byte for byte.
+    changes: Vec<u8>,
 }
 
 impl Hunk {
     fn place(&self) -> String {
-        format!("{}:{}", self.path, self.lines.first().copied().unwrap_or(1))
+        format!("{}:{}", String::from_utf8_lossy(&self.path), self.lines.first().copied().unwrap_or(1))
     }
 }
 
@@ -240,23 +241,24 @@ fn targets(hunks: &[Traced]) -> BTreeMap<String, Vec<String>> {
 }
 
 fn trace(base: Option<&str>) -> Result<Trace, String> {
-    let diff = git::run(&[
-        "-c", "core.quotePath=false", "diff", "--cached", "-U0", "--no-color", "--no-ext-diff",
+    let diff = git::run_raw(&[
+        "-c", "core.quotePath=false", "diff", "--cached", "-U0", "--no-color", "--no-ext-diff", "--no-textconv",
         "--no-renames", "--src-prefix=a/", "--dst-prefix=b/",
     ])?;
     let hunks = match parse_hunks(&diff) {
         Ok(hunks) => hunks,
         Err(reason) => return Ok(Trace::Unattributed(reason)),
     };
-    let traced: BTreeSet<&str> = hunks.iter().map(|h| h.path.as_str()).collect();
-    let staged = git::run(&["diff", "--cached", "--name-status", "-z", "--no-renames"])?;
-    let fields: Vec<&str> = staged.split('\0').collect();
+    let traced: BTreeSet<&[u8]> = hunks.iter().map(|h| h.path.as_slice()).collect();
+    let staged = git::run_raw(&["diff", "--cached", "--name-status", "-z", "--no-renames"])?;
+    let fields: Vec<&[u8]> = staged.split(|&b| b == 0).collect();
     let mut entries = fields.chunks(2).filter_map(|c| match c {
         [status, path] => Some((*status, *path)),
         _ => None,
     });
     if let Some((status, path)) = entries.find(|(_, p)| !traced.contains(p)) {
-        return Ok(Trace::Unattributed(if status == "A" {
+        let path = String::from_utf8_lossy(path);
+        return Ok(Trace::Unattributed(if status == b"A" {
             format!("{path} is a new file, so it has no earlier commit")
         } else {
             format!("cannot tell which commit {path} belongs to")
@@ -289,29 +291,31 @@ fn trace(base: Option<&str>) -> Result<Trace, String> {
 
 /// Lines in the HEAD version each hunk touches. A pure insertion has no old
 /// lines, so the lines around it stand in for it. A new file is an error.
-fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
+fn parse_hunks(diff: &[u8]) -> Result<Vec<Hunk>, String> {
     let mut hunks: Vec<Hunk> = Vec::new();
-    let mut path: Option<String> = None;
-    let mut header = String::new();
+    let mut path: Option<Vec<u8>> = None;
+    let mut header = Vec::new();
     let mut in_header = true;
-    for line in diff.lines() {
-        if line.starts_with("diff --git ") {
+    for raw in diff.split_inclusive(|&b| b == b'\n') {
+        let line = raw.strip_suffix(b"\n").unwrap_or(raw);
+        if line.starts_with(b"diff --git ") {
             header.clear();
             in_header = true;
         }
-        if in_header && !line.starts_with("@@ ") {
-            header.push_str(line);
-            header.push('\n');
+        if in_header && !line.starts_with(b"@@ ") {
+            header.extend_from_slice(line);
+            header.push(b'\n');
         }
-        if in_header && let Some(p) = line.strip_prefix("--- ") {
-            path = header_path(p, "a/");
+        if in_header && let Some(p) = line.strip_prefix(b"--- ") {
+            path = header_path(p, b"a/");
         } else if in_header
             && path.is_none()
-            && let Some(new) = line.strip_prefix("+++ ").and_then(|p| header_path(p, "b/"))
+            && let Some(new) = line.strip_prefix(b"+++ ").and_then(|p| header_path(p, b"b/"))
         {
-            return Err(format!("{new} is a new file, so it has no earlier commit"));
-        } else if let Some(h) = line.strip_prefix("@@ -") {
+            return Err(format!("{} is a new file, so it has no earlier commit", String::from_utf8_lossy(&new)));
+        } else if let Some(h) = line.strip_prefix(b"@@ -") {
             in_header = false;
+            let h = String::from_utf8_lossy(h);
             let mut ranges = h.split_whitespace();
             let (start, count) = range(ranges.next().unwrap_or(""));
             let (_, new_count) = range(ranges.next().unwrap_or("").trim_start_matches('+'));
@@ -329,14 +333,15 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
                     old_start: start,
                     old_count: count,
                     new_count,
-                    changes: String::new(),
+                    changes: Vec::new(),
                 });
             }
-        } else if !in_header && (line.starts_with('+') || line.starts_with('-') || line.starts_with('\\'))
+        } else if !in_header
+            && matches!(line.first(), Some(b'+' | b'-' | b'\\'))
             && let Some(last) = hunks.last_mut()
         {
-            last.changes.push_str(line);
-            last.changes.push('\n');
+            last.changes.extend_from_slice(line);
+            last.changes.push(b'\n');
         }
     }
     Ok(hunks)
@@ -345,22 +350,22 @@ fn parse_hunks(diff: &str) -> Result<Vec<Hunk>, String> {
 /// The path in a `---`/`+++` header line without its `a/` or `b/` prefix, or `None` for
 /// `/dev/null`. git ends the line with a tab when the name has a space, and C-quotes names
 /// with special characters.
-fn header_path(text: &str, prefix: &str) -> Option<String> {
-    let text = text.strip_suffix('\t').unwrap_or(text);
-    if text == "/dev/null" {
+fn header_path(text: &[u8], prefix: &[u8]) -> Option<Vec<u8>> {
+    let text = text.strip_suffix(b"\t").unwrap_or(text);
+    if text == b"/dev/null" {
         return None;
     }
-    let name = match text.strip_prefix('"').and_then(|t| t.strip_suffix('"')) {
+    let name = match text.strip_prefix(b"\"").and_then(|t| t.strip_suffix(b"\"")) {
         Some(quoted) => unquote(quoted),
-        None => text.to_string(),
+        None => text.to_vec(),
     };
-    Some(name.strip_prefix(prefix).map_or(name.clone(), str::to_string))
+    Some(name.strip_prefix(prefix).map_or_else(|| name.clone(), <[u8]>::to_vec))
 }
 
 /// Decodes git's C-style quoting: single-letter escapes and `\ooo` octal bytes.
-fn unquote(quoted: &str) -> String {
+fn unquote(quoted: &[u8]) -> Vec<u8> {
     let mut bytes = Vec::new();
-    let mut input = quoted.bytes().peekable();
+    let mut input = quoted.iter().copied().peekable();
     while let Some(b) = input.next() {
         if b != b'\\' {
             bytes.push(b);
@@ -388,7 +393,7 @@ fn unquote(quoted: &str) -> String {
             None => bytes.push(b'\\'),
         }
     }
-    String::from_utf8_lossy(&bytes).into_owned()
+    bytes
 }
 
 /// `start,count` or `start` (count 1) from an `@@` line.
@@ -399,17 +404,32 @@ fn range(r: &str) -> (u32, u32) {
     }
 }
 
-fn blame(path: &str, lines: &[u32]) -> BTreeSet<String> {
+fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
+    let path = os_path(path);
     let mut shas = BTreeSet::new();
     for line in lines {
         let range = format!("{line},{line}");
-        if let Ok(out) = git::run(&["blame", "-l", "-s", "-L", &range, "HEAD", "--", path])
-            && let Some(sha) = out.split_whitespace().next()
+        let args = ["blame", "-l", "-s", "-L", &range, "HEAD", "--"].map(OsStr::new);
+        if let Ok(out) = git::run_raw(&[&args[..], &[path.as_os_str()]].concat())
+            && let Some(sha) = out.split(u8::is_ascii_whitespace).next().filter(|s| !s.is_empty())
         {
-            shas.insert(sha.trim_start_matches('^').to_string());
+            shas.insert(String::from_utf8_lossy(sha).trim_start_matches('^').to_string());
         }
     }
     shas
+}
+
+/// A path from git's output as an argument for git: its bytes as they are on Unix; through
+/// UTF-8 elsewhere, which is how git writes paths on Windows.
+#[cfg(unix)]
+fn os_path(bytes: &[u8]) -> OsString {
+    use std::os::unix::ffi::OsStrExt;
+    OsStr::from_bytes(bytes).to_os_string()
+}
+
+#[cfg(not(unix))]
+fn os_path(bytes: &[u8]) -> OsString {
+    OsString::from(String::from_utf8_lossy(bytes).into_owned())
 }
 
 #[cfg(test)]
@@ -419,36 +439,37 @@ mod tests {
     #[test]
     fn parses_modifications_and_insertions() {
         let diff = "diff --git a/x b/x\n--- a/src/x.rs\n+++ b/src/x.rs\n@@ -3,2 +3,2 @@\n-a\n-b\n+c\n+d\n@@ -10,0 +11 @@\n+e\n@@ -20 +21 @@\n-f\n+g\n";
-        let hunks = parse_hunks(diff).unwrap();
+        let hunks = parse_hunks(diff.as_bytes()).unwrap();
         assert_eq!(hunks.iter().map(|h| h.lines.clone()).collect::<Vec<_>>(), vec![vec![3, 4], vec![10, 11], vec![20]]);
-        assert!(hunks.iter().all(|h| h.path == "src/x.rs"));
+        assert!(hunks.iter().all(|h| h.path == b"src/x.rs"));
     }
 
     #[test]
     fn keeps_each_hunks_header_and_ranges_for_rebuilding_a_patch() {
         let diff = "diff --git a/x b/x\nindex 1..2 100644\n--- a/x\n+++ b/x\n@@ -1 +1 @@ ctx\n-a\n+b\n@@ -5,0 +6 @@\n+c\n\\ No newline at end of file\n";
-        let hunks = parse_hunks(diff).unwrap();
-        assert_eq!(hunks[0].header, "diff --git a/x b/x\nindex 1..2 100644\n--- a/x\n+++ b/x\n");
+        let hunks = parse_hunks(diff.as_bytes()).unwrap();
+        assert_eq!(hunks[0].header, b"diff --git a/x b/x\nindex 1..2 100644\n--- a/x\n+++ b/x\n");
         assert_eq!((hunks[0].old_start, hunks[0].old_count, hunks[0].new_count), (1, 1, 1));
-        assert_eq!(hunks[0].changes, "-a\n+b\n");
+        assert_eq!(hunks[0].changes, b"-a\n+b\n");
         assert_eq!((hunks[1].old_start, hunks[1].old_count, hunks[1].new_count), (5, 0, 1));
-        assert_eq!(hunks[1].changes, "+c\n\\ No newline at end of file\n");
+        assert_eq!(hunks[1].changes, b"+c\n\\ No newline at end of file\n");
     }
 
     #[test]
     fn hunk_lines_that_look_like_file_headers_are_content() {
         let diff = "diff --git a/x.lua b/x.lua\n--- a/x.lua\n+++ b/x.lua\n@@ -1,2 +0,0 @@\n--- /dev/null\n--- a/other\n@@ -5 +3 @@\n-d\n+D\n@@ -7,0 +6 @@\n+++ b/foo\n";
-        let hunks = parse_hunks(diff).unwrap();
+        let hunks = parse_hunks(diff.as_bytes()).unwrap();
         assert_eq!(
-            hunks.iter().map(|h| (h.path.as_str(), h.lines.clone())).collect::<Vec<_>>(),
-            vec![("x.lua", vec![1, 2]), ("x.lua", vec![5]), ("x.lua", vec![7, 8])]
+            hunks.iter().map(|h| (h.path.as_slice(), h.lines.clone())).collect::<Vec<_>>(),
+            vec![(&b"x.lua"[..], vec![1, 2]), (b"x.lua", vec![5]), (b"x.lua", vec![7, 8])]
         );
-        assert_eq!(hunks[0].changes, "--- /dev/null\n--- a/other\n");
-        assert_eq!(hunks[2].changes, "+++ b/foo\n");
+        assert_eq!(hunks[0].changes, b"--- /dev/null\n--- a/other\n");
+        assert_eq!(hunks[2].changes, b"+++ b/foo\n");
     }
 
     #[test]
     fn header_paths_drop_the_tab_terminator_and_decode_quoting() {
+        let header_path = |text: &str, prefix: &str| super::header_path(text.as_bytes(), prefix.as_bytes()).map(|p| String::from_utf8(p).unwrap());
         assert_eq!(header_path("a/src/x.rs", "a/"), Some("src/x.rs".to_string()));
         assert_eq!(header_path("a/my file.txt\t", "a/"), Some("my file.txt".to_string()));
         assert_eq!(header_path("/dev/null", "a/"), None);
@@ -461,12 +482,12 @@ mod tests {
     #[test]
     fn new_files_with_quoted_names_need_an_explicit_target() {
         let diff = "diff --git \"a/n\\\"q.rs\" \"b/n\\\"q.rs\"\n--- /dev/null\n+++ \"b/n\\\"q.rs\"\n@@ -0,0 +1 @@\n+x\n";
-        assert!(parse_hunks(diff).unwrap_err().contains("n\"q.rs is a new file"));
+        assert!(parse_hunks(diff.as_bytes()).unwrap_err().contains("n\"q.rs is a new file"));
     }
 
     #[test]
     fn new_files_need_an_explicit_target() {
         let diff = "--- /dev/null\n+++ b/new.rs\n@@ -0,0 +1 @@\n+x\n";
-        assert!(parse_hunks(diff).unwrap_err().contains("new.rs is a new file"));
+        assert!(parse_hunks(diff.as_bytes()).unwrap_err().contains("new.rs is a new file"));
     }
 }

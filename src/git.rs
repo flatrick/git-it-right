@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -7,8 +8,15 @@ pub fn run(args: &[&str]) -> Result<String, String> {
     output(Command::new("git").args(args))
 }
 
+/// Runs `git` and returns its stdout exactly as written, for output that holds file contents
+/// or paths, which need not be UTF-8 and may end in whitespace.
+pub fn run_raw<S: AsRef<OsStr>>(args: &[S]) -> Result<Vec<u8>, String> {
+    let out = Command::new("git").args(args).stdin(Stdio::null()).output().map_err(|e| format!("could not run git: {e}"))?;
+    if out.status.success() { Ok(out.stdout) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+}
+
 pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
-    output_with_stdin(Command::new("git").args(args), input)
+    output_with_stdin(Command::new("git").args(args), input.as_bytes())
 }
 
 /// Runs git with inherited stdio so the user sees git's own output.
@@ -25,14 +33,14 @@ fn output(cmd: &mut Command) -> Result<String, String> {
     }
 }
 
-fn output_with_stdin(cmd: &mut Command, input: &str) -> Result<String, String> {
+fn output_with_stdin(cmd: &mut Command, input: &[u8]) -> Result<String, String> {
     let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|e| format!("could not run git: {e}"))?;
-    child.stdin.take().unwrap().write_all(input.as_bytes()).map_err(|e| e.to_string())?;
+    child.stdin.take().unwrap().write_all(input).map_err(|e| e.to_string())?;
     let out = child.wait_with_output().map_err(|e| e.to_string())?;
     if out.status.success() {
         Ok(String::from_utf8_lossy(&out.stdout).trim_end().to_string())
@@ -66,7 +74,7 @@ impl TempIndex {
         output(&mut self.git(args))
     }
 
-    pub fn run_with_stdin(&self, args: &[&str], input: &str) -> Result<String, String> {
+    pub fn run_with_stdin(&self, args: &[&str], input: &[u8]) -> Result<String, String> {
         output_with_stdin(&mut self.git(args), input)
     }
 

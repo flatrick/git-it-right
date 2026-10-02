@@ -1,6 +1,7 @@
 mod common;
 
 use common::{Repo, stderr};
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
 const EDITOR: (&str, &str) = ("GIT_EDITOR", "true");
@@ -467,4 +468,110 @@ fn amend_and_squash_accept_an_explicit_target() {
         assert_eq!(repo.git(&["log", "-1", "--format=%s"]), format!("{prefix} feat: add a"), "{sub}");
         assert_eq!(repo.git(&["show", "HEAD:b.txt"]), "B", "{sub}");
     }
+}
+
+/// The file contents of one byte-level split case: two commits, the staged version, and
+/// what each commit must hold after `rebase --autosquash`.
+struct Bytes<'a> {
+    first: &'a [u8],
+    second: &'a [u8],
+    staged: &'a [u8],
+    want_first: &'a [u8],
+    want_second: &'a [u8],
+}
+
+fn split_and_fold_keeps_bytes(name: &OsStr, case: Bytes, base: &[(&str, &[u8])], config: &[(&str, &str)]) {
+    let repo = Repo::new();
+    for (key, value) in config {
+        repo.git(&["config", key, value]);
+    }
+    std::fs::write(repo.dir.join("base.txt"), "base\n").unwrap();
+    for (path, data) in base {
+        std::fs::write(repo.dir.join(path), data).unwrap();
+    }
+    repo.git(&["add", "-A"]);
+    repo.git(&["commit", "-q", "-m", "chore: base"]);
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    for (data, msg) in [(case.first, "feat: first"), (case.second, "feat: second")] {
+        std::fs::write(repo.dir.join(name), data).unwrap();
+        repo.git(&["add", "-A"]);
+        repo.git(&["commit", "-q", "-m", msg]);
+    }
+    std::fs::write(repo.dir.join(name), case.staged).unwrap();
+    repo.git(&["add", "-A"]);
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{name:?}: {}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: second\nfeat: first", "{name:?}");
+    for (rev, want) in [("HEAD~1:", case.want_first), ("HEAD:", case.want_second)] {
+        let mut spec = OsString::from(rev);
+        spec.push(name);
+        let got = repo.cmd("git").arg("show").arg(&spec).output().unwrap().stdout;
+        assert_eq!(got, want, "{name:?} at {rev}");
+    }
+}
+
+const FOUR_LINES: Bytes = Bytes {
+    first: b"one\ntwo\nthree\nfour\n",
+    second: b"one\ntwo\nthree\nFOUR\n",
+    staged: b"ONE  \ntwo\nthree\nFOURx   \n",
+    want_first: b"ONE  \ntwo\nthree\nfour\n",
+    want_second: b"ONE  \ntwo\nthree\nFOURx   \n",
+};
+
+#[test]
+fn split_keeps_crlf_line_endings() {
+    let case = Bytes {
+        first: b"one\r\ntwo\r\nthree\r\nfour\r\n",
+        second: b"one\r\ntwo\r\nthree\r\nFOUR\r\n",
+        staged: b"ONE\r\ntwo\r\nthree\r\nFOURx\r\n",
+        want_first: b"ONE\r\ntwo\r\nthree\r\nfour\r\n",
+        want_second: b"ONE\r\ntwo\r\nthree\r\nFOURx\r\n",
+    };
+    split_and_fold_keeps_bytes(OsStr::new("f.txt"), case, &[(".gitattributes", b"* -text\n")], &[]);
+}
+
+#[test]
+fn split_keeps_non_utf8_content() {
+    let case = Bytes {
+        first: b"caf\xe9 1\nl2\nl3\nl4\n",
+        second: b"caf\xe9 1\nl2\nl3\nL4 \xe9\n",
+        staged: b"CAF\xc9 1\nl2\nl3\nL4x \xe9\n",
+        want_first: b"CAF\xc9 1\nl2\nl3\nl4\n",
+        want_second: b"CAF\xc9 1\nl2\nl3\nL4x \xe9\n",
+    };
+    split_and_fold_keeps_bytes(OsStr::new("f.txt"), case, &[], &[]);
+}
+
+#[test]
+fn split_keeps_trailing_whitespace() {
+    split_and_fold_keeps_bytes(OsStr::new("f.txt"), FOUR_LINES, &[], &[]);
+    let no_final_newline = Bytes {
+        staged: b"ONE\ntwo\nthree\nFOURx   ",
+        want_first: b"ONE\ntwo\nthree\nfour\n",
+        want_second: b"ONE\ntwo\nthree\nFOURx   ",
+        ..FOUR_LINES
+    };
+    split_and_fold_keeps_bytes(OsStr::new("f.txt"), no_final_newline, &[], &[]);
+}
+
+#[test]
+fn split_ignores_apply_whitespace_and_textconv_settings() {
+    for setting in ["error", "fix"] {
+        split_and_fold_keeps_bytes(OsStr::new("f.txt"), FOUR_LINES, &[], &[("apply.whitespace", setting)]);
+    }
+    split_and_fold_keeps_bytes(
+        OsStr::new("f.txt"),
+        FOUR_LINES,
+        &[(".gitattributes", b"*.txt diff=shout\n")],
+        &[("diff.shout.textconv", "sed s/^/SHOUT:/")],
+    );
+}
+
+// Windows file names are UTF-16 and cannot hold bytes that are not valid UTF-8.
+#[cfg(unix)]
+#[test]
+fn split_traces_non_utf8_file_names() {
+    use std::os::unix::ffi::OsStrExt;
+    split_and_fold_keeps_bytes(OsStr::from_bytes(b"caf\xe9.txt"), FOUR_LINES, &[], &[]);
 }
