@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `probe_dash_dash.py` - Probe: four staged changes whose hunk lines look like `---`/`+++` headers, run with `gir fixup --dry-run`.
+-   `logs/probe-head-afd58e8-20261002-1015.log` - Evidence: the probe at `afd58e8`, before any change.
 
 ## Specification impact
 
@@ -69,10 +71,10 @@
 #### `p1-dash-dash-reproduces`
 
 -   Claim: At this Task's starting revision, deleting `-- header` from a committed file and editing a later line makes `gir fixup` report `cannot tell which commit header:5 belongs to`.
--   State: `UNVERIFIED`
--   Scope: Linux, this branch at the Task's first commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `afd58e8`.
 -   Consequence if false: the review's reproduction does not hold here, and the defect needs re-establishing.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-dash-dash-reproduces).
 
 ### DEFINE gate
 
@@ -82,19 +84,27 @@
 
 ### Relevant context
 
-`PENDING`
+-   `trace` in `src/cmd/fixup.rs` runs `git diff --cached -U0` and passes the text to `parse_hunks`; `split.rs` rebuilds patches from the `Hunk`s it returns.
+-   `parse_hunks` tracks `in_header` (from `diff --git` to the first `@@`), but tests `--- ` and `+++ b/` on every line. In a hunk body, a deleted line `-- x` reads `--- x` and an added line `++ b/x` reads `+++ b/x`.
+-   `--- x` sets the current path to `x`, or to none for `/dev/null`; hunks under no path are dropped. `+++ b/x` with no path is reported as a new file.
+-   The probe at `afd58e8` (`logs/probe-head-afd58e8-20261002-1015.log`) shows three outcomes: case 1 refuses with `header:5`; case 2 silently picks commit A although the staged changes trace to A and B; case 4 calls an added line a new file. Case 3, `++ b/foo` alone, is already correct because a path is set.
+-   The unit test `new_files_need_an_explicit_target` passes `parse_hunks` a diff without a `diff --git` line, so `in_header` is false throughout it.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `git diff` output always starts each file with `diff --git`; source: git's diff format; not verified beyond the probe; if false, header lines before it would be read as body lines.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the defect reproduces at `HEAD`, the code path is known, and the one test that depends on header detection is identified.
 
 ## Investigate
 
@@ -110,7 +120,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-dash-dash-reproduces"></a>
+### Verification: `p1-dash-dash-reproduces`
+
+- Claim: [p1-dash-dash-reproduces](#p1-dash-dash-reproduces)
+- Method: built `target/debug/gir` at `afd58e8` and ran `probe_dash_dash.py`.
+- Evidence considered: `logs/probe-head-afd58e8-20261002-1015.log`, case 1: `gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>`, exit `2`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 
