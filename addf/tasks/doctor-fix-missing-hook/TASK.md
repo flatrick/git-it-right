@@ -130,7 +130,11 @@ Observed at `3ab3c09` (`logs/acceptance-head-3ab3c09-20261002-1339.log`, `logs/p
 
 ## Investigate
 
-`PENDING`
+No further probe is needed for the design: the probes under Understand settled it. Whether cargo can build inside Codex's `workspace-write` sandbox is a logistics check for `IMPLEMENT`; if it cannot, work stops and the operator is asked (`ledger.md`).
+
+### INVESTIGATE gate
+
+`ESTABLISHED`.
 
 ## Decide
 
