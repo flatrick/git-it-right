@@ -257,19 +257,36 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`. The Windows path 
 
 ### Technical
 
-`PENDING`
+Output that carries file contents or paths has to stay bytes from git to git: any decoding, trimming or line splitting on the way changes what gets committed. `git::run_raw` is the boundary for that, and `git diff` and `git apply` need `--no-textconv` and `--whitespace=nowarn` so user settings do not reshape a patch gir builds. The integration tests enforce each case.
 
 ### Process
 
-`PENDING`
+No material process learning; the acceptance script written as the probe served both as the before and after check.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is enforced by tests; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-crlf`, `c2-non-utf8-content`, `c3-whitespace`, `c4-settings`, `c5-end-to-end`, `c6-regression-tests`, `c7-non-utf8-name`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is required by `spec/fixup.md#req-fixup-split` and guarded by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-split-loses-bytes`
+
+-   Claim: [p1-split-loses-bytes](#p1-split-loses-bytes)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the code before the fix.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge. The Windows path conversion is a deferred verification, not a Claim, and is covered by the operator's planned Windows testing rather than an open Claim.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, `acceptance.py` and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 
