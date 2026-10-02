@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Reproduce Q5 and Q6 at the current `HEAD` (`p1-advice-fails`), then read how `run`, `trace` and `split` handle an untraced file and a hunk with several commits.
+**Resume at:** Reproduce Q5 and Q6 at the current `HEAD` (`p1-advice-fails`), then read how `run`, `trace` and `split` handle them.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-advice-fails` blocks `UNDERSTAND`.
 

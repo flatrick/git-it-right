@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [split-refusal-advice](tasks/split-refusal-advice/TASK.md) -
-  --split asks or refuses with advice that works. State: `DEFINE`.
+  --split asks or refuses with advice that works. State: `UNDERSTAND`.
 
 ## Ledger
 
