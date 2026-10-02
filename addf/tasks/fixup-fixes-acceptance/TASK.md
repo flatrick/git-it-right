@@ -4,9 +4,9 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
 **Resume at:** Build the old (`d246ab2`) and new binaries side by side, then confirm `p1-old-build-fails` with the review's scripts.
 
