@@ -17,6 +17,10 @@
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `probe_dash_dash.py` - Probe: four staged changes whose hunk lines look like `---`/`+++` headers, run with `gir fixup --dry-run`.
 -   `logs/probe-head-afd58e8-20261002-1015.log` - Evidence: the probe at `afd58e8`, before any change.
+-   `logs/probe-fixed-20261002-1017.log` - Evidence: the probe with the fix (the tree committed as `06c5ee4`).
+-   `logs/probe-split-20261002-1018.log` - Evidence: `--split` on probe case 2 with the fix.
+-   `logs/test-final-20261002-1017.log` - Evidence: `cargo test` with the fix (the tree committed as `06c5ee4`).
+-   `logs/clippy-20261002-1017.log` - Evidence: `cargo clippy --all-targets -- -D warnings` with the fix.
 
 ## Specification impact
 
@@ -130,7 +134,11 @@ No further probe is needed. Dispositions:
 
 ## Implement
 
-`PENDING`
+-   `06c5ee4` changes `parse_hunks` in `src/cmd/fixup.rs` as decided: `in_header` starts `true`, and the `--- ` and `+++ b/` tests run only while it is true.
+-   Tests added in the same commit: the unit test `hunk_lines_that_look_like_file_headers_are_content`, and the integration tests `deleted_line_starting_with_dashes_is_traced_like_any_other`, `deleted_dev_null_comment_does_not_hide_later_hunks` and `added_line_starting_with_plus_b_is_not_a_new_file`.
+-   Before the fix, all four new tests failed: the unit test traced the later hunks to path `other`; the integration tests got exit `2`, `0` and `2` where `0`, `2` and `0` were expected.
+-   No deviation from Decide.
+-   Not a success Claim, but checked because `--split` rebuilds patches from the same hunks: `--split` on probe case 2 creates one `fixup!` per commit with the right content (`logs/probe-split-20261002-1018.log`).
 
 ## Verify
 

@@ -1,0 +1,12 @@
+## case 2 with --split
+$ gir fixup --split  (exit 0)
+gir: created fixup! for 03a7945b26 feat: B
+gir: created fixup! for 5b8d074c83 feat: A
+  fold: git rebase --autosquash a7fa73aee9
+fixup! feat: A
+fixup! feat: B
+feat: B
+
+x.lua at HEAD~1: '-- /dev/null\nl1\nl2\nl3\nL4x\n'
+x.lua at HEAD: 'l1\nl2\nl3\nL4x\n'
+status: ''

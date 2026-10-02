@@ -1,0 +1,15 @@
+    Checking winnow v1.0.4
+    Checking unicase v2.9.0
+    Checking libc v0.2.189
+    Checking cfg-if v1.0.5
+    Checking linux-raw-sys v0.12.1
+    Checking lexopt v0.3.2
+    Checking bitflags v2.13.2
+    Checking fastrand v2.5.0
+    Checking once_cell v1.21.4
+    Checking rustix v1.1.5
+    Checking getrandom v0.4.3
+    Checking git-conventional v1.1.0
+    Checking gir v0.0.3 (/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fixup-modes)
+    Checking tempfile v3.27.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.49s
