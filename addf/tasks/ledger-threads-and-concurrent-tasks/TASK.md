@@ -245,6 +245,8 @@ Residual uncertainty: none known. Verification strategy: each success criterion 
 - Conclusion: `VERIFIED`.
 - Limitations: none.
 
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c1-ledger-threads` in the wording the operator narrowed.
+
 ## Learn
 
 ### Technical
