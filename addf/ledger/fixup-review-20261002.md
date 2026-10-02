@@ -1,11 +1,12 @@
-# Ledger — ledger-threads-and-concurrent-tasks
+# Ledger thread — `fixup-review-20261002`
 
-Questions raised while shaping this Task, with the operator's answers (2026-10-02).
+Edge cases in `gir fixup` and `--split` found by a `/code-review high` of `feat/fixup-modes` on 2026-10-02.
+Copied here unchanged from the `ledger.md` of the Task `ledger-threads-and-concurrent-tasks`, which received them only because the retired root Ledger handed off all its entries at once.
 
-## Moved from the root `LEDGER.md`
-
-The root `LEDGER.md` held these entries when the Task started; they are moved here unchanged, as Work control's handoff requires.
-They are not about this Task: success criterion `c5-findings-thread` moves them on into their own thread.
+Append-only: never edit or delete a prior entry; append new ones at the end.
+An entry is named by its position among the `Q:` entries, `Q1` being the first.
+Settle an entry with a `D:` line that names it.
+See `skills/work-control.md`'s Ledger section for the full contract, including how a Task takes entries and when the thread is archived.
 
 Entries 1–10 come from a `/code-review high` of `feat/fixup-modes` at `d246ab2`, run on 2026-10-02 against `target/debug/gir` with git 2.56.0 in throwaway repos.
 Its repro scripts and logs are kept locally in `.scratch/code-review-edgecases-20261002-0933/` (gitignored, so not shared).
@@ -62,36 +63,3 @@ For each one, whether to fix it on this branch is still OPEN.
   A: No, read from the files.
   `ROADMAP.md` lines 6, 7 and 40 and many lines of `CLIENT-TESTING.md` hold several sentences each.
   `addf/SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` is wrapped at a fixed width.
-
-## This Task
-
-- Q: Which two findings should become Tasks, and how should the root Ledger hand off ten findings to two Tasks?
-  A: OPEN for the findings. The operator judged that the root Ledger is a poor home for data about one Task, and that two Tasks at once is a case addf keeps running into, so addf needs an amendment first.
-- Q: What is wrong with the root Ledger?
-  A: It does three jobs: pre-Task exploration, a backlog of unscheduled findings, and state shared by every Task and worktree. Its all-or-nothing handoff cannot split one exploration across several Tasks or none, and one shared append-only file conflicts across worktrees.
-- Q: Could the two fixes be one Task under the current rules instead?
-  A: Yes, but the eight untasked findings would still have no home; that is the main reason for the amendment.
-- Q: Where should pre-Task exploration live?
-  A: Ledger threads: `ledger/<thread>.md`, one append-only file per exploration. A Task copies the entries it takes, and the thread records which Task took each.
-- Q: Where should findings nobody is working on yet live?
-  A: As open entries in their thread, until each is taken by a Task, rejected, or moved elsewhere; the thread is archived only when every entry is settled.
-- Q: Which rules for several active Tasks should addf adopt?
-  A: All four offered: ask which Task when resuming with more than one active; Tasks that overlap in spec modules or files declare it and their order; the Isolate question is asked per Task; and a cap on active Tasks.
-- Q: What is the cap?
-  A: 3.
-- Q: Should the amendment come before the two fixes?
-  A: Yes, as its own Task under the current rules; the fix Tasks then start under the new ones.
-- Q: Isolated workspace and line of development?
-  A: No new one: worktree `.worktrees/fixup-modes`, branch `feat/fixup-modes`. The earlier ledger commit `e3e3c3b` was made before this question was asked, which the Isolate rule did not allow.
-- Q: Are the objective, scope and success criteria viable and desirable?
-  A: Agreed by the operator, as written in `TASK.md`.
-- Q: Does writing to a ledger thread trigger the Isolate question?
-  A: No; only creating a Task does. A thread is committed where it is written, and before a new workspace is branched from it.
-- Q: When one Task takes every entry of a thread, what happens to the thread?
-  A: It moves into the Task's folder as its `ledger.md`; copying with a disposition line is only for a Task that takes part of a thread.
-- Q: What should `check-capsule` enforce?
-  A: All four offered: refuse a root `LEDGER.md`; `INDEX.md` lists exactly the open threads; refuse more than 3 active Tasks; check threads in prose mode.
-- Q: What does declaring an order between overlapping Tasks commit them to?
-  A: The order of spec publication: the earlier Task publishes and finishes first, and the later one re-reads the current spec before its own `VERIFY`. Work may run in parallel.
-- Q: Where are the ten fixup findings now?
-  A: In the thread `ledger/fixup-review-20261002.md`, copied unchanged with their introducing paragraph (`c5-findings-thread`).

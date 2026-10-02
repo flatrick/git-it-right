@@ -22,7 +22,8 @@ is available through its archived bundle, not through this index.
 
 ## Ledger
 
-`NONE`. `LEDGER.md` holds no entries.
+- [fixup-review-20261002](ledger/fixup-review-20261002.md) - ten edge cases
+  in `gir fixup` and `--split` from a code review; all ten open.
 
 ## Skills
 
@@ -83,11 +84,11 @@ is available through its archived bundle, not through this index.
     heading.
 -   Update this index in the same pass that adds, terminalizes, promotes,
     or corrects a current artifact. Work control owns the active-Task and
-    Ledger entries; Stewardship owns terminal removal, promotion, and
-    correction.
+    Ledger entries; Stewardship owns terminal removal, archived threads,
+    promotion, and correction.
 -   A stale entry is a discovery defect in this file, not evidence
     against the artifact it names.
 -   Do not copy another repository's populated `INDEX.md` during adoption.
     Create this file fresh and list only what exists at the destination.
--   The same applies to `SPEC.md`, `spec/`, and `LEDGER.md`. They are instance
+-   The same applies to `SPEC.md`, `spec/`, and `ledger/`. They are instance
     data, never source capsule content.

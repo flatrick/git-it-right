@@ -82,10 +82,10 @@ repository's `SPEC.md` or its `spec/` modules. Leave `spec/` absent until the
 destination specification is large enough to need a child module from
 `templates/SPEC-MODULE.md`.
 
-The same applies to `LEDGER.md`: it holds this repository's own in-progress
-pre-Task exploration, never the source's. Create the destination's
-`LEDGER.md` fresh from `templates/LEDGER.md`, empty, regardless of what the
-source repository's `LEDGER.md` currently holds.
+The same applies to `ledger/`: its threads hold this repository's own pre-Task exploration, never the source's.
+Do not copy any thread; the destination creates its own from `templates/LEDGER-THREAD.md` as its exploration needs them.
+A destination adopted before threads existed may still have a root `LEDGER.md`, which `scripts/check-capsule` refuses.
+Move its entries unchanged into a thread under `ledger/`, or delete the file if it holds only the empty template, and list any new thread in `INDEX.md`.
 
 Before copying `RECOMMENDATIONS.md`, check it for a repository-specific
 narrative claim (a sentence naming "this repository" and a fact only true of
@@ -172,7 +172,7 @@ past a collision without the explicit review above.
 
 - The framework root is the only configurable value.
 - Reusable framework material is copied. `SPEC.md`, `spec/`, `INDEX.md`, and
-  `LEDGER.md` are created as destination instance data.
+  `ledger/` are created as destination instance data.
 - `scripts/` is reusable framework material; archive compatibility baselines
   are repository instance data.
 - Never overwrite a differing destination file without explicit review

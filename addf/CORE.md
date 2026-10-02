@@ -17,11 +17,9 @@ change directly, without loading a responsibility Skill. At or above it,
 load [Work control](skills/work-control.md) before further investigation or
 change.
 
-Before the threshold is crossed, or before a Task's name and objective are
-settled, do not let that exploration evaporate: append every question and
-answer it raises to the pre-Task Ledger (`LEDGER.md`, at the framework
-root). See Work control's Ledger section for the append-only contract and
-what happens to it once a Task starts.
+Before the threshold is crossed, or before a Task's name and objective are settled, do not let that exploration evaporate.
+Append every question and answer it raises to a Ledger thread: one append-only file per exploration under `ledger/`.
+See Work control's Ledger section for the thread contract and what happens to a thread's entries once a Task takes them.
 
 ## The lifecycle
 
@@ -40,7 +38,7 @@ current action does not need:
   [the index](INDEX.md) first; work may already be in flight, and a Task's
   State is not discoverable any other way), transitioning its lifecycle
   State, reading the current specification, deciding whether work meets the
-  Task-worthy threshold above, maintaining the pre-Task Ledger, or deciding
+  Task-worthy threshold above, maintaining Ledger threads, or deciding
   whether to isolate work in a new workspace and line of development.
 - [Evidence and verification](skills/evidence-and-verification.md) — a
   material Claim must be established, contradicted, or deferred.

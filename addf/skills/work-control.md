@@ -5,8 +5,8 @@ description: Use when meaningful repository work starts or resumes, or when its 
 
 # Work control
 
-Maintain one Task as the resumable execution cursor and gate lifecycle
-transitions. Paths below are relative to the framework root.
+Maintain each active Task as its own resumable execution cursor and gate lifecycle transitions.
+Paths below are relative to the framework root.
 
 ## Activate
 
@@ -20,60 +20,59 @@ change. Record the triggering observation under Material empirical premises.
 
 ## Isolate
 
-**SHALL:** Before making any repository change once this Activate gate is
-crossed — including a Ledger entry or creating a Task — ask the operator
-whether this work should happen in a new isolated workspace and a new
-isolated line of development, keeping the current one clean, unless the
-operator already answered that question earlier in this conversation, in
-which case use that answer instead of asking again.
+**SHALL:** Before a new Task's first repository change, including creating the Task, ask the operator whether this Task should happen in a new isolated workspace and a new isolated line of development, keeping the current one clean.
+Ask once per Task: an answer given for another Task, in this conversation or earlier, does not carry over.
 
 **Reason:** An operator who did not ask for in-place changes should not
 discover them mixed into their current workspace and line of development;
 asking once, up front, is cheaper than an unwanted merge or a manual
 cleanup later.
+Several Tasks can be active at once, and each may belong in a different place, so one Task's answer cannot stand for another's.
 
-**Scope:** Any version-controlled repository, once this Activate gate is
-crossed (Task-worthy work). Below that threshold, work stays informal per
-Core and this constraint does not apply. In git, "isolated workspace"
+**Scope:** Every new Task in a version-controlled repository.
+Writing to a Ledger thread does not trigger this question: a thread is pre-Task material, committed in the workspace where it is written.
+Below the Activate threshold, work stays informal per Core and this constraint does not apply.
+In git, "isolated workspace"
 means a new `git worktree` (or a fresh clone where worktrees are
 unavailable) and "isolated line of development" means a new branch;
 another VCS should use its closest equivalent (a second checkout and a new
 named branch or bookmark).
 
-If the operator answers yes, create the isolated workspace and line of
-development before any other change. If the root `LEDGER.md` already holds
-entries, carry its content into the new workspace as the first act after
-creating it: an isolated workspace starts from a committed revision, so
-uncommitted pre-Task exploration stays behind in the old one and the Ledger
-handoff below would find nothing to move. If the operator answers no, or the
-repository has no VCS, proceed in the current workspace. Either way, record
-the decision (and, once created, the workspace/branch identity) in the
-Ledger, or in the Task's Constraints once one exists — whichever is current
-at that point.
+If the operator answers yes, first commit every Ledger thread the Task draws on, then create the isolated workspace and line of development before any other change.
+An isolated workspace starts from a committed revision, so an uncommitted thread would stay behind and the Ledger handoff below would find nothing to take.
+If the operator answers no, or the repository has no VCS, proceed in the current workspace.
+Either way, record the decision, and once created the workspace and branch identity, in the Task's Constraints.
 
 ## Ledger
 
-Before a Task exists, or before its name and objective are settled, keep the
-exploration that leads there from being lost. Append every question and its
-answer — or its still-open state — that comes up while deciding whether work
-is Task-worthy, or while shaping what a Task would even be, to `LEDGER.md` at
-the framework root. It is append-only: never edit or delete a prior entry,
-only add new ones. One entry per question:
+Before a Task exists, or before its name and objective are settled, keep the exploration that leads there from being lost.
+Write it to a Ledger thread: one file per exploration under `ledger/`, named with a short kebab-case slug and created from `templates/LEDGER-THREAD.md`.
+One exploration, such as a code review, can lead to several Tasks or to none, so a thread belongs to its exploration, not to a Task.
+Append every question and its answer, or its still-open state, that comes up while deciding whether work is Task-worthy or while shaping what a Task would be.
+A thread is append-only: never edit or delete a prior entry, only add new ones at the end.
+One entry per question:
 
 - Q: `<question>`
   A: `<answer, or OPEN if still unresolved>`
 
-Before raising a new question, check the current Ledger; do not duplicate one
-it already holds an answer for.
+An entry is named by its position among the thread's `Q:` entries, `Q1` being the first; append-only keeps that position stable.
+Settle an entry by appending a disposition line that names it, never by editing the entry:
 
-When a Task is created (Start or resume, below), move the Ledger's
-accumulated content into the new Task's bundle as an owned artifact (for
-example `ledger.md`), and fold anything still material into Material
-empirical premises, Open questions, or Constraints as appropriate. Then reset
-the root `LEDGER.md` to its empty state from `templates/LEDGER.md`, so the
-next pre-Task exploration starts clean. The copy moved into the Task bundle
-is the durable record; nothing that mattered is lost by clearing the root
-file.
+- D: `<Q positions, or all>` -> `<taken by Task name | rejected: reason | moved to place>`
+
+Before raising a new question, check the open threads `INDEX.md` lists; do not duplicate one a thread already answers.
+Add a question to the thread whose exploration it belongs to, or start a new thread and list it in `INDEX.md` in the same pass.
+
+When a Task is created (Start or resume, below), it takes the thread entries it was shaped from:
+
+- If it takes every entry of a thread, move the thread file into the Task's bundle as `ledger.md` and remove the thread from `INDEX.md`. No disposition line is needed.
+- Otherwise, copy the entries it takes into the bundle's `ledger.md`, unchanged and naming the thread and their positions, and append a disposition line to the thread naming the Task. The copy keeps the bundle self-contained after archival.
+
+Fold anything still material into Material empirical premises, Open questions, or Constraints.
+Once the Task exists, its own `ledger.md` holds the rest of its DEFINE dialogue.
+
+A thread whose every `Q:` has a disposition is settled; load [Stewardship](stewardship.md) to archive it.
+Entries no Task has taken stay open in their thread, listed through `INDEX.md`, until each is taken, rejected, or moved.
 
 ## Define
 
@@ -88,14 +87,14 @@ for gaps, ambiguity, and missing constraints, and ask about them. Treat
 what the operator says with default skepticism at the level of detail, even
 when the general shape is almost certainly right: the agent's role is to
 surface which specifics still need pressure-testing, not to accept them at
-face value. Use the Ledger (above) to hold this dialogue's questions and
-answers for as long as a Task's name and objective remain unsettled.
+face value.
+Hold this dialogue's questions and answers in a Ledger thread (above) until the Task exists, then in the Task's own `ledger.md`.
 
 Read `SPEC.md` before settling the Task. Follow its ordered specification map
 only as far as the objective requires. Record the current specification
 references, the proposed delta or `NONE`, and a terminal publication value of
 `PENDING` in the Task's Specification impact section. The current specification
-contains completed truth; the active Task carries the proposal.
+contains completed truth; each active Task carries its own proposal.
 
 **SHALL:** Mark DEFINE's exit claim ("Outcome and bounds can guide
 investigation and verification") `ESTABLISHED` only when the operator has
@@ -124,25 +123,34 @@ Read `INDEX.md` before either path. It is the only route by which a session
 holding no conversation memory learns that a Task is already in flight;
 without it, resuming depends on the agent guessing to look under `tasks/`.
 
-For new work, create `tasks/<task-name>/TASK.md` from
+For new work, first count the active Tasks `INDEX.md` lists.
+At most three Tasks may be active at once; with three active, do not create another.
+Tell the operator, and let them choose which active Task to finish or stop first.
+
+Otherwise, create `tasks/<task-name>/TASK.md` from
 `templates/TASK-RECORD.md`. Set Contract version to `2`, and set State and State
 path to `DEFINE`. Set Resume at to one concrete action, question, or artifact
 reference. For every obligation, name its earliest blocking gate or explicit
 deferred checkpoint. Fill the Specification impact section from the current
 `SPEC.md` tree. Add the Task to `INDEX.md` under Active Tasks — path, objective
-phrase, and current State — in the same pass. If a pre-Task Ledger exists,
-perform its handoff (above) in the same pass, and update the index's Ledger
-entry to match.
+phrase, and current State — in the same pass.
+Perform the Ledger handoff (above) for the thread entries the Task takes in the same pass, and update the index's Ledger entries to match.
+
+Compare the new Task's Specification impact, and the files it expects to change, with every other active Task.
+Where they overlap, record the overlap and the order in both Tasks' Constraints.
+The order is the order of spec publication: the earlier Task publishes its delta and terminalizes first.
+The later Task may work in parallel, but re-reads the current specification after the earlier one terminalizes, before its own `VERIFY`.
 
 When resuming:
 
-1. Read only Resume first. State must equal the final State path entry.
-2. If they differ, stop and repair the cursor from task-local evidence. Never
+1. If more than one Task is active and the operator has not named one, list the active Tasks from `INDEX.md` and ask which to resume.
+2. Read only Resume first. State must equal the final State path entry.
+3. If they differ, stop and repair the cursor from task-local evidence. Never
    infer State from artifact presence.
-3. Read the objective, success criteria, constraints, Specification impact,
+4. Read the objective, success criteria, constraints, Specification impact,
    current-State section, and only references needed for material Decisions and
    open obligations. Do not scan every owned artifact.
-4. Conservatively classify any ambiguous obligation to the earliest gate it
+5. Conservatively classify any ambiguous obligation to the earliest gate it
    may block.
 
 A terminal Task does not resume the same traversal. Start a new Task and
@@ -227,7 +235,7 @@ conditions.
 Load [Evidence and verification](evidence-and-verification.md) when a claim
 must be established, contradicted, or deferred. Load
 [Stewardship](stewardship.md) before Complete, Stop, archival, promotion, or
-another change to current truth. Work control owns the active cursor;
+another change to current truth. Work control owns each active cursor;
 Stewardship owns its terminal publication.
 
 ## Exit check
@@ -239,12 +247,12 @@ Stewardship owns its terminal publication.
 - Each obligation names a blocking gate or deferred checkpoint.
 - The next transition is justified and no contradiction is hidden.
 - Only context needed for the current action was loaded.
-- No pre-Task Ledger content was silently discarded: it is either still
-  accumulating at the root, or was moved into the started Task's bundle. If
-  an isolated workspace was created, the Ledger came with it.
-- Isolation was asked about (or already answered earlier in this
-  conversation) before this pass's first repository change.
+- No Ledger entry was silently discarded: each is still open in its thread, settled by a disposition line, or moved with its whole thread into a Task's bundle.
+- Every thread a new isolated workspace drew on was committed before the workspace was created.
+- Each new Task's Isolate question was asked before that Task's first repository change.
+- At most three Tasks are active, and active Tasks that overlap record the overlap and their order in their Constraints.
 - The Task names the current specification it consumed, its proposed delta or
   `NONE`, and its terminal publication state.
 - `INDEX.md` names every active Task at its current State, and names no
   Task that is not active.
+- `INDEX.md` lists every thread under `ledger/`, and no other file as a thread.

@@ -14,7 +14,7 @@ regardless.>
 Skill, Rule, or one of CORE.md/RECOMMENDATIONS.md/REFERENCES.md/ADOPT.md.
 `NONE` if this entry only records friction, with no fix yet. Not for
 changes to Task-instance content (tasks/, SPEC.md's product content,
-LEDGER.md entries, knowledge/) — see `rules/self-improvement-log.md`'s
+ledger/ threads, knowledge/) — see `rules/self-improvement-log.md`'s
 Scope.>
 
 ## Files touched
