@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then publish the delta and complete.
+**Resume at:** `NONE`
 
-**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -30,7 +30,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-split-refusals`, `framework:spec/fixup.md#req-fixup-ask-several`, `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-insertion-target`
 - Proposed delta: `split-refusals`, `ask-several` and `split-flag-hint` reworded, and a new `split-ask`, as written under Decide.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/fixup.md#req-fixup-split-flag-hint`, `framework:spec/fixup.md#req-fixup-ask-several`, `framework:spec/fixup.md#req-fixup-split-refusals`, `framework:spec/fixup.md#req-fixup-split-ask`
 
 ## Define
 
@@ -282,8 +282,9 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir fixup --split` no longer gives advice that cannot work (`45174c6`). At a terminal it asks which commit each untraceable file (new, binary, mode-only) belongs to and places its staged version there, and asks which neighbour an insertion between two commits' lines belongs to. Without a terminal it refuses both with advice that works. The picker's `s` and the `--split` hint appear only when the split can go ahead.
+The delta is published in `spec/fixup.md`: `split-flag-hint`, `ask-several` and `split-refusals` reworded, and a new `split-ask`.
 
 ### Gate basis
 
-`PENDING`
+All six success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0; the delta is published in this checkpoint. No Claim is carried forward.

@@ -74,7 +74,7 @@
 **split-hint.** On a multiple-target refusal, `gir fixup` SHALL print `split: git restore --staged . && git add -p, then one gir fixup per commit` on stderr.
 
 <a id="req-fixup-split-flag-hint"></a>
-**split-flag-hint.** On a multiple-target refusal, `gir fixup` SHALL print `or: gir fixup --split creates one fixup! per commit` on stderr after the split hint.
+**split-flag-hint.** On a multiple-target refusal, `gir fixup` SHALL print `or: gir fixup --split creates one fixup! per commit` on stderr after the split hint, unless a staged hunk changes lines last changed by several commits.
 
 <a id="req-fixup-absorb-hint"></a>
 **absorb-hint.** On a multiple-target refusal of `gir fixup` itself with `git-absorb` installed, it SHALL print `or: git absorb (installed) creates one fixup per commit` on stderr.
@@ -85,7 +85,7 @@
 **interactive.** A run SHALL be interactive when `GIR_INTERACTIVE` is `1`, or when `GIR_INTERACTIVE` is not `0` and stdin and stderr are both terminals; a run with `--dry-run` SHALL NOT be interactive.
 
 <a id="req-fixup-ask-several"></a>
-**ask-several.** When interactive and the staged hunks identify several eligible commits, `gir fixup` SHALL, instead of refusing, list each target numbered from `1` with its 10-character commit ID, subject and file locations, then `s) split: one fixup! per commit`, on stderr, and read an answer from stdin.
+**ask-several.** When interactive and the staged hunks identify several eligible commits, `gir fixup` SHALL, instead of refusing, list each target numbered from `1` with its 10-character commit ID, subject and file locations, then, unless a staged hunk changes lines last changed by several commits, `s) split: one fixup! per commit`, on stderr, and read an answer from stdin.
 
 <a id="req-fixup-ask-branch-commit"></a>
 **ask-branch-commit.** When interactive, and automatic selection meets a new file or a file or hunk it cannot trace, or `gir reword` has no commit argument, gir SHALL list up to 20 of the newest commits after the base commit, or on `HEAD` when no base is found, numbered from `1` with their 10-character commit ID and subject, on stderr, and read an answer from stdin.
@@ -102,7 +102,10 @@
 **split.** `gir fixup --split` without a commit argument SHALL create one commit per target the staged hunks identify, in ascending order of full commit ID, each holding only the hunks traced to its target, leaving the working tree and the index unchanged and `HEAD`'s tree equal to the tree staged before the command.
 
 <a id="req-fixup-split-refusals"></a>
-**split-refusals.** Before creating any commit, `--split` SHALL refuse a hunk whose lines trace to several commits with `gir: <path>:<line> spans several commits; split it with git add -p` on stderr and exit `2`; the other refusals of automatic selection SHALL apply unchanged.
+**split-refusals.** Before creating any commit, `--split` SHALL refuse a hunk that changes lines last changed by several commits with `gir: <path>:<line> spans several commits; split it with git add -p` on stderr and exit `2`. When not interactive, it SHALL refuse a staged file it cannot trace with `gir: <reason>; --split cannot place it: commit it on its own or unstage it (git restore --staged -- <path>), then run gir <subcommand> --split again`, and an insertion whose adjacent lines were last changed by two eligible commits with `gir: <path>:<line> is an insertion between lines of <sha> <subject> and <sha> <subject>; run gir <subcommand> --split in a terminal to choose, or stage it on its own and run gir <subcommand> <commit>`, each on stderr with exit `2`, where `<reason>` is the clause automatic selection reports for that file. The other refusals of automatic selection SHALL apply unchanged.
+
+<a id="req-fixup-split-ask"></a>
+**split-ask.** When interactive, before creating any commit, `--split` SHALL ask for each staged file it cannot trace, with `gir: <reason>; pick the commit it belongs to:` and the commits `ask-branch-commit` lists, and SHALL ask for each insertion whose adjacent lines were last changed by two eligible commits, with `gir: <path>:<line> is an insertion between lines of two commits; pick the one it belongs to:` and those two commits numbered from `1`, the line above's first, each with its 10-character commit ID, subject and `(line above)` or `(line below)`. The file's staged version SHALL go into the chosen commit's autosquash commit, and the insertion SHALL go with the chosen commit's hunks; a cancel SHALL print `gir: cancelled; nothing committed` and exit `1` with no commit.
 
 <a id="req-fixup-split-with-target"></a>
 **split-with-target.** `--split` with a commit argument SHALL print `gir: --split finds each commit itself; drop the commit argument` to stderr and exit `2`.
