@@ -1,4 +1,27 @@
 # Changelog
+## v0.2.1 - 2026-10-02
+
+### CI
+
+- Check formatting
+
+### Documentation
+
+- Mark the gir library as internal
+- Link unpackaged docs by absolute URL
+- **release:** Add crates.io publish step
+
+### Miscellaneous
+
+- Add MIT and Apache-2.0 license files
+- Prepare crate metadata for crates.io
+- Stop tracking .idea
+- Declare minimum Rust version
+
+### Styling
+
+- Add rustfmt.toml matching existing layout
+- Apply cargo fmt
 ## v0.2.0 - 2026-10-02
 
 ### CI
