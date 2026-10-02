@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE`
 
-**Resume at:** Record the operator's answer about enabling CI in `ledger.md`, settle the objective and success criteria with them, then evaluate the DEFINE gate.
+**Resume at:** Transition to `UNDERSTAND` and verify the live repository settings and workflow execution path.
 
-**Open obligations:** Operator agreement on objective, scope, and success criteria blocks `DEFINE`; live settings, workflow changes, and verification block later gates.
+**Open obligations:** Live settings and workflow inspection block `UNDERSTAND`; repository settings and workflow changes block `IMPLEMENT`; readback, workflow checks, and safely enabling CI block `VERIFY`.
 
 ## Owned artifacts
 
@@ -26,7 +26,7 @@
 
 ### Objective
 
-Protect `main` against force pushes and deletion, and prevent unapproved external PRs from starting CI runs before Actions is enabled.
+Protect `main` against force pushes and deletion, prevent unapproved external PRs from starting CI runs, then enable CI after verifying the safeguards.
 
 ### Success criteria
 
@@ -60,17 +60,17 @@ Protect `main` against force pushes and deletion, and prevent unapproved externa
 <a id="actions-state"></a>
 #### `actions-state`
 
-- Claim: Actions is enabled only after the safeguards are verified, if the operator agrees that this Task should enable CI.
+- Claim: Actions remains disabled until the safeguards are verified, then the `ci` workflow runs on this branch without unapproved external PR execution.
 - State: `UNVERIFIED`
 - Scope: `flatrick/git-it-right` at completion.
-- Consequence if false: CI starts before the safeguards are in place, or stays disabled against the operator's intent.
-- Basis: Pending operator scope decision and GitHub readback.
+- Consequence if false: CI starts before the safeguards are in place or remains disabled after the operator-approved enable step.
+- Basis: Pending GitHub readback.
 
 ### Constraints
 
 - Work in the current `.worktrees/fixup-modes` worktree on `feat/fixup-modes`, as the operator chose in `ledger.md`.
 - Require approval for every external PR, as the operator chose in `ledger.md`.
-- Keep Actions disabled until protection, approval policy, and workflow safeguards are verified.
+- Keep Actions disabled until protection, approval policy, and workflow safeguards are verified. Then enable CI as the operator requested.
 - This Task precedes `doctor-fix-file-mode`'s hosted Windows CI verification. It proposes no product specification delta; that Task publishes its doctor delta after its own CI verification.
 
 ### Material empirical premises
@@ -86,7 +86,7 @@ Protect `main` against force pushes and deletion, and prevent unapproved externa
 
 ### DEFINE gate
 
-`NOT_SATISFIED`: the operator's scope and success-criteria answer is pending.
+`ESTABLISHED`: the operator asked to secure the public repository before enabling CI, chose this branch and approval for every external PR, asked to protect `main` against force pushes and deletion, and explicitly agreed to the proposed scope and success criteria with CI enabled after the safeguards are verified.
 
 ## Understand
 
