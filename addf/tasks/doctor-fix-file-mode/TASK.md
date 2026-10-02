@@ -155,7 +155,21 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 
 ## Decide
 
-`PENDING`
+-   **Mechanism.** After `Fix::Chmod`'s index update and skip-worktree restore, `apply` calls a new `make_executable_on_disk(root, paths)` for the same entries.
+    On Unix (`#[cfg(unix)]`) it builds each file's path from its stored bytes (`OsStr::from_bytes`), reads it with `symlink_metadata`, skips it if that fails or it is not a regular file, and otherwise adds an execute bit for each class (user, group, other) that has the read bit, the way `0644` becomes `0755`, writing the mode only when it changes.
+    On other platforms (`#[cfg(not(unix))]`) it does nothing: Windows has no executable bit and git keeps the mode in the index only.
+-   **What stays untouched:** content (only the mode is set); missing files (deleted, or outside a sparse cone) are skipped, never created; a symlink in place of a script is skipped, so its target is never changed; unmerged paths are already not flagged.
+-   **Skip-worktree entries whose file happens to exist** are made executable too, since `c2-fixed` asks for every fixed script that exists on disk.
+-   **Errors:** a failure to set the mode on an existing regular file is returned as `cannot make <path> executable: <error>`, like the other fixes' write errors; the index change made just before it stays.
+-   **Spec delta** (published at completion), appended to `exec-bit`: "On systems with an executable bit, `--fix` SHALL also make each of those files that exists in the working tree as a regular file executable, without changing its content, and SHALL NOT create a missing file or change the target of a symbolic link; on Windows it SHALL NOT change the working tree."
+-   **Rejected:** `chmod` before the index update, which would leave files executable if the index update fails; following symlinks (`fs::metadata`), which would make an unrelated target executable; reading the process umask, which needs `libc` for no observable gain over mirroring the read bits.
+-   **Verification strategy.** Tests first in `tests/doctor.rs`: one cross-platform test that `--fix` leaves no unstaged change for fixed scripts (it exercises the Windows branch on Windows CI), and `#[cfg(unix)]` tests for the on-disk bit, `git add` keeping `100755`, the hook running, an unstaged edit, and a symlink.
+    They run against the source at `98feea1` (extracted with `git archive`) and must fail there except the symlink guard; then `cargo test --no-fail-fast`, clippy, and `acceptance.py` on the old and new builds.
+    `c3-os-agnostic` by inspection of both branches; Windows CI is not observable here.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design is probed (`logs/probe-chmod-after-fix-20261002-1400.log`), stays inside `exec-bit`'s fix, and each success Claim has a planned check.
 
 ## Implement
 
