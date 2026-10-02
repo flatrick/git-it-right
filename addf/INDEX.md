@@ -20,7 +20,7 @@ is available through its archived bundle, not through this index.
 - [doctor-fix-file-mode](tasks/doctor-fix-file-mode/TASK.md) -
   gir doctor --fix makes fixed scripts executable on disk. State: `VERIFY`.
 - [public-ci-safeguards](tasks/public-ci-safeguards/TASK.md) - protect `main`
-  and control public CI runs before enabling Actions. State: `DECIDE`.
+  and control public CI runs before enabling Actions. State: `IMPLEMENT`.
 
 ## Ledger
 

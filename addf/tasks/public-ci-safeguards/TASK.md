@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Record the exact setting and workflow changes, their order, and verification checks.
+**Resume at:** Set `main` branch protection and all-external fork PR approval, then harden `.github/workflows/ci.yml` while Actions remains disabled.
 
 **Open obligations:** Live settings and workflow inspection block `UNDERSTAND`; repository settings and workflow changes block `IMPLEMENT`; readback, workflow checks, and safely enabling CI block `VERIFY`.
 
