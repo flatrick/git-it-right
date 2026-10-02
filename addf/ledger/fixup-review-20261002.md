@@ -65,3 +65,8 @@ For each one, whether to fix it on this branch is still OPEN.
   `addf/SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` is wrapped at a fixed width.
 - D: Q2 -> taken by Task diff-header-parsing
 - D: Q1, Q8 -> taken by Task split-preserves-index
+- Q: Can `gir fixup` trace a staged change to a file whose name contains a space?
+  A: No, reproduced on `d246ab2` and on the fixed build (review script `edge.py` case 2; `tasks/fixup-fixes-acceptance/logs/edge-old.log` and `edge-new.log` while that Task is active).
+  `gir fixup` reports `cannot tell which commit my file.txt belongs to`.
+  For such a name git writes the `---`/`+++` header with a trailing tab (`--- a/my file.txt` then TAB), and `parse_hunks` keeps the tab in the path, so the path never matches.
+  Found by the acceptance run of the header and split-index fixes; not caused by either fix.

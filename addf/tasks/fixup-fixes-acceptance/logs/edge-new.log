@@ -1,0 +1,69 @@
+
+=== 1 deleting a '-- comment' line then another hunk
+(0, '<sha> feat: lua')
+(0, '<sha> feat: lua')
+
+=== 1b split with '-- comment' deletion across two targets
+(0, 'gir: created fixup! for <sha> feat: lua two\ngir: created fixup! for <sha> feat: lua one\n  fold: git rebase --autosquash <sha>')
+fixup! feat: lua one | fixup! feat: lua two | feat: lua two | feat: lua one
+
+=== 2 file name with a space
+(2, 'gir: cannot tell which commit my file.txt belongs to; pass one: gir fixup <commit>')
+
+=== 3 apply.whitespace=error and trailing whitespace in split
+(2, 'On branch topic\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n  (use "git restore <file>..." to discard changes in working directory)\n\tmodified:   a\n\tmodified:   b\n\nno changes added to commit (use "git add" and/or "git commit -a")\ngir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
+feat: b | feat: a | chore: base
+
+=== 3b apply.whitespace=fix
+(2, 'On branch topic\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n  (use "git restore <file>..." to discard changes in working directory)\n\tmodified:   a\n\tmodified:   b\n\nno changes added to commit (use "git add" and/or "git commit -a")\ngir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
+feat: b | feat: a | chore: base
+
+=== 4 insertion between two commits' lines with --split
+(2, 'gir: f:1 spans several commits; split it with git add -p')
+
+=== 5 new file + --split, non-interactive
+(2, 'gir: new is a new file, so it has no earlier commit; pass one: gir fixup <commit>')
+
+=== 6 intent-to-add entry survives split?
+M  a
+M  b
+ A ita
+
+(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+fixup! feat: b | fixup! feat: a | feat: b | feat: a
+status after: ' A ita\n'
+
+=== 7 reword with staged changes
+(0, 'gir: created amend! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+amend! feat: a | feat: a | chore: base amend! feat: a
+
+status after: 'M  a\n'
+
+=== 8 deleted line content '-- /dev/null'-like and '--- a/'
+(0, '<sha> feat: sql')
+
+=== 9 split when a hunk deletes the whole file of one target
+(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+fixup! feat: b | fixup! feat: a | feat: b | feat: a
+
+=== 10 split, file mode + content change
+(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+fixup! feat: b | fixup! feat: a | feat: b | feat: a
+
+=== 11 split with pre-commit hook that fails on 2nd commit -> state
+(2, 'gir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
+feat: b | feat: a | chore: base
+status after: 'M  a\nM  b\n'
+
+=== 12 picker offers merge commit / main commits when no base (on main, no upstream)
+0  gir: new is a new file, so it has no earlier commit; pick the commit it belongs to:
+  1) <sha> feat: a
+pick [1-1, q]: gir: created fixup! for <sha> feat: a
+  fold: git rebase --autosquash <base>
+
+
+=== 13 squash --split opens editor per target; message check
+(0, 'gir: created squash! for <sha> feat: a\ngir: created squash! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+squash! feat: b | squash! feat: a | feat: b | feat: a
+
+[script exit 0]

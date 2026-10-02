@@ -14,7 +14,10 @@
 
 ## Owned artifacts
 
--   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `ledger.md` - the questions that shaped this Task, with the operator's answers.
+-   `review-scripts/` - the review's `edge.py`, `edge2.py` and `edge3.py`, copied unchanged except that `edge.py` reads the gir binary from `GIR_BIN` when set.
+-   `run_review_scripts.py` - runs those scripts against two builds, normalises commit IDs and temporary paths, and diffs.
+-   `logs/edge-old.log`, `logs/edge2-old.log`, `logs/edge3-old.log`, `logs/edge-new.log`, `logs/edge2-new.log`, `logs/edge3-new.log`, `logs/review-scripts-diff.log` - Evidence: the review scripts on `d246ab2` and on `HEAD`, normalised, and their diff.
 
 ## Specification impact
 
@@ -87,10 +90,10 @@ Show, comparing the reviewed build `d246ab2` with this branch's `HEAD`, that `06
 #### `p1-old-build-fails`
 
 -   Claim: On the old build `d246ab2`, the review's scripts still show the #1 and #2 failures.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0.
 -   Consequence if false: the before side of every comparison is unsound.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-old-build-fails).
 
 ### DEFINE gate
 
@@ -100,19 +103,26 @@ Show, comparing the reviewed build `d246ab2` with this branch's `HEAD`, that `06
 
 ### Relevant context
 
-`PENDING`
+-   The old binary is built from `git archive d246ab2` in a scratch directory, so no worktree or branch is added to the repository; the new binary is `target/debug/gir` at this branch's `HEAD`.
+-   The review scripts run every case in a fresh temporary repository with `GIR_INTERACTIVE=0`, `GIT_EDITOR=true` and an empty global config. Commit IDs differ between runs, so `run_review_scripts.py` replaces them and temporary paths before diffing.
+-   Their diff (`logs/review-scripts-diff.log`) differs only in `edge.py` cases 1 and 1b (finding #2) and the intent-to-add case, and in `edge2.py` cases 15 (sparse checkout) and 16 (`skip-worktree`) (finding #1); `edge3.py` is identical.
+-   `edge.py` case 2, a file name with a space, fails identically on both builds. git writes a trailing tab after such a name in `---`/`+++` lines, and `parse_hunks` keeps it in the path. It is a new finding, recorded as Q11 in `ledger/fixup-review-20261002.md`, and outside this Task.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `NONE`.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`. What remains is building the end-to-end scenarios, not an uncertainty.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: both builds exist, the before side is confirmed, and the review scripts' comparison is in `logs/`.
 
 ## Investigate
 
@@ -128,7 +138,14 @@ Show, comparing the reviewed build `d246ab2` with this branch's `HEAD`, that `06
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-old-build-fails"></a>
+### Verification: `p1-old-build-fails`
+
+- Claim: [p1-old-build-fails](#p1-old-build-fails)
+- Method: `run_review_scripts.py` with the binary built from `d246ab2`.
+- Evidence considered: `logs/edge-old.log` cases 1 and 1b (`cannot tell which commit header:5 belongs to`) and the intent-to-add case (`status after: '?? ita'`); `logs/edge2-old.log` cases 15 (` D out/c`) and 16 (` M cfg`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 

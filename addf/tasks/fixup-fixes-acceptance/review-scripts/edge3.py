@@ -1,0 +1,12 @@
+from edge import repo, commit, sh, gir, log, case
+case("20 trailing whitespace on the last line of the diff")
+d = repo()
+commit(d, "a", "a1\n", "feat: a"); commit(d, "b", "b1\n", "feat: b")
+open(f"{d}/a", "w").write("A1\n"); open(f"{d}/b", "w").write("B1   \n")
+sh(d, "git", "add", "-A"); print(gir(d, "fixup", "--split")); print(log(d))
+case("21 latin-1 content")
+d = repo()
+open(f"{d}/a", "wb").write(b"caf\xe9\n"); sh(d, "git", "add", "-A"); sh(d, "git", "commit", "-qm", "feat: a")
+commit(d, "b", "b1\n", "feat: b")
+open(f"{d}/a", "wb").write(b"CAF\xe9\n"); open(f"{d}/b", "w").write("B1\n")
+sh(d, "git", "add", "-A"); print(gir(d, "fixup", "--split")); print(log(d))
