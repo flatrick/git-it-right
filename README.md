@@ -15,6 +15,12 @@ Releases have binaries for Linux x86_64, Windows x86_64, and macOS Apple Silicon
 Each binary has a `.sha256` file; check it with `sha256sum -c <file>.sha256` (`shasum -a 256 -c` on macOS).
 The binaries are unsigned, so macOS Gatekeeper and Windows SmartScreen warn on first run.
 
+With a Rust toolchain, you can install from crates.io instead:
+
+```sh
+cargo install gir --locked
+```
+
 To build from source instead, you need `git` and a Rust toolchain (`rustup`).
 
 ```sh
@@ -206,3 +212,9 @@ git-cliff --bumped-version
 - Log any bug you find but do not fix right away in [BUGS.md](BUGS.md).
 - Merge a pull request with a merge commit, never a squash or rebase merge: `addf/` records cite a branch's commits by ID, and git-cliff builds the changelog from individual commits.
 - Commit `addf/` process records with the `addf` scope, for example `docs(addf): ...`; `cliff.toml` keeps that scope out of the changelog, so checkpoint commits cost nothing there.
+
+## License
+
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT), at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in gir by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
