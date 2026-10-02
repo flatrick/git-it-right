@@ -126,7 +126,11 @@ Show, comparing the reviewed build `d246ab2` with this branch's `HEAD`, that `06
 
 ## Investigate
 
-`PENDING`
+No probe is needed: the success Claims are themselves the observations to make, and no design choice depends on an unknown.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: no decision-relevant uncertainty is open.
 
 ## Decide
 
