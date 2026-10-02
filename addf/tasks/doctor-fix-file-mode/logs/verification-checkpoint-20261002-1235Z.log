@@ -1,0 +1,18 @@
+2026-10-02 12:35 UTC
+Branch: feat/fixup-modes
+HEAD: 7926f9792ff3ef7b7f450e20057159266c09e9a8
+
+gh pr status: no pull request for this branch before this checkpoint.
+gh pr create --draft --base main --head feat/fixup-modes:
+https://github.com/flatrick/git-it-right/pull/5
+gh pr view 5: OPEN, draft, base main, head 7926f9792ff3ef7b7f450e20057159266c09e9a8, no status checks.
+gh workflow list --all: ci disabled_manually (ID 367303764).
+gh run list --branch feat/fixup-modes --limit 5: no runs.
+
+cargo test --no-fail-fast -q: exit 0; all test binaries passed, 240 tests total.
+cargo clippy --all-targets -- -D warnings: exit 0; no warnings.
+python -m unittest discover -s addf/scripts/tests -q: exit 0; 63 tests passed.
+python addf/scripts/check-capsule --root addf --include-archive: exit 0; capsule is consistent.
+
+The Windows manual run and Windows CI have not been observed here. The operator
+was asked for the manual result and for a decision on re-enabling the workflow.

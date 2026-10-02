@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Wait for the operator's manual Windows test run of the pushed branch (and its Windows CI run); record it as the Verification of `c3-os-agnostic`, then set the VERIFY gate and continue to LEARN.
+**Resume at:** Draft PR #5 points at `7926f97`, but GitHub's `ci` workflow is disabled. Wait for the operator's decision on re-enabling it and the manual Windows result; observe Windows CI, then verify `c3-os-agnostic` and continue to LEARN.
 
-**Open obligations:** `c3-os-agnostic` waits for the operator's Windows test run of the pushed branch (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
+**Open obligations:** `c3-os-agnostic` waits for the manual Windows result and Windows CI, which requires a decision on the disabled workflow (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -27,6 +27,7 @@
 -   `criteria.py` - Probe: compares this file's Specification impact, Success criteria and premise with an earlier commit, ignoring State and Basis lines.
 -   `logs/inspection-windows-branch-20261002-1404.log` - Evidence: the code change at `7ff434a`, every `cfg(unix)`/`cfg(not(unix))` in the touched files, and the installed Rust targets.
 -   `logs/criteria-unchanged-20261002-1405.log` - Evidence: the Success criteria, Specification impact and premise at `98feea1` against this checkpoint, ignoring State and Basis lines.
+-   `logs/verification-checkpoint-20261002-1235Z.log` - Evidence: draft PR #5, the disabled CI workflow, and the local verification checks at `7926f97`.
 
 ## Specification impact
 
@@ -247,6 +248,10 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 The sub-agent stopped in `VERIFY` at this checkpoint: `c3-os-agnostic`'s Scope names Windows CI, which runs only after a push, and pushing is outside its authority.
 `VERIFY`'s gate is `NOT_SATISFIED` until the operator settles `c3-os-agnostic`, for example by pushing and reading the Windows CI result, or by narrowing its Scope.
 After that, LEARN and the terminal checkpoint remain, including publishing the delta under Specification impact as worded in Decide.
+
+### Checkpoint on 2026-10-02
+
+Draft PR [#5](https://github.com/flatrick/git-it-right/pull/5) is open at `7926f97`. GitHub reports no checks or runs because workflow `ci` is `disabled_manually`. The operator was asked whether to re-enable it and for the manual Windows test result. Local tests, clippy, capsule tests and the archive check pass at this revision (`logs/verification-checkpoint-20261002-1235Z.log`). None of these observations establishes `c3-os-agnostic`; its State and the VERIFY gate remain unchanged.
 
 ## Learn
 
