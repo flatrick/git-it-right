@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Record the `VERIFY` gate result from [run 37020537546](https://github.com/flatrick/git-it-right/actions/runs/37020537546) (`logs/ci-green-run-20261002.log`), then transition to `LEARN`.
+**Resume at:** Fill `## Learn` (Technical and Process) with the material learning from this Task and its disposition, then record the `LEARN` gate.
 
 **Open obligations:** `c5-spec` is published in the terminal checkpoint.
 
