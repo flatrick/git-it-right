@@ -199,3 +199,5 @@ git-cliff --bumped-version
 - `cargo clippy --all-targets -- -D warnings` must pass.
 - Log any friction you hit, with the OS it happened on, in [FRICTION.md](FRICTION.md).
 - Log any bug you find but do not fix right away in [BUGS.md](BUGS.md).
+- Merge a pull request with a merge commit, never a squash or rebase merge: `addf/` records cite a branch's commits by ID, and git-cliff builds the changelog from individual commits.
+- Commit `addf/` process records with the `addf` scope, for example `docs(addf): ...`; `cliff.toml` keeps that scope out of the changelog, so checkpoint commits cost nothing there.
