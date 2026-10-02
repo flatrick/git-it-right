@@ -134,7 +134,17 @@ No probe is needed: the success Claims are themselves the observations to make, 
 
 ## Decide
 
-`PENDING`
+-   **`acceptance.py`** in this bundle runs the end-to-end scenarios against a given gir binary and prints one `PASS` or `FAIL` line per check, so the same script runs on the old and the new build:
+    -   `a2`: the `-- header` deletion and the `-- /dev/null` two-commit case through `gir fixup` or `gir fixup --split`, then `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash`, checking each original commit's file content afterwards.
+    -   `a3`: a sparse checkout, a `skip-worktree` file with a local edit and a `git add -N` file through `gir fixup --split` and the rebase, then `git add -A` and `git commit -a`, checking that the hidden file is still in `HEAD`, the private edit is not, and the intent-to-add file is still intent-to-add.
+    -   `a4` (new build): a linked worktree, cone mode with a sparse index, a subdirectory, `gir amend --split` and `gir squash --split` with `GIT_EDITOR=true`, and the picker's `s` with `GIR_INTERACTIVE=1`, each checking `git status` and `git ls-files -v`, and that no `gir-split-index-*` file remains in the git directory after a successful and a hook-refused split.
+-   **Integration tests** for the regression-relevant cases: the two-commit `-- /dev/null` case folded by rebase (`tests/fixup.rs`); `git add -A` and `git commit -a` after a split in a sparse checkout and with `skip-worktree`, a linked worktree, cone mode with a sparse index, a subdirectory, and no leftover temporary index after success and failure (`tests/fixup_modes.rs`). Amend, squash and the picker share the split code path already covered there, so they stay in `acceptance.py` only.
+-   **Verification strategy.** `acceptance.py` on both builds, logs committed; then `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+-   **On a failure** on the new build: stop, record it here, and report to the operator (Constraints).
+
+### DECIDE gate
+
+`ESTABLISHED`: every success Claim has a planned check.
 
 ## Implement
 
