@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
+**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
 
 ## Owned artifacts
 
@@ -56,37 +56,37 @@
 #### `c2-fixed`
 
 -   Claim: After the change, `gir doctor --fix` sets those index entries to `100755` without needing the file, leaves the working tree and the staged content unchanged (an unstaged edit stays unstaged), keeps hooks outside a sparse checkout's cone `skip-worktree`, leaves a file with unresolved conflict entries unflagged and its entries untouched, and finishes normally; hooks present in the working tree are still fixed.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: `--fix` still leaves repositories half-changed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-fixed).
 
 <a id="c3-tests"></a>
 #### `c3-tests`
 
 -   Claim: Regression tests fail on the code at this Task's start and pass after; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision; the tests follow `rules/os-agnostic-code.md`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-tests).
 
 <a id="c4-spec"></a>
 #### `c4-spec`
 
 -   Claim: `spec/doctor.md#req-doctor-exec-bit` states the outcome instead of the command, and the delta is published at completion.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the specification describes a mechanism that no longer exists.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-spec).
 
 <a id="c5-verified-here"></a>
 #### `c5-verified-here`
 
 -   Claim: The diff Codex produces is reviewed and verified by the supervisor in this worktree before it is committed; Codex's own report is not used as evidence.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this Task.
 -   Consequence if false: unverified delegated work lands on the branch.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c5-verified-here).
 
 ### Constraints
 
@@ -187,6 +187,44 @@ No further probe is needed for the design: the probes under Understand settled i
 - Evidence considered: `logs/acceptance-head-3ab3c09-20261002-1339.log`: the deleted-hook case exits `2` with `fatal: Unable to process path .githooks/pre-commit`, leaving every hook `100644` and `.gitattributes` unwritten; the local-edit case leaves `.githooks/commit-msg` staged with the edit.
 - Conclusion: `VERIFIED` for the narrowed Claim.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-c2-fixed"></a>
+### Verification: `c2-fixed`
+
+- Claim: [c2-fixed](#c2-fixed)
+- Method: checks run by the supervisor on the build of `246e837` and on the source before the change.
+- Evidence considered: `logs/acceptance-fixed-20261002-134930.log`: all 20 checks pass, including the deleted hook (no `fatal`, summary line reached, `.gitattributes` written, mode `100755`, file still absent), the sparse hooks (mode `100755`, still `S`, still absent) and the local edit (mode `100755`, edit unstaged, staged content unchanged); `logs/acceptance-old-20261002-134930.log` fails 7 of them. The conflict case: `doctor_fix_leaves_unmerged_hook_stages_untouched` passes (`logs/test-final-20261002-1348.log`), where both earlier builds resolved the conflict (`logs/probe-unmerged-hook-20261002-1345.log`). `logs/regression-doctor-names-20261002-1349.log` matches the `doctor-path-names` result.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. On `core.filemode=true` the fixed files stay `100644` on disk (Q15), as before.
+
+<a id="verification-c3-tests"></a>
+### Verification: `c3-tests`
+
+- Claim: [c3-tests](#c3-tests)
+- Method: checks run by the supervisor on the build of `246e837` and on the source before the change.
+- Evidence considered: `logs/tests-on-start-20261002-134930.log`: three of the five new tests fail on the source before the change (deleted hook, unstaged edit, conflict); the sparse and unchanged-hook tests pass there and guard against regressions. `logs/test-final-20261002-1348.log`: 235 passed, 0 failed. `logs/clippy-20261002-1348.log`: no warnings. The tests use only names Windows can hold and only `git`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only here; CI runs them on Windows, not observed.
+
+<a id="verification-c4-spec"></a>
+### Verification: `c4-spec`
+
+- Claim: [c4-spec](#c4-spec)
+- Method: checks run by the supervisor on the build of `246e837` and on the source before the change.
+- Evidence considered: The delta under Specification impact is published to `spec/doctor.md#req-doctor-exec-bit` in the terminal checkpoint.
+- Conclusion: `VERIFIED`.
+- Limitations: Publication and this Verification share one checkpoint, as Stewardship's terminal checkpoint requires.
+
+<a id="verification-c5-verified-here"></a>
+### Verification: `c5-verified-here`
+
+- Claim: [c5-verified-here](#c5-verified-here)
+- Method: checks run by the supervisor on the build of `246e837` and on the source before the change.
+- Evidence considered: Codex's two diffs (`logs/codex/run1.diff`, `logs/codex/run2-cumulative.diff`) were read here before use; review found the unmerged-path gap, fixed in run 2. The diff was applied unchanged and checked here with the full suite, clippy, `acceptance.py` on both builds and the new tests on the old source (logs/test-final-20261002-1348.log, logs/clippy-20261002-1348.log, logs/acceptance-old-20261002-134930.log, logs/acceptance-fixed-20261002-134930.log, logs/tests-on-start-20261002-134930.log). Codex's own claims (`logs/codex/run1-final-answer.txt`, `run2-final-answer.txt`) are not cited as evidence anywhere in this record.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c4-spec` with its publication in the terminal checkpoint.
 
 ## Learn
 
