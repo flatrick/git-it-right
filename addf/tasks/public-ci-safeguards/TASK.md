@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Verify GitHub Actions and branch settings, then inspect how the current workflow runs for fork PRs and pushes.
+**Resume at:** Settle the branch protection payload, fork approval policy, and safe order for enabling Actions.
 
 **Open obligations:** Live settings and workflow inspection block `UNDERSTAND`; repository settings and workflow changes block `IMPLEMENT`; readback, workflow checks, and safely enabling CI block `VERIFY`.
 
