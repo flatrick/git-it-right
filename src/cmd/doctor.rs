@@ -115,6 +115,13 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
     }
 }
 
+fn has_text_auto_rule(text: &str) -> bool {
+    text.lines().any(|l| {
+        let mut words = l.split_whitespace();
+        words.next() == Some("*") && words.any(|w| w == "text=auto")
+    })
+}
+
 fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     match std::fs::read(root.join(".gitattributes")).map(|b| String::from_utf8_lossy(&b).into_owned()) {
         Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
@@ -125,7 +132,7 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();
             out.push(check(Level::Warn, ".gitattributes", format!("missing{extra}"), Some(Fix::WriteFile(".gitattributes", templates::GITATTRIBUTES))));
         }
-        Ok(text) if !text.lines().any(|l| l.trim_start().starts_with("* text=auto")) => {
+        Ok(text) if !has_text_auto_rule(&text) => {
             out.push(check(Level::Info, ".gitattributes", "no `* text=auto` line; line endings are not normalised", None));
         }
         Ok(_) => out.push(check(Level::Ok, ".gitattributes", "", None)),
@@ -369,6 +376,16 @@ mod tests {
         }
         for good in ["console.rs", "auxiliary/x", "src/nul_check.rs", "a.b.c"] {
             assert!(!windows_unsafe(good.as_bytes()), "{good}");
+        }
+    }
+
+    #[test]
+    fn text_auto_rule_ignores_whitespace_and_attribute_order() {
+        for good in ["* text=auto", "*\ttext=auto", "*   text=auto eol=lf", "* eol=lf text=auto", "  * text=auto", "* text=auto\r", "# notes\n*\t\ttext=auto\n"] {
+            assert!(has_text_auto_rule(good), "{good:?}");
+        }
+        for bad in ["", "* text=autofoo", "# * text=auto", "*.txt text=auto", "* text", "* -text", "*text=auto"] {
+            assert!(!has_text_auto_rule(bad), "{bad:?}");
         }
     }
 }

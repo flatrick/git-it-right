@@ -68,7 +68,7 @@
 **gitattributes-autocrlf.** When `.gitattributes` does not exist and `core.autocrlf` is set to a value other than `false`, `gir doctor` SHALL append `and core.autocrlf=VALUE, so line endings depend on each clone` to its missing-file warning.
 
 <a id="req-doctor-gitattributes-rule"></a>
-**gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
+**gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose first whitespace-separated word is `*` and one of whose remaining words is exactly `text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
 
 <a id="req-doctor-editorconfig"></a>
 **editorconfig.** When `.editorconfig` does not exist, `gir doctor` SHALL print `info  .editorconfig: missing`; `--fix` SHALL create it with `root = true`; a `[*]` section setting `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`, `indent_style = space` and `indent_size = 4`; `trim_trailing_whitespace = false` for Markdown; `indent_size = 2` for YAML, JSON and TOML; `end_of_line = crlf` for `*.cmd`, `*.bat` and `*.sln`; and `indent_style = tab` for `Makefile`.
