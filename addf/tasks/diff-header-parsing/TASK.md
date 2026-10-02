@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Confirm `p1-dash-dash-reproduces` at the current `HEAD`, then read `parse_hunks` and its callers in `src/cmd/fixup.rs`.
+**Resume at:** Give every decision-relevant uncertainty a disposition, then transition to `DECIDE`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-dash-dash-reproduces` blocks `UNDERSTAND`.
 
