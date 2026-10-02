@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Measure what `serde_json` adds to the release binary and the dependency tree, against a hand-written parser; then take the parser choice and the `git -c` question to the operator.
+**Resume at:** Write the Decide section: data shape, loading order, validation, consumers, rejected alternatives, verification strategy and specification delta.
 
-**Open obligations:** Open questions on the JSON parser and `git -c` values (block `INVESTIGATE`).
+**Open obligations:** `NONE`.
 
 ## Owned artifacts
 
