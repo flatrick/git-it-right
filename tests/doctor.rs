@@ -666,13 +666,13 @@ fn doctor_suggests_ignore_rules_for_a_non_ascii_marker_name() {
     assert!(line.contains(" bin/ obj/"), "{report}");
 }
 
-// `--fix` passes the name to git as an argument, and Windows arguments cannot carry bytes
-// that are not valid UTF-8.
+// Windows cannot pass non-UTF-8 path bytes as arguments, and macOS cannot create this name
+// in the working tree. Git can store the raw bytes in its index on Unix.
 #[cfg(unix)]
 #[test]
 fn doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name() {
     let repo = Repo::new();
-    commit_files_named(&repo, &[b".githooks/hook\xe9"]);
+    add_index_entries(&repo, "100644", &[b".githooks/hook\xe9"]);
     let report = stdout(&repo.gir(&["doctor"]));
     assert_eq!(report_line(&report, "exec-bit"), Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\""), "{report}");
     let out = repo.gir(&["doctor", "--fix"]);
