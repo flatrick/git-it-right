@@ -143,7 +143,11 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Implement
 
-Pending.
+- Set `main` protection through GitHub's API. The immediate response and a separate readback both showed `enforce_admins:true`, `allow_force_pushes:false`, `allow_deletions:false`, and no required checks or PR reviews.
+- Set fork PR contributor approval to `all_external_contributors`. A separate readback showed that value; Actions remained disabled.
+- Committed `.github/workflows/ci.yml` at `19b3cf6`: explicit read-only token permissions, checkout without persisted credentials, per-ref run cancellation, and 30-minute test and 10-minute capsule job limits.
+- PyYAML parsed the workflow, and a focused check found the expected permissions, cancellation, job limits, and checkout settings. `actionlint` is not installed; the hosted run will check GitHub's workflow interpretation.
+- The branch still needs to be pushed before the hosted verification and enable step.
 
 ## Verify
 

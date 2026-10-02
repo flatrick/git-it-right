@@ -106,6 +106,7 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 -   Code and tests follow `rules/os-agnostic-code.md`.
 -   Delegated to a sub-agent from `UNDERSTAND` on; see `c6-stops-for-decisions`.
 -   No other Task is active.
+-   `public-ci-safeguards` now runs on the same branch and must finish before this Task's hosted Windows CI verification. It has no product specification delta; this Task publishes the doctor delta after its own verification.
 
 ### Material empirical premises
 
