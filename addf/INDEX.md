@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [split-patch-fidelity](tasks/split-patch-fidelity/TASK.md) -
-  gir fixup --split commits exactly the staged bytes. State: `INVESTIGATE`.
+  gir fixup --split commits exactly the staged bytes. State: `DECIDE`.
 
 ## Ledger
 
