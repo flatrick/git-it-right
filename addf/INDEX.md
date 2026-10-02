@@ -17,13 +17,14 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [split-refusal-advice](tasks/split-refusal-advice/TASK.md) -
+  --split asks or refuses with advice that works. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - twelve edge
-  cases in `gir fixup` and `--split` and the order to fix them; seven open
-  (Q1, Q2, Q3, Q4, Q8, Q11 taken).
+  cases in `gir fixup` and `--split` and the order to fix them; four open
+  (Q7, Q9, Q10, Q12).
 
 ## Skills
 
