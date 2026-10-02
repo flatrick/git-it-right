@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [doctor-fix-missing-hook](tasks/doctor-fix-missing-hook/TASK.md) -
-  gir doctor --fix sets the exec bit even without the file. State: `VERIFY`.
+  gir doctor --fix sets the exec bit even without the file. State: `LEARN`.
 
 ## Ledger
 
