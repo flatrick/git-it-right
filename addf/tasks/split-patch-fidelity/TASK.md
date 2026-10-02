@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Confirm `p1-split-loses-bytes` at the current `HEAD`, then read how the diff text reaches `parse_hunks` and `patch` (`git::run`, `diff.lines()`).
+**Resume at:** Confirm `p1-split-loses-bytes` at the current `HEAD`, then read how the diff text reaches `parse_hunks` and `patch`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-loses-bytes` blocks `UNDERSTAND`.
 
