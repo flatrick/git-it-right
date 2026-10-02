@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Record the temporary-index design under Decide, then transition to `IMPLEMENT`.
+**Resume at:** Write the planned tests in `tests/fixup_modes.rs`, see them fail, then add `git::TempIndex` and use it in `split.rs`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-drops-flags` blocks `UNDERSTAND`; re-reading the spec after `diff-header-parsing` terminalizes blocks `VERIFY`.
 
