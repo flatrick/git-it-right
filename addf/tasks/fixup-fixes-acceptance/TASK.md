@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then complete.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`
 
@@ -34,7 +34,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-staged-line-target`, `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-split-rollback`
 - Proposed delta: `NONE`. This Task tests behavior; it changes no requirement.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -273,8 +273,12 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+The header-parsing fix (`06c5ee4`) and the split-index fix (`3d8a04b`) are accepted, comparing the reviewed build `d246ab2` with this branch.
+The review's own scripts differ only in the cases of findings #1 and #2.
+End to end, through `git rebase --autosquash` and `git add -A` / `git commit -a`, the new build passes all 53 acceptance checks and the old build fails 31.
+Regression cases are integration tests (`2c6a352`), which fail on the old source.
+Two new findings are recorded in `ledger/fixup-review-20261002.md` (Q11, Q12).
 
 ### Gate basis
 
-`PENDING`
+All five success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0. No Claim is carried forward.
