@@ -26,15 +26,19 @@ fn section(source: &str, topic: &str) -> Option<String> {
 }
 
 fn types(cfg: &Config) -> String {
-    let mut out = String::from("Allowed types (gir.types in .girconfig):\n");
+    let mut out = match &cfg.types_file {
+        Some(file) => format!("Allowed types (from {}):\n", file.path.display()),
+        None => String::from("Allowed types (gir.types in .girconfig):\n"),
+    };
     for t in &cfg.types {
-        let summary = section(CHEATSHEET, t)
-            .and_then(|s| s.lines().next().map(str::to_string))
+        let described = cfg.types_file.as_ref().and_then(|f| f.defs.iter().find(|d| &d.ty == t)).map(|d| d.description.clone());
+        let summary = described
+            .or_else(|| section(CHEATSHEET, t).and_then(|s| s.lines().next().map(str::to_string)))
             .unwrap_or_else(|| format!("changelog group: {}", group_title(t)));
         out.push_str(&format!("  {t:<9} {summary}\n"));
     }
-    if !cfg.aliases.is_empty() {
-        let aliases: Vec<String> = cfg.aliases.iter().map(|(a, b)| format!("{a}->{b}")).collect();
+    let aliases: Vec<String> = cfg.aliases.iter().filter(|(a, _)| cfg.alias_for(a).is_some()).map(|(a, b)| format!("{a}->{b}")).collect();
+    if !aliases.is_empty() {
         out.push_str(&format!("Auto-mapped aliases: {}\n", aliases.join(" ")));
     }
     out.push_str("When to use each, with examples: gir explain <type>. Also: gir explain breaking, scopes, fixup.");

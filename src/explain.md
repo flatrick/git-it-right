@@ -115,6 +115,12 @@ Reword the commit: `git commit --amend` for the last commit, or `git rebase -i <
         feature = feat
         bugfix = fix
 
+`gir.typesFile` names a SourceGit type definition file (JSON: `Name`, `Type`, `Description` per type).
+Its types replace `types`, and an alias to a type it leaves out stops applying.
+Set it in `.girconfig`, or in git config (`git config --global gir.typesFile ~/cc-types.json`) for every repository.
+A relative path is relative to the file that sets it; an empty value in `.girconfig` turns off one from git config.
+An invalid file stops `lint`, the hooks and `init` until it is fixed.
+
 ## hooks
 `gir init` installs `.githooks/commit-msg` and `.githooks/pre-push` and sets `core.hooksPath = .githooks`.
 Each clone needs `gir init` (or `git config core.hooksPath .githooks`) once, because git does not trust hook paths from a clone.

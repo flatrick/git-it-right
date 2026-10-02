@@ -142,8 +142,9 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
         out.push(check(Level::Info, ".editorconfig", "missing; editors will not agree on indentation and newlines", Some(Fix::WriteFile(".editorconfig", templates::EDITORCONFIG))));
     }
 
-    if let Err(e) = Config::load_from(&root.join(config::FILE)) {
-        out.push(check(Level::Warn, config::FILE, e, None));
+    match Config::load_at(root) {
+        Ok(cfg) => out.extend(cfg.warnings.into_iter().map(|w| check(Level::Warn, config::FILE, w, None))),
+        Err(e) => out.push(check(Level::Warn, config::FILE, e, None)),
     }
 
     let files = git::run_raw(&["ls-files", "--cached", "--others", "--exclude-standard", "-z"]).unwrap_or_default();

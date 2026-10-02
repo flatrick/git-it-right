@@ -93,14 +93,14 @@ fn run() -> Result<i32, String> {
             Ok(0)
         }
         ("explain", [topic]) => {
-            let cfg = Config::load().unwrap_or_default();
+            let cfg = load_config().unwrap_or_default();
             let page = explain::page(topic, &cfg)
                 .ok_or_else(|| format!("no topic `{topic}`; topics: {}", explain::topics().join(" ")))?;
             gir::outln!("{page}");
             Ok(0)
         }
         ("lint", rest) => {
-            let cfg = Config::load()?;
+            let cfg = load_config()?;
             let opts = lint::Options { fix: flag("fix"), json: flag("json") };
             let source = match (range, rest) {
                 (Some(_), []) if opts.fix => return Err("gir lint --range cannot --fix recorded commits".into()),
@@ -113,7 +113,7 @@ fn run() -> Result<i32, String> {
             lint::lint(source, opts, &cfg)
         }
         ("hook", [name, rest @ ..]) => {
-            let cfg = Config::load()?;
+            let cfg = load_config()?;
             match (name.as_str(), rest) {
                 ("commit-msg", [file]) => hook::commit_msg(file, &cfg),
                 ("pre-push", [remote, ..]) => hook::pre_push(remote, &cfg),
@@ -122,6 +122,14 @@ fn run() -> Result<i32, String> {
         }
         _ => Err(format!("bad arguments for `{sub}`\n{USAGE}")),
     }
+}
+
+fn load_config() -> Result<Config, String> {
+    let cfg = Config::load()?;
+    for w in &cfg.warnings {
+        eprintln!("gir: warning: {w}");
+    }
+    Ok(cfg)
 }
 
 fn err(e: impl std::fmt::Display) -> String {
