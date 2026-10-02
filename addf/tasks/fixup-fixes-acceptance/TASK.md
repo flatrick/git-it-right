@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write `acceptance.py`, run it on both builds, then add the integration tests.
+**Resume at:** Waiting for the operator: approve moving `cfg.txt` into the base commit in `acceptance.py` scenarios `a3.2`, `a4.4` and `a4.5` (see Implement), then rerun both builds.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -17,6 +17,10 @@
 -   `ledger.md` - the questions that shaped this Task, with the operator's answers.
 -   `review-scripts/` - the review's `edge.py`, `edge2.py` and `edge3.py`, copied unchanged except that `edge.py` reads the gir binary from `GIR_BIN` when set.
 -   `run_review_scripts.py` - runs those scripts against two builds, normalises commit IDs and temporary paths, and diffs.
+-   `acceptance.py` - the end-to-end scenarios `a2`, `a3` and `a4` against one gir binary, one `PASS`/`FAIL` line per check.
+-   `logs/acceptance-new-20261002-1107.log` - Evidence: `acceptance.py` on the new build (first run).
+-   `logs/acceptance-old-20261002-1107.log` - Evidence: `acceptance.py` on the old build `d246ab2` (first run).
+-   `logs/control-skip-worktree-rebase-20261002-1107.log` - Evidence: control with plain git and no gir: rebasing onto `main` with a `skip-worktree` file that has a private edit and was added on `topic`.
 -   `logs/edge-old.log`, `logs/edge2-old.log`, `logs/edge3-old.log`, `logs/edge-new.log`, `logs/edge2-new.log`, `logs/edge3-new.log`, `logs/review-scripts-diff.log` - Evidence: the review scripts on `d246ab2` and on `HEAD`, normalised, and their diff.
 
 ## Specification impact
@@ -148,7 +152,10 @@ No probe is needed: the success Claims are themselves the observations to make, 
 
 ## Implement
 
-`PENDING`
+-   First run of `acceptance.py` (`logs/acceptance-new-20261002-1107.log`, `logs/acceptance-old-20261002-1107.log`): the new build passes 48 checks and fails 5; the old build passes 22 and fails 31.
+-   All 5 new-build failures are `git rebase -i --autosquash main` in `a3.2`, `a4.4` and `a4.5` (and the history check that depends on it), each with `error: Your local changes to the following files would be overwritten by checkout: cfg.txt`.
+-   Cause: the scenario, not gir. In those scenarios `cfg.txt`, the `skip-worktree` file with a private edit, is added on `topic`, so the rebase must check out `main`, where it does not exist. The control `logs/control-skip-worktree-rebase-20261002-1107.log` reproduces the same error with plain git and no gir, and shows the rebase succeeding when `cfg.txt` is committed on `main` instead.
+-   Per Constraints, work stopped here and the operator was asked before changing the scenario.
 
 ## Verify
 
