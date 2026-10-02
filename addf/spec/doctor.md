@@ -94,10 +94,13 @@
 **case-collision.** For indexed paths that differ only in case, `gir doctor` SHALL print `warn  case-collision: paths differ only in case` with the paths; `--fix` SHALL NOT rename them. The stages of one unmerged path SHALL NOT count as a collision.
 
 <a id="req-doctor-windows-names"></a>
-**windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, or the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
+**windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, a control character (a byte from 1 to 31), or bytes that are not valid UTF-8, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
 
 <a id="req-doctor-exec-bit"></a>
 **exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/`, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL run `git update-index --chmod=+x --` for those paths.
+
+<a id="req-doctor-path-display"></a>
+**path-display.** `gir doctor` SHALL read indexed and listed paths as Git stores them, and its report lines SHALL show each path as stored, except that a path with a control character or bytes that are not valid UTF-8 SHALL be shown C-quoted as Git quotes it.
 
 <a id="req-doctor-index-clean"></a>
 **index-clean.** When no indexed case collision, Windows-unsafe name, or missing executable bit exists, `gir doctor` SHALL count the index check as OK and SHALL print no index warning.

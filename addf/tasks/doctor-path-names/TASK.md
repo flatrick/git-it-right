@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then publish the delta and complete.
+**Resume at:** `NONE`
 
-**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -28,7 +28,7 @@
 
 - Current contract: `framework:spec/doctor.md#req-doctor-case-collision`, `framework:spec/doctor.md#req-doctor-windows-names`, `framework:spec/doctor.md#req-doctor-exec-bit`, `framework:spec/doctor.md#req-doctor-ignore-rules`
 - Proposed delta: `windows-names` also covers control characters and bytes that are not valid UTF-8; a new `path-display` says how report lines show paths; both as written under Decide.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/doctor.md#req-doctor-windows-names`, `framework:spec/doctor.md#req-doctor-path-display`
 
 ## Define
 
@@ -251,8 +251,9 @@ References to source files, commits and `spec/doctor.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir doctor` reads file names exactly as git stores them (`7068733`). `exec-bit` finds and fixes hooks with quoted or non-UTF-8 names, the ignore-rule check sees non-ASCII marker names, `windows-names` also flags control characters and names that are not UTF-8, and report lines show names as stored, in git's quoted form only for control characters and undecodable bytes.
+The delta is published in `spec/doctor.md`: `windows-names` extended and a new `path-display`.
 
 ### Gate basis
 
-`PENDING`
+All four success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0; the delta is published in this checkpoint. The Windows assumptions are deferred to the operator's Windows testing.
