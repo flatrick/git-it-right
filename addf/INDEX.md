@@ -17,8 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [split-preserves-index](tasks/split-preserves-index/TASK.md) -
-  gir fixup --split leaves untouched index entries alone. State: `LEARN`.
+`NONE`. No Task is currently active.
 
 ## Ledger
 

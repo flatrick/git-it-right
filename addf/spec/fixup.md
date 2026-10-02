@@ -99,7 +99,7 @@
 ## Splitting
 
 <a id="req-fixup-split"></a>
-**split.** `gir fixup --split` without a commit argument SHALL create one commit per target the staged hunks identify, in ascending order of full commit ID, each holding only the hunks traced to its target, leaving the working tree unchanged and `HEAD`'s tree equal to the tree staged before the command.
+**split.** `gir fixup --split` without a commit argument SHALL create one commit per target the staged hunks identify, in ascending order of full commit ID, each holding only the hunks traced to its target, leaving the working tree and the index unchanged and `HEAD`'s tree equal to the tree staged before the command.
 
 <a id="req-fixup-split-refusals"></a>
 **split-refusals.** Before creating any commit, `--split` SHALL refuse a hunk whose lines trace to several commits with `gir: <path>:<line> spans several commits; split it with git add -p` on stderr and exit `2`; the other refusals of automatic selection SHALL apply unchanged.
@@ -108,7 +108,7 @@
 **split-with-target.** `--split` with a commit argument SHALL print `gir: --split finds each commit itself; drop the commit argument` to stderr and exit `2`.
 
 <a id="req-fixup-split-rollback"></a>
-**split-rollback.** If creating a split commit fails, gir SHALL reset `HEAD` to the commit it started from and the index to the tree staged before the command, print a message ending `; restored HEAD and the index` on stderr, and exit `2`.
+**split-rollback.** If creating a split commit fails, gir SHALL reset `HEAD` to the commit it started from, leave the index as it was before the command, print a message ending `; restored HEAD and the index` on stderr, and exit `2`.
 
 <a id="req-fixup-split-output"></a>
 **split-output.** After splitting, gir SHALL print `gir: created fixup! for <10-character-sha> <target-subject>` for each commit and then one `  fold: git rebase --autosquash <10-character-base-sha>` line to stderr; with `--dry-run` it SHALL instead print each target's 10-character commit ID and subject on its own stdout line and create no commit.

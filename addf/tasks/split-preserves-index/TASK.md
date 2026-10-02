@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then publish the spec delta and complete.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`
 
@@ -28,7 +28,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-split-rollback`
 - Proposed delta: split and split-rollback also leave the `skip-worktree` and intent-to-add state of every index entry as it was before the command, and change no entry the split does not commit.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-split-rollback`
 
 ## Define
 
@@ -225,8 +225,10 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir fixup --split` now builds its commits in a temporary index and leaves the real one alone (`3d8a04b`).
+After a split, or a failed split that restores, a sparse checkout keeps its hidden files hidden, a `skip-worktree` file keeps its flag and private edit out of `git status`, and an intent-to-add file stays intent-to-add.
+The spec delta is published in `spec/fixup.md` (`split`, `split-rollback`).
 
 ### Gate basis
 
-`PENDING`
+All three success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0. No Claim is carried forward.
