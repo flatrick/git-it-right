@@ -17,13 +17,14 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [split-patch-fidelity](tasks/split-patch-fidelity/TASK.md) -
+  gir fixup --split commits exactly the staged bytes. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - twelve edge
-  cases in `gir fixup` and `--split` and the order to fix them; nine open
-  (Q1, Q2, Q8, Q11 taken).
+  cases in `gir fixup` and `--split` and the order to fix them; seven open
+  (Q1, Q2, Q3, Q4, Q8, Q11 taken).
 
 ## Skills
 
