@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Give every decision-relevant uncertainty a disposition under Investigate, then transition to `DECIDE`.
+**Resume at:** Record the selected design under Decide and get the operator's review of its open choices before `IMPLEMENT`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
