@@ -1,4 +1,19 @@
 # Changelog
+## v0.2.0 - 2026-10-02
+
+### CI
+
+- Move actions to their Node 24 majors
+- Build release binaries on version tags
+- Raise check-capsule's Python minimum to 3.11
+
+### Documentation
+
+- Mark release latest after publishing
+
+### Features
+
+- **config:** Read SourceGit's type definition file from gir.typesFile
 ## v0.1.0 - 2026-10-02
 
 ### Bug Fixes
