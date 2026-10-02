@@ -22,9 +22,9 @@ is available through its archived bundle, not through this index.
 
 ## Ledger
 
-- [fixup-review-20261002](ledger/fixup-review-20261002.md) - eleven edge
+- [fixup-review-20261002](ledger/fixup-review-20261002.md) - twelve edge
   cases in `gir fixup` and `--split` from a code review and its acceptance
-  run; eight open (Q1, Q2, Q8 taken).
+  run; nine open (Q1, Q2, Q8 taken).
 
 ## Skills
 

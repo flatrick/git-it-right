@@ -234,19 +234,40 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, on Linux.
 
 ### Technical
 
-`PENDING`
+-   When the behavior under test orders things by commit ID, as `--split` does, comparisons between runs need fixed commit dates; otherwise identical behavior looks different, or a difference can hide.
+-   When a scenario fails, a control with plain git and no gir separates the tool's behavior from git's own refusals. Here it showed that the first `skip-worktree` rebase failures came from the scenario.
 
 ### Process
 
-`PENDING`
+-   `diff-header-parsing` and `split-preserves-index` were completed on evidence from `--dry-run` output, `git status` and index flags. The operator had to ask for testing of the end state a user meets: the folded history, and `git add -A` / `git commit -a` after a split. Success criteria for a fix should include that end state from the start.
+-   A question to the operator named the scenario's file (`cfg.txt`) without saying it existed only inside the test, and was unclear until explained.
+-   Neither is addf friction; no framework change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learnings are applied in `run_review_scripts.py` and `acceptance.py`, and the regression cases are enforced by the integration tests; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `a1-review-scripts`, `a2-header-end-to-end`, `a3-split-end-to-end`, `a4-setups`, `a5-regression-tests`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is specified in `spec/fixup.md` and guarded by integration tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-old-build-fails`
+
+-   Claim: [p1-old-build-fails](#p1-old-build-fails)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it describes the old build.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`. The possible leftover temporary index after an interrupted split is recorded as Q12 in `ledger/fixup-review-20261002.md`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, the review-script copies, `acceptance.py`, `run_review_scripts.py` and every log it cites under `logs/`; internal links are relative.
+The old binary was built in a scratch directory and is not kept; `git archive d246ab2` rebuilds it.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 

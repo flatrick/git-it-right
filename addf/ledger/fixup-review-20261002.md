@@ -70,3 +70,8 @@ For each one, whether to fix it on this branch is still OPEN.
   `gir fixup` reports `cannot tell which commit my file.txt belongs to`.
   For such a name git writes the `---`/`+++` header with a trailing tab (`--- a/my file.txt` then TAB), and `parse_hunks` keeps the tab in the path, so the path never matches.
   Found by the acceptance run of the header and split-index fixes; not caused by either fix.
+- Q: Can an interrupted `gir fixup --split` leave its temporary index file behind?
+  A: Likely, inferred from the code, not tested.
+  `git::TempIndex` removes `gir-split-index-<pid>` in the git directory when it is dropped, which does not happen when the process is killed (for example Ctrl+C during a commit hook or editor).
+  The leftover file is harmless to git but is never cleaned up.
+  Found while verifying the Task `fixup-fixes-acceptance`.
