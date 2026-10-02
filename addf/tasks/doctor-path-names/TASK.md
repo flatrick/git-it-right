@@ -122,7 +122,14 @@ Findings at `4da58e7` (`logs/probe-head-4da58e7-20261002-1221.log`, `logs/probe-
 
 ## Investigate
 
-`PENDING`
+The probe settled every factual uncertainty (Understand). Dispositions:
+
+-   The two Windows assumptions: `DEFERRED_VERIFICATION` to the operator's Windows testing (Deferred verification).
+-   Whether `windows-names` covers control characters and non-UTF-8 names, and how reports show unprintable names: decisions for the operator in `DECIDE`, not uncertainties a probe can settle.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`.
 
 ## Decide
 
