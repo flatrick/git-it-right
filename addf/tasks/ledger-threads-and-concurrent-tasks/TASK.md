@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Implement the design under Decide: checker and tests first, then Skills, templates and adoption, then the findings thread.
+**Resume at:** Verify each success criterion against the committed files; keep the logs in the bundle's `logs/`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
