@@ -8,13 +8,13 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Read back every safeguard and confirm the pushed workflow, then enable repository Actions and the `ci` workflow and observe PR #5.
+**Resume at:** Evaluate the VERIFY gate using the recorded GitHub settings and CI run, then transition to LEARN.
 
-**Open obligations:** Readback, workflow checks, safely enabling CI, and hosted run observation block `VERIFY`.
+**Open obligations:** Evaluate the VERIFY gate; complete LEARN and the terminal checkpoint. The macOS doctor test failure belongs to `doctor-fix-file-mode`.
 
 ## Owned artifacts
 
-- `ledger.md` - the operator's choices and the open scope question.
+- `ledger.md` - the operator's choices and scope agreement.
 
 ## Specification impact
 
@@ -61,10 +61,10 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 #### `actions-state`
 
 - Claim: Actions remains disabled until the safeguards are verified, then the `ci` workflow runs on this branch without unapproved external PR execution.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: `flatrick/git-it-right` at completion.
 - Consequence if false: CI starts before the safeguards are in place or remains disabled after the operator-approved enable step.
-- Basis: Pending GitHub readback.
+- Basis: [Verification](#verification-actions-state).
 
 ### Constraints
 
@@ -155,6 +155,15 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Verify
 
+<a id="verification-actions-state"></a>
+### Verification: `actions-state`
+
+- Claim: [actions-state](#actions-state).
+- Method: Read back every safeguard before enabling Actions, then enable repository Actions and the `ci` workflow, push to PR #5, inspect all hosted jobs, and read settings back again.
+- Evidence considered: Before enabling, GitHub returned the requested `main` protection, `all_external_contributors`, Actions `enabled:false`, and a disabled `ci` workflow. After enabling, it returned Actions `enabled:true`, workflow `state:active`, the same branch protection and fork policy. [Run 37015437824](https://github.com/flatrick/git-it-right/actions/runs/37015437824) was triggered by `pull_request` at `b8175a8`. Both Windows jobs and both Ubuntu jobs passed; the macOS test job failed in `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name` with `Illegal byte sequence` when creating a test filename.
+- Conclusion: `VERIFIED` for the safeguarded enable sequence and hosted run. The CI result is red due to a doctor test fixture failure, which the active `doctor-fix-file-mode` Task must resolve.
+- Limitations: No external fork PR was opened. The GitHub policy readback and documented semantics support the approval claim; the run only exercises this repository's own PR.
+
 <a id="verification-main-protected"></a>
 ### Verification: `main-protected`
 
@@ -190,6 +199,10 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 - Evidence considered: `gh api repos/flatrick/git-it-right` returned `private:false`, `visibility:public`, `default_branch:main`; the Actions permissions endpoint returned `enabled:false`; the `main` endpoint returned `protected:false`; the rulesets endpoint returned `[]`; the workflow endpoint returned `state:disabled_manually`.
 - Conclusion: `VERIFIED` for the observed state.
 - Limitations: GitHub settings can change after observation; final settings require fresh readback.
+
+### VERIFY gate
+
+`ESTABLISHED`: all four safeguard success claims have verification entries and no success-critical uncertainty remains for this Task. The macOS doctor test failure does not refute the repository protection or the safely enabled workflow; it is assigned to the already active doctor Task.
 
 ## Learn
 
