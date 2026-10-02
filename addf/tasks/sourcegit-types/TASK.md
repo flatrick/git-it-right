@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Add `serde_json` and the types-file loading to `src/config.rs`, then the consumers, then the tests, per Decide.
+**Resume at:** Write a Verification for each of c1 to c6 from the Implement checkpoints; c6 on Windows and macOS needs hosted CI, which needs the operator to push.
 
-**Open obligations:** `NONE`.
+**Open obligations:** `c6-no-regression` on Windows and macOS (blocks `VERIFY`). Operator review of the Implement deviations (blocks `VERIFY`).
 
 ## Owned artifacts
 
