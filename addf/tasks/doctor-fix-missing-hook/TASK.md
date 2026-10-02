@@ -23,7 +23,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/doctor.md#req-doctor-exec-bit`
-- Proposed delta: `exec-bit`: `--fix` SHALL set the flagged index entries to mode `100755` without needing their files in the working tree, instead of naming the `git update-index --chmod=+x` command.
+- Proposed delta: `exec-bit`: `--fix` SHALL set the flagged index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree, instead of naming the `git update-index --chmod=+x` command.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -138,7 +138,16 @@ No further probe is needed for the design: the probes under Understand settled i
 
 ## Decide
 
-`PENDING`
+-   **Mechanism.** `Fix::Chmod` keeps, for each flagged path, its object ID and whether it is `skip-worktree` (from `git ls-files -s -v -z`, which `index_checks` already reads apart from `-v`). `--fix` writes `100755 <object>\t<path>\0` records to `git update-index -z --index-info` on stdin, then the skip-worktree paths to `git update-index -z --skip-worktree --stdin`. Both read paths as bytes on stdin, so no name needs to pass through a command-line argument, which also removes the Windows limit for names that are not UTF-8.
+-   **Why not `--chmod=+x`:** it needs the file and re-reads it, which fails for a deleted file and stages unstaged edits.
+-   **Spec delta** (published at completion): `exec-bit`'s `--fix` sentence becomes "`--fix` SHALL set those index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree."
+-   **Implementer.** Codex, as the worker under `harness-driver`, in a throwaway clone with `-s workspace-write`, given this design, the failing `acceptance.py`, `rules/os-agnostic-code.md` and the test conventions. The supervisor reviews and verifies the diff here (`c5-verified-here`).
+-   **Rejected:** `--cacheinfo` per path, which needs each name as an argument; leaving `skip-worktree` cleared, which would make `git status` show hooks outside a sparse cone as deleted.
+-   **Verification strategy.** `acceptance.py` on both builds; Codex's tests run here against the source before the change; `cargo test` and clippy here; the earlier doctor probe as a regression check.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design is probed, and each success Claim has a planned check.
 
 ## Implement
 
