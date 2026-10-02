@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write the integration tests, see them fail, then return every untraced file from `trace`, add the questions and whole-file placement to `split`, and update the picker and hint.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-advice-fails` blocks `UNDERSTAND`.
 
@@ -16,6 +16,14 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `acceptance.py` - Probe and acceptance: each criterion's cases with and without a terminal (`GIR_INTERACTIVE`), through `git rebase --autosquash` where a split happens.
+-   `logs/acceptance-fixed-20261002-1209.log` - Evidence: the first acceptance run on the change, with one wrong check (see Implement).
+-   `logs/acceptance-fixed-20261002-120919.log` - Evidence: the run that exposed the empty-patch failure (see Implement).
+-   `logs/acceptance-fixed-x5-20261002-1209.log` - Evidence: `acceptance.py` five times on the final change (the tree committed as `45174c6`).
+-   `logs/test-final-20261002-1209.log` - Evidence: `cargo test` before the empty-patch fix.
+-   `logs/test-final-20261002-1209-run1.log`, `logs/test-final-20261002-1209-run2.log`, `logs/test-final-20261002-1209-run3.log` - Evidence: `cargo test --no-fail-fast` three times on the tree committed as `45174c6`.
+-   `logs/clippy-20261002-1209.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/tests-on-start-6dcb42e-20261002-1210.log` - Evidence: the new tests against the source before the change (`6dcb42e`).
+-   `logs/regression-sweep-20261002-1209.log` - Evidence: the earlier acceptance scripts and the review scripts on this build.
 -   `logs/acceptance-head-f46e828-20261002-1205.log` - Evidence: `acceptance.py` at the Task's start.
 
 ## Specification impact
@@ -161,7 +169,12 @@ No probe is needed: `acceptance.py` reproduces every case, and the one assumptio
 
 ## Implement
 
-`PENDING`
+-   `45174c6` implements Decide in `src/cmd/fixup.rs` (`Trace` with `hunks` and `untraced`, `trace(base, all)`, `parse_hunks` without the new-file error, the picker's `s` and the `--split` hint only when `split::can_split`), `src/cmd/fixup/split.rs` (`can_split`, the refusals, the two questions, `neighbours`, `place_whole_file`), and `src/git.rs` (`TempIndex::run_raw`).
+-   Deviation from Decide: the insertion question lists the two commits in file order, the line above's first, each labelled `(line above)` or `(line below)`, instead of by commit ID; the commit-ID order is effectively random, which made the question harder to answer and the tests unable to pick a commit.
+-   Two unit tests that expected `parse_hunks` to fail on a new file now assert that it returns no hunks, and are renamed `new_files_have_no_lines_to_trace` and `new_files_with_quoted_names_have_no_lines_to_trace`; the new-file message now comes from `trace`, unchanged in wording.
+-   Found during implementation: a target that receives only whole files has an empty patch, and `git apply` rejects empty input. Whether it showed depended on commit-ID order, so the binary-file case passed once and failed the next run (`logs/acceptance-fixed-20261002-120919.log`). Fixed by skipping `git apply` for an empty patch; `split_places_a_file_in_a_commit_with_no_hunks_of_its_own` reproduces it every time on the intermediate code. That test passes on the source before this Task too, where a new file makes everything one commit, so it guards the new code rather than separating old from new.
+-   `acceptance.py` corrections: the insertion answers became `2` (the line below) after the order change, and one check expected three `fixup!` commits where two is correct.
+-   New integration tests in `tests/fixup_modes.rs`: `split_without_a_terminal_refuses_an_untraceable_file_with_split_advice`, `split_at_a_terminal_asks_where_an_untraceable_file_goes`, `split_at_a_terminal_places_a_binary_file_whole`, `split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits`, `split_at_a_terminal_asks_where_an_ambiguous_insertion_goes` (through `--split` and through the picker's `s`), `split_is_not_offered_when_a_hunk_changes_lines_of_several_commits`, `split_places_a_file_in_a_commit_with_no_hunks_of_its_own`. The first six fail on the source before the change (`logs/tests-on-start-6dcb42e-20261002-1210.log`).
 
 ## Verify
 

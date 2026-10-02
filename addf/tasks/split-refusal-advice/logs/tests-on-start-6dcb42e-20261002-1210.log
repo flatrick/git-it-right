@@ -1,0 +1,100 @@
+tests/fixup_modes.rs from 45174c6 run against the source of 6dcb42e (before the change)
+   Compiling libc v0.2.189
+   Compiling getrandom v0.4.3
+   Compiling rustix v1.1.5
+   Compiling winnow v1.0.4
+   Compiling unicase v2.9.0
+   Compiling cfg-if v1.0.5
+   Compiling lexopt v0.3.2
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/pre-advice)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.71s
+     Running tests/fixup_modes.rs (target/debug/deps/fixup_modes-c7fabf2f73f41bbb)
+
+running 7 tests
+test split_without_a_terminal_refuses_an_untraceable_file_with_split_advice ... FAILED
+test split_places_a_file_in_a_commit_with_no_hunks_of_its_own ... ok
+test split_at_a_terminal_asks_where_an_ambiguous_insertion_goes ... FAILED
+test split_at_a_terminal_asks_where_an_untraceable_file_goes ... FAILED
+test split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits ... FAILED
+test split_is_not_offered_when_a_hunk_changes_lines_of_several_commits ... FAILED
+test split_at_a_terminal_places_a_binary_file_whole ... FAILED
+
+failures:
+
+---- split_without_a_terminal_refuses_an_untraceable_file_with_split_advice stdout ----
+
+thread 'split_without_a_terminal_refuses_an_untraceable_file_with_split_advice' (172324) panicked at tests/fixup_modes.rs:623:9:
+new file: gir: new.txt is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- split_at_a_terminal_asks_where_an_ambiguous_insertion_goes stdout ----
+
+thread 'split_at_a_terminal_asks_where_an_ambiguous_insertion_goes' (172318) panicked at tests/fixup_modes.rs:696:9:
+assertion `left == right` failed: ["fixup", "--split"]: gir: f.txt:1 spans several commits; split it with git add -p
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_at_a_terminal_asks_where_an_untraceable_file_goes stdout ----
+
+thread 'split_at_a_terminal_asks_where_an_untraceable_file_goes' (172319) panicked at tests/common/mod.rs:52:9:
+git ["rebase", "-q", "-i", "--autosquash", "main"]: error: could not apply 0914c2f... fixup! feat: add a
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+You can amend the commit now, with
+
+  git commit --amend 
+
+Once you are satisfied with your changes, run
+
+  git rebase --continue
+
+
+---- split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits stdout ----
+
+thread 'split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits' (172323) panicked at tests/fixup_modes.rs:682:5:
+gir: f.txt:1 spans several commits; split it with git add -p
+
+
+---- split_is_not_offered_when_a_hunk_changes_lines_of_several_commits stdout ----
+
+thread 'split_is_not_offered_when_a_hunk_changes_lines_of_several_commits' (172321) panicked at tests/fixup_modes.rs:715:5:
+gir: staged changes belong to several commits:
+  1) 14b5fcd081 feat: add b  <- b.txt:1
+  2) 73aa9e666b feat: extend a  <- a.txt:3
+  3) a68b85cb28 feat: add a  <- a.txt:3
+  s) split: one fixup! per commit
+pick [1-3, s, q]: gir: cancelled; nothing committed
+
+
+---- split_at_a_terminal_places_a_binary_file_whole stdout ----
+
+thread 'split_at_a_terminal_places_a_binary_file_whole' (172320) panicked at tests/fixup_modes.rs:660:5:
+assertion `left == right` failed
+  left: "one\ntwo\nthree"
+ right: "one\nTWO\nthree"
+
+
+failures:
+    split_at_a_terminal_asks_where_an_ambiguous_insertion_goes
+    split_at_a_terminal_asks_where_an_untraceable_file_goes
+    split_at_a_terminal_places_a_binary_file_whole
+    split_is_not_offered_when_a_hunk_changes_lines_of_several_commits
+    split_without_a_terminal_refuses_an_ambiguous_insertion_naming_both_commits
+    split_without_a_terminal_refuses_an_untraceable_file_with_split_advice
+
+test result: FAILED. 1 passed; 6 failed; 0 ignored; 0 measured; 32 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `--test fixup_modes`
+error: 1 target failed:
+    `--test fixup_modes`

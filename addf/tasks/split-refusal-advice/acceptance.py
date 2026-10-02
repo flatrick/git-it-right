@@ -165,8 +165,8 @@ check("no git add -p advice", "add -p" not in text)
 
 scenario("c3 terminal, --split, an insertion between two commits' lines: asked, then split")
 d = insertion_repo()
-# the question for f.txt:1 lists the two commits; answer 1 = the first listed
-code, text = gir(d, "fixup", "--split", answers="1\n")
+# the question for f.txt:1 lists the line above's commit first; 2 = the line below's, feat: two
+code, text = gir(d, "fixup", "--split", answers="2\n")
 check("exit 0", code == 0)
 check("asked about f.txt:1", "pick [" in text and "f.txt:1" in text)
 check("two fixup! commits were created", git(d, "log", "--format=%s", "-2").count("fixup!") == 2)
@@ -179,11 +179,11 @@ check("feat: a holds A", show(d, "HEAD~3:a.txt") == "A\n")
 
 scenario("c3 terminal, picker s, an insertion between two commits' lines: asked, then split")
 d = insertion_repo()
-code, text = gir(d, "fixup", answers="s\n1\n")
+code, text = gir(d, "fixup", answers="s\n2\n")
 check("exit 0", code == 0)
 check("the picker offered s", "s) split" in text)
 check("asked about f.txt:1 after s", text.count("pick [") == 2 and "f.txt:1" in text.split("s) split", 1)[-1])
-check("the split went ahead", git(d, "log", "--format=%s", "-3").count("fixup!") == 3)
+check("the split went ahead: one fixup! each for feat: a and the chosen commit", git(d, "log", "--format=%s", "-3").count("fixup!") == 2)
 
 scenario("c4 the picker does not offer s when the split cannot go ahead")
 d = repo()
