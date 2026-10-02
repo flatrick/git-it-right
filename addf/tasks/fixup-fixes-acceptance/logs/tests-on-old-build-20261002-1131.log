@@ -1,0 +1,159 @@
+tests/fixup.rs and tests/fixup_modes.rs from 0eea112 (uncommitted) run against the source of d246ab2, --no-fail-fast
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/fixup.rs (target/debug/deps/fixup-b55d494eaaa3efb2)
+
+running 26 tests
+test automatic_target_reports_unattributed_lines ... ok
+test automatic_target_refuses_a_new_binary_file ... ok
+test automatic_target_has_no_base_limit_when_no_base_exists ... ok
+test automatic_target_refuses_a_new_file ... ok
+test automatic_target_refuses_a_staged_file_without_line_changes ... ok
+test added_line_starting_with_plus_b_is_not_a_new_file ... FAILED
+test automatic_target_reports_multiple_targets_and_split_hint ... ok
+test accepts_optional_target_and_dry_run_in_either_order ... ok
+test commit_failure_reports_git_command_and_target ... ok
+test base_lookup_prefers_origin_head_over_main_and_limits_automatic_target ... ok
+test base_lookup_falls_back_to_master ... ok
+test base_lookup_falls_back_to_upstream ... ok
+test deleted_line_starting_with_dashes_is_traced_like_any_other ... FAILED
+test deleted_dev_null_comment_does_not_hide_later_hunks ... FAILED
+test explicit_target_must_be_after_base ... ok
+test dev_null_comment_split_folds_into_the_right_commits ... FAILED
+test insertion_between_base_and_topic_lines_targets_topic ... ok
+test insertion_uses_adjacent_head_lines ... ok
+test explicit_target_ignores_line_origin_and_accepts_new_files ... ok
+test explicit_target_must_be_in_current_branch_history ... ok
+test mixed_base_and_topic_replacement_is_refused ... ok
+test requires_staged_changes_even_with_explicit_target ... ok
+test rejects_invalid_explicit_commit ... ok
+test multiple_targets_suggest_installed_git_absorb ... ok
+test success_without_base_prints_base_placeholder ... ok
+test successful_fixup_prints_target_and_base_and_preserves_config ... ok
+
+failures:
+
+---- added_line_starting_with_plus_b_is_not_a_new_file stdout ----
+
+thread 'added_line_starting_with_plus_b_is_not_a_new_file' (100534) panicked at tests/fixup.rs:326:5:
+assertion `left == right` failed: gir: foo is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- deleted_line_starting_with_dashes_is_traced_like_any_other stdout ----
+
+thread 'deleted_line_starting_with_dashes_is_traced_like_any_other' (100730) panicked at tests/fixup.rs:301:5:
+assertion `left == right` failed: gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>
+
+  left: Some(2)
+ right: Some(0)
+
+---- deleted_dev_null_comment_does_not_hide_later_hunks stdout ----
+
+thread 'deleted_dev_null_comment_does_not_hide_later_hunks' (100729) panicked at tests/fixup.rs:313:5:
+assertion `left == right` failed: 
+  left: Some(0)
+ right: Some(2)
+
+---- dev_null_comment_split_folds_into_the_right_commits stdout ----
+
+thread 'dev_null_comment_split_folds_into_the_right_commits' (100790) panicked at tests/fixup.rs:337:5:
+assertion `left == right` failed: gir: the split commits do not add up to the staged changes; restored HEAD and the index
+
+  left: Some(2)
+ right: Some(0)
+
+
+failures:
+    added_line_starting_with_plus_b_is_not_a_new_file
+    deleted_dev_null_comment_does_not_hide_later_hunks
+    deleted_line_starting_with_dashes_is_traced_like_any_other
+    dev_null_comment_split_folds_into_the_right_commits
+
+test result: FAILED. 22 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `--test fixup`
+     Running tests/fixup_modes.rs (target/debug/deps/fixup_modes-c7fabf2f73f41bbb)
+
+running 27 tests
+test amend_with_nothing_staged_points_to_reword ... ok
+test amend_creates_an_amend_commit_with_the_staged_changes ... ok
+test explicit_target_checks_apply_to_every_subcommand ... ok
+test dry_run_prints_the_target_for_every_subcommand ... ok
+test picker_can_be_disabled_and_never_runs_for_dry_run ... ok
+test failed_split_leaves_index_entries_alone ... FAILED
+test picker_offers_branch_commits_for_a_new_file ... ok
+test picker_offers_branch_commits_for_reword ... ok
+test amend_and_squash_accept_an_explicit_target ... ok
+test picker_number_puts_all_staged_changes_in_that_commit ... ok
+test refusals_name_the_subcommand_that_was_run ... ok
+test reword_without_a_target_needs_one_when_not_interactive ... ok
+test reword_needs_nothing_staged ... ok
+test picker_split_creates_one_commit_per_target ... ok
+test reword_changes_no_content_and_leaves_the_index_alone ... ok
+test several_targets_without_a_terminal_refuse_and_suggest_split ... ok
+test add_all_and_commit_all_after_split_keep_hidden_and_private_files ... FAILED
+test split_is_refused_with_a_commit_argument_and_for_reword ... ok
+test picker_cancel_creates_no_commit ... ok
+test split_creates_one_commit_per_target ... ok
+test split_from_a_subdirectory_keeps_index_entries ... FAILED
+test split_refuses_a_hunk_spanning_several_commits_before_committing ... ok
+test split_handles_alternating_targets_in_one_file ... ok
+test split_in_a_linked_worktree_keeps_its_index_entries ... FAILED
+test squash_creates_a_squash_commit_for_the_traced_target ... ok
+test split_leaves_index_entries_it_does_not_commit_alone ... FAILED
+test split_restores_head_and_index_when_a_commit_fails ... ok
+
+failures:
+
+---- failed_split_leaves_index_entries_alone stdout ----
+
+thread 'failed_split_leaves_index_entries_alone' (101236) panicked at tests/fixup_modes.rs:319:9:
+assertion `left == right` failed: sparse checkout
+  left: (["M  a.txt", "M  b.txt", " D out/c.txt"], "H a.txt\nH b.txt\nH base.txt\nH out/c.txt")
+ right: (["M  a.txt", "M  b.txt"], "H a.txt\nH b.txt\nH base.txt\nS out/c.txt")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- add_all_and_commit_all_after_split_keep_hidden_and_private_files stdout ----
+
+thread 'add_all_and_commit_all_after_split_keep_hidden_and_private_files' (101230) panicked at tests/fixup_modes.rs:338:5:
+assertion `left == right` failed
+  left: "private local edit"
+ right: "c"
+
+---- split_from_a_subdirectory_keeps_index_entries stdout ----
+
+thread 'split_from_a_subdirectory_keeps_index_entries' (101896) panicked at tests/fixup_modes.rs:376:5:
+assertion `left == right` failed
+  left: ([" M cfg.txt"], "H a.txt\nH b.txt\nH base.txt\nH cfg.txt")
+ right: ([], "H a.txt\nH b.txt\nH base.txt\nS cfg.txt")
+
+---- split_in_a_linked_worktree_keeps_its_index_entries stdout ----
+
+thread 'split_in_a_linked_worktree_keeps_its_index_entries' (101973) panicked at tests/fixup_modes.rs:362:5:
+assertion `left == right` failed
+  left: " M cfg.txt"
+ right: ""
+
+---- split_leaves_index_entries_it_does_not_commit_alone stdout ----
+
+thread 'split_leaves_index_entries_it_does_not_commit_alone' (102065) panicked at tests/fixup_modes.rs:296:9:
+assertion `left == right` failed: sparse checkout
+  left: ([" D out/c.txt"], "H a.txt\nH b.txt\nH base.txt\nH out/c.txt")
+ right: ([], "H a.txt\nH b.txt\nH base.txt\nS out/c.txt")
+
+
+failures:
+    add_all_and_commit_all_after_split_keep_hidden_and_private_files
+    failed_split_leaves_index_entries_alone
+    split_from_a_subdirectory_keeps_index_entries
+    split_in_a_linked_worktree_keeps_its_index_entries
+    split_leaves_index_entries_it_does_not_commit_alone
+
+test result: FAILED. 22 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+error: test failed, to rerun pass `--test fixup_modes`
+error: 2 targets failed:
+    `--test fixup`
+    `--test fixup_modes`

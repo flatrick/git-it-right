@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Add the integration tests planned under Decide, then run `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -25,6 +25,9 @@
 -   `logs/platform-paths-20261002-1122.log` - Evidence: after the fixes: the normaliser on Windows-style paths, temporary directories following `TMPDIR`, and the review-script comparison reproducible across runs and temporary directories.
 -   `logs/acceptance-new-20261002-1130.log` - Evidence: `acceptance.py` on the new build after the scenario correction.
 -   `logs/acceptance-old-20261002-1130.log` - Evidence: `acceptance.py` on the old build after the scenario correction.
+-   `logs/tests-on-old-build-20261002-1131.log` - Evidence: this branch's `tests/fixup.rs` and `tests/fixup_modes.rs` run against the source of `d246ab2`.
+-   `logs/test-final-20261002-1131.log` - Evidence: `cargo test --no-fail-fast` on the tree committed as `2c6a352`.
+-   `logs/clippy-20261002-1131.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
 -   `logs/edge-old.log`, `logs/edge2-old.log`, `logs/edge3-old.log`, `logs/edge-new.log`, `logs/edge2-new.log`, `logs/edge3-new.log`, `logs/review-scripts-diff.log` - Evidence: the review scripts on `d246ab2` and on `HEAD`, normalised, and their diff.
 
 ## Specification impact
@@ -165,6 +168,9 @@ No probe is needed: the success Claims are themselves the observations to make, 
 -   Not run on Windows: the Windows path handling is checked only by substituting a Windows temporary directory into the normaliser.
 -   With the operator's approval, every `skip-worktree` scenario now commits `cfg.txt` in the base commit on `main` (`repo(base=...)`), and `a4.4`/`a4.5` expect the history `feat: a`, `feat: b`. Under the new rule `os-agnostic-code`, `review-scripts/edge.py` now uses `os.devnull` and requires `GIR_BIN`; the review-script comparison is byte-for-byte the same as before that change.
 -   Second run: the new build passes all 53 checks (`logs/acceptance-new-20261002-1130.log`); the old build fails 31 (`logs/acceptance-old-20261002-1130.log`), across every `a2`, `a3` and `a4` scenario except `a4.7` (temporary index files did not exist before the fix).
+-   `2c6a352` adds the integration tests: `dev_null_comment_split_folds_into_the_right_commits` (`tests/fixup.rs`); in `tests/fixup_modes.rs`, a cone-mode sparse-index setup in the setup table, a no-leftover-temporary-index assertion in both split tests, `add_all_and_commit_all_after_split_keep_hidden_and_private_files`, `split_in_a_linked_worktree_keeps_its_index_entries` and `split_from_a_subdirectory_keeps_index_entries`. `index_view` now reads `git ls-files --sparse -v`, so a sparse index's directory entries are compared too.
+-   The same two test files run against the source of `d246ab2` fail 9 tests (4 in `tests/fixup.rs`, 5 in `tests/fixup_modes.rs`), every new or changed one (`logs/tests-on-old-build-20261002-1131.log`).
+-   `amend`/`squash --split` and the picker's `s` share the split code path the integration tests cover, so they stay in `acceptance.py` only, as decided.
 
 ## Verify
 
