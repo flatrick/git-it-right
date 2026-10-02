@@ -1,23 +1,23 @@
 
 === 14 CRLF file split
-(2, 'gir: error: patch failed: a:1\nerror: a: patch does not apply; restored HEAD and the index')
+(2, 'gir: error: patch failed: b:2\nerror: b: patch does not apply; restored HEAD and the index')
 feat: b | feat: a | chore: attrs | chore: base
 
 === 15 sparse checkout + split
 before: 'M  in/a\nM  in/b\n'
-(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
-fixup! feat: b | fixup! feat: a | feat: c | feat: b
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+fixup! feat: a | fixup! feat: b | feat: c | feat: b
 after: ' D out/c\n'
 
 === 16 assume-unchanged / skip-worktree bit after split
 before: 'M  a\nM  b\n'
-(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
 after: ' M cfg\n'
 
 === 17 interactive picker with several targets where a hunk spans -> choose s
 2 gir: staged changes belong to several commits:
-  1) <sha> feat: two  <- f:1
-  2) <sha> feat: one  <- f:1
+  1) <sha> feat: one  <- f:1
+  2) <sha> feat: two  <- f:1
   s) split: one fixup! per commit
 pick [1-2, s, q]: gir: f:1 spans several commits; split it with git add -p
 

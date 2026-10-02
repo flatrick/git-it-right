@@ -21,8 +21,8 @@
 @@ -30,9 +30,9 @@
   A ita
  
- (0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
- fixup! feat: b | fixup! feat: a | feat: b | feat: a
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+ fixup! feat: a | fixup! feat: b | feat: b | feat: a
 -status after: '?? ita\n'
 +status after: ' A ita\n'
  
@@ -35,18 +35,18 @@
 @@ -6,14 +6,14 @@
  === 15 sparse checkout + split
  before: 'M  in/a\nM  in/b\n'
- (0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
- fixup! feat: b | fixup! feat: a | feat: c | feat: b
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+ fixup! feat: a | fixup! feat: b | feat: c | feat: b
 -after: ' D out/c\n'
 +after: ''
  
  === 16 assume-unchanged / skip-worktree bit after split
  before: 'M  a\nM  b\n'
- (0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
 -after: ' M cfg\n'
 +after: ''
  
  === 17 interactive picker with several targets where a hunk spans -> choose s
  2 gir: staged changes belong to several commits:
-   1) <sha> feat: two  <- f:1
+   1) <sha> feat: one  <- f:1
 ##### edge3.py: identical

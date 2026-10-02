@@ -1,0 +1,14 @@
+## 1 normalise() with a Windows temp dir (gettempdir patched to C:\Users\me\AppData\Local\Temp)
+'in C:\\Users\\me\\AppData\\Local\\Temp\\tmpab12\\x.lua:3 here' -> 'in C:\\Users\\me\\AppData\\Local\\Temp\\tmpab12\\x.lua:3 here'
+'in C:/Users/me/AppData/Local/Temp/tmpab12/x.lua:3 here' -> 'in C:/Users/me/AppData/Local/Temp/tmpab12/x.lua:3 here'
+'sha 5b8d074c83 kept' -> 'sha <sha> kept'
+
+## 2 TMPDIR=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: Python's temp dir follows the environment
+/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp
+
+## 3 review scripts with TMPDIR=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: diff identical to the committed one?
+/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp/out/review-scripts-diff.log addf/tasks/fixup-fixes-acceptance/logs/review-scripts-diff.log differ: byte 595, line 15
+
+## 4 acceptance.py with TMPDIR=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: repositories created there
+48 PASS, 5 FAIL
+14

@@ -29,8 +29,8 @@ M  a
 M  b
  A ita
 
-(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
-fixup! feat: b | fixup! feat: a | feat: b | feat: a
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+fixup! feat: a | fixup! feat: b | feat: b | feat: a
 status after: ' A ita\n'
 
 === 7 reword with staged changes
@@ -43,12 +43,12 @@ status after: 'M  a\n'
 (0, '<sha> feat: sql')
 
 === 9 split when a hunk deletes the whole file of one target
-(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
-fixup! feat: b | fixup! feat: a | feat: b | feat: a
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+fixup! feat: a | fixup! feat: b | feat: b | feat: a
 
 === 10 split, file mode + content change
-(0, 'gir: created fixup! for <sha> feat: a\ngir: created fixup! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
-fixup! feat: b | fixup! feat: a | feat: b | feat: a
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+fixup! feat: a | fixup! feat: b | feat: b | feat: a
 
 === 11 split with pre-commit hook that fails on 2nd commit -> state
 (2, 'gir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
@@ -63,7 +63,7 @@ pick [1-1, q]: gir: created fixup! for <sha> feat: a
 
 
 === 13 squash --split opens editor per target; message check
-(0, 'gir: created squash! for <sha> feat: a\ngir: created squash! for <sha> feat: b\n  fold: git rebase --autosquash <sha>')
-squash! feat: b | squash! feat: a | feat: b | feat: a
+(0, 'gir: created squash! for <sha> feat: b\ngir: created squash! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+squash! feat: a | squash! feat: b | feat: b | feat: a
 
 [script exit 0]

@@ -21,6 +21,8 @@
 -   `logs/acceptance-new-20261002-1107.log` - Evidence: `acceptance.py` on the new build (first run).
 -   `logs/acceptance-old-20261002-1107.log` - Evidence: `acceptance.py` on the old build `d246ab2` (first run).
 -   `logs/control-skip-worktree-rebase-20261002-1107.log` - Evidence: control with plain git and no gir: rebasing onto `main` with a `skip-worktree` file that has a private edit and was added on `topic`.
+-   `logs/platform-paths-20261002-1121.log` - Evidence: the first platform check, which showed the Windows normaliser bug and the run-to-run ordering difference.
+-   `logs/platform-paths-20261002-1122.log` - Evidence: after the fixes: the normaliser on Windows-style paths, temporary directories following `TMPDIR`, and the review-script comparison reproducible across runs and temporary directories.
 -   `logs/edge-old.log`, `logs/edge2-old.log`, `logs/edge3-old.log`, `logs/edge-new.log`, `logs/edge2-new.log`, `logs/edge3-new.log`, `logs/review-scripts-diff.log` - Evidence: the review scripts on `d246ab2` and on `HEAD`, normalised, and their diff.
 
 ## Specification impact
@@ -156,6 +158,9 @@ No probe is needed: the success Claims are themselves the observations to make, 
 -   All 5 new-build failures are `git rebase -i --autosquash main` in `a3.2`, `a4.4` and `a4.5` (and the history check that depends on it), each with `error: Your local changes to the following files would be overwritten by checkout: cfg.txt`.
 -   Cause: the scenario, not gir. In those scenarios `cfg.txt`, the `skip-worktree` file with a private edit, is added on `topic`, so the rebase must check out `main`, where it does not exist. The control `logs/control-skip-worktree-rebase-20261002-1107.log` reproduces the same error with plain git and no gir, and shows the rebase succeeding when `cfg.txt` is committed on `main` instead.
 -   Per Constraints, work stopped here and the operator was asked before changing the scenario.
+-   At the operator's request, the scripts were made platform-neutral. Repositories already came from `tempfile.mkdtemp()`, which follows `TMPDIR`/`TEMP`/`TMP` (on Windows, `$env:TEMP`). `acceptance.py` now uses `os.devnull` for `GIT_CONFIG_GLOBAL` instead of `/dev/null`. `run_review_scripts.py` builds its path pattern from `tempfile.gettempdir()` and accepts either slash, instead of a hard-coded `/tmp/`.
+-   That check found a flaw in the first `a1-review-scripts` comparison. `--split` orders commits by ID, and the review scripts do not fix commit dates, so IDs and the order changed between runs; the first comparison matched cases 9, 10 and 13 only by chance. `run_review_scripts.py` now sets `GIT_AUTHOR_DATE` and `GIT_COMMITTER_DATE`. The rerun (`logs/review-scripts-diff.log`, replaced) is identical across two runs and with another temporary directory, and still differs only in the #1 and #2 cases (`logs/platform-paths-20261002-1122.log`).
+-   Not run on Windows: the Windows path handling is checked only by substituting a Windows temporary directory into the normaliser.
 
 ## Verify
 
