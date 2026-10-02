@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Record that the probe settled every uncertainty except the operator's decisions, then transition to `DECIDE`.
+**Resume at:** Ask the operator the two open questions under Understand, then record the design under Decide.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
