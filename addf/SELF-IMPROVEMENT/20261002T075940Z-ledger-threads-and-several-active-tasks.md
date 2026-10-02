@@ -34,5 +34,5 @@ Resuming asks which Task when more than one is active, overlapping Tasks record 
 
 ## Why
 
-The decisions and the operator's answers are in the Task that made the change, `ledger-threads-and-concurrent-tasks` (`tasks/ledger-threads-and-concurrent-tasks/ledger.md` while it is active).
+The decisions and the operator's answers are in the Task that made the change, `ledger-threads-and-concurrent-tasks` (`history:tasks/ledger-threads-and-concurrent-tasks/ledger.md`).
 Rejected alternatives: tagging entries in one root file, which keeps one shared file that conflicts across worktrees; creating the Task early instead of threads, which fails when one exploration leads to several Tasks or none; and `ROADMAP.md` or a new `backlog/` for findings nobody is working on yet.

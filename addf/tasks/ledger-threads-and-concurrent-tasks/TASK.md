@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then hand over to Stewardship for `COMPLETED`.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`
 
@@ -27,7 +27,7 @@
 
 - Current contract: `framework:SPEC.md`, read only to confirm it specifies gir's product behavior and not addf's own mechanics.
 - Proposed delta: `NONE`. This Task changes addf's framework mechanics, which `rules/self-improvement-log.md` records instead.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -290,8 +290,13 @@ The ten fixup findings live on in `ledger/fixup-review-20261002.md`; the copy in
 
 ### Summary
 
-`PENDING`
+addf keeps pre-Task exploration in Ledger threads under `ledger/` instead of one root `LEDGER.md`, so one exploration can lead to several Tasks or to none, and findings nobody is working on stay open in their thread.
+Up to three Tasks may be active at once, with a resume question, declared overlap and publication order, and the Isolate question asked per Task.
+`scripts/check-capsule` enforces the root-Ledger refusal, the thread listing in `INDEX.md`, and the three-Task limit.
+The ten fixup findings are the first thread, `ledger/fixup-review-20261002.md`.
+No product specification changed.
 
 ### Gate basis
 
-`PENDING`
+All six success Claims are `VERIFIED` through the Verifications above, on Linux; `c1-ledger-threads` in the wording the operator narrowed during `VERIFY`.
+`p1-single-task-assumption` is `VERIFIED`. No Claim is carried forward.
