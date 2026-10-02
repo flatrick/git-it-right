@@ -247,19 +247,36 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c6-spec-and-test
 
 ### Technical
 
-`PENDING`
+`--split` orders its rounds by commit ID, which changes from run to run, so a defect that depends on round order can pass once and fail the next time. The empty-patch failure was found only because `acceptance.py` was run again. Order-dependent code needs a test whose setup makes the order irrelevant (here, a single target), and repeated runs of the acceptance script.
 
 ### Process
 
-`PENDING`
+The first version of a picker question listed choices in an order the tests could not rely on; writing the test before the code exposed it. No framework change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is enforced by `split_places_a_file_in_a_commit_with_no_hunks_of_its_own`; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-untraced-no-terminal`, `c2-untraced-terminal`, `c3-ambiguous-insertion`, `c4-picker-offers-split`, `c5-end-to-end`, `c6-spec-and-tests`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is specified in `spec/fixup.md` and guarded by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-advice-fails`
+
+-   Claim: [p1-advice-fails](#p1-advice-fails)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the code before the change.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, `acceptance.py` and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 
