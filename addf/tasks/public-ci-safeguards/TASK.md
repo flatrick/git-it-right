@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Evaluate the VERIFY gate using the recorded GitHub settings and CI run, then transition to LEARN.
+**Resume at:** Record material learning, promotion and archive disposition, then complete this Task and return to the doctor Task's macOS failure.
 
-**Open obligations:** Evaluate the VERIFY gate; complete LEARN and the terminal checkpoint. The macOS doctor test failure belongs to `doctor-fix-file-mode`.
+**Open obligations:** Complete LEARN and the terminal checkpoint. The macOS doctor test failure belongs to `doctor-fix-file-mode`.
 
 ## Owned artifacts
 
