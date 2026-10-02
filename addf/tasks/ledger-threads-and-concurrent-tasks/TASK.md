@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Settle `p1-single-task-assumption`: read every current addf file that mentions the Ledger, the active Task, or `INDEX.md`'s Task list, and record the result under Understand.
+**Resume at:** Transition to `INVESTIGATE`; the UNDERSTAND gate is recorded under Understand.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
@@ -96,10 +96,10 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 #### `p1-single-task-assumption`
 
 -   Claim: Besides `skills/work-control.md`'s "Maintain one Task as the resumable execution cursor", no current addf file assumes a single active Task.
--   State: `UNVERIFIED`
--   Scope: the framework root on this branch.
+-   State: `VERIFIED`
+-   Scope: the framework root at `db33325`, excluding `.archive/`, `tasks/`, `evidence/` and `SELF-IMPROVEMENT/`.
 -   Consequence if false: some rule still forbids or breaks concurrent Tasks after the amendment.
--   Basis: pending check in `UNDERSTAND`.
+-   Basis: [Verification](#verification-p1-single-task-assumption).
 
 ### DEFINE gate
 
@@ -109,19 +109,28 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 
 ### Relevant context
 
-`PENDING`
+-   Files that name the root Ledger and change under `c1-ledger-threads`: `CORE.md` (Is this Task-worthy?, Route), `skills/work-control.md` (Isolate, Ledger, Define, Start or resume, Exit check), `ADOPT.md` (instance data, Adoption invariants), `INDEX.md` and `templates/INDEX.md` (Ledger section, invariants), `templates/LEDGER.md`, `templates/SELF-IMPROVEMENT.md`, `rules/self-improvement-log.md` (Scope), `scripts/check-capsule` (`check_placeholders`) and `scripts/tests/test_check_capsule.py`.
+-   Files that assume one Task, for `c3-several-active-tasks`: only `skills/work-control.md` — its opening line, "the active Task carries the proposal" under Define, "Work control owns the active cursor" under Responsibility handoff, and Isolate's "unless the operator already answered that question earlier in this conversation".
+-   `INDEX.md` already lists Active Tasks as a list, and `check_index` already checks every active Task's entry, so neither assumes one Task.
+-   `check_placeholders` checks `LEDGER.md` strictly, including inline code; files under the directories it lists are checked only in prose with inline code stripped. A thread quoting git output such as `<commit>` needs the prose mode.
+-   `archived_checked` covers only `.archive/tasks/` and `.archive/open-claims/`, so an archived thread under `.archive/ledger/` is not checked, like other archived material outside Task bundles.
+-   Stewardship owns archival and index removal; it has no Ledger rule today.
 
 ### Assumptions
 
--   `NONE` yet.
+-   A thread entry can be referred to by its position among the thread's `Q:` entries, because the file is append-only and positions never change; source: the existing append-only contract; not verified by any check; if false, a disposition could name the wrong entry.
 
 ### Open questions
 
--   `NONE` yet.
+-   `NONE`. The remaining choices (template name, disposition format, whether a thread taken whole by one Task is moved instead of copied, what the checker enforces) are design choices for `DECIDE`, not uncertainties a probe can settle.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every file that names the Ledger or assumes one Task is listed above, and `p1-single-task-assumption` is verified, so the change set is known.
 
 ## Investigate
 
@@ -137,7 +146,14 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-single-task-assumption"></a>
+### Verification: `p1-single-task-assumption`
+
+- Claim: [p1-single-task-assumption](#p1-single-task-assumption)
+- Method: searched current addf files for `ledger`, `the active task`, `the current task`, `one task`, `active cursor`, `the task's` and `resum` (case-insensitive), then read each hit in context.
+- Evidence considered: the search output (129 lines, kept locally in `.scratch/understand-refs-20261002-0943.log`, not committed); the four `skills/work-control.md` passages listed under Relevant context; `check_index` in `scripts/check-capsule` iterating over every active Task.
+- Conclusion: `VERIFIED`: apart from `skills/work-control.md`, no current file assumes one active Task; within it, the opening line is the rule, and the other three passages are wording or the Isolate scope.
+- Limitations: a keyword search can miss a paraphrase. `skills/work-control.md` was read in full; `skills/stewardship.md` and `skills/evidence-and-verification.md` only around their hits.
 
 ## Learn
 
