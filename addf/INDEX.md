@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [diff-path-names](tasks/diff-path-names/TASK.md) -
-  gir fixup traces files whatever their names. State: `DEFINE`.
+  gir fixup traces files whatever their names. State: `UNDERSTAND`.
 
 ## Ledger
 

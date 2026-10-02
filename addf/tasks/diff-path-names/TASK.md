@@ -4,9 +4,9 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
 **Resume at:** Confirm `p1-space-name-fails` at the current `HEAD`, then read how `parse_hunks` takes the path from `---`/`+++` lines.
 
