@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Record whether any decision-relevant uncertainty needs a probe before DECIDE.
+**Resume at:** Record the design, spec wording and verification plan in Decide.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
