@@ -17,14 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [sourcegit-types](tasks/sourcegit-types/TASK.md) - gir reads SourceGit's
+  Conventional Commit type definition file; `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
   in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
-- [sourcegit-types-20261002](ledger/sourcegit-types-20261002.md) - shaping
-  issue #4, SourceGit's type definition file; Q8 awaits confirmation.
 
 ## Skills
 
