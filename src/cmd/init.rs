@@ -22,8 +22,12 @@ pub fn init(force: bool, optional: bool) -> Result<i32, String> {
             hook_paths.push(rel);
         }
     }
-    conflicts += i32::from(write(&root, config::FILE, &config::default_file(), force)? == WriteOutcome::Kept);
-    let cfg = Config::load_from(&root.join(config::FILE))?;
+    let girconfig = config::default_file(config::types_file_in_git_config(&root));
+    conflicts += i32::from(write(&root, config::FILE, &girconfig, force)? == WriteOutcome::Kept);
+    let cfg = Config::load_at(&root)?;
+    for w in &cfg.warnings {
+        eprintln!("gir: warning: {w}");
+    }
     for (rel, content) in [("cliff.toml", templates::cliff_toml(&cfg)), ("GIT-IT-RIGHT.md", templates::GIT_IT_RIGHT_MD.to_string())] {
         if !adopted || force || optional || root.join(rel).exists() {
             conflicts += i32::from(write(&root, rel, &content, force)? == WriteOutcome::Kept);

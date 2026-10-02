@@ -31,3 +31,23 @@ See `skills/work-control.md`'s Ledger section for the full contract, including h
   The agent's reading, not yet confirmed: such an alias stops applying, so the aliased type is rejected like any unknown type.
 - Q9: Should the work happen in an isolated worktree and branch?
 - A9: Yes, a new worktree on a new branch.
+- Q10: Does an alias whose target the file leaves out stop applying, or is it a configuration error?
+- A10: It stops applying; the aliased type is rejected like any unknown type. This confirms the agent's reading in A8.
+- Q11: How does a relative `gir.typesFile` resolve?
+- A11: Against the directory of the file that set it, as git resolves `include.path`.
+  `~/` expands to the home directory, and an empty value in `.girconfig` turns off a value from git config.
+- Q12: Do `gir explain` and `gir doctor` tolerate an invalid types file?
+- A12: Yes, as they tolerate an invalid `.girconfig` today: `explain` falls back to the defaults and `doctor` prints a `warn` line; `lint`, `hook`, `fixup` and `init` refuse.
+- Q13: What does `gir init` write as `types` when a types file is configured?
+- A13: The `types` line commented out, so a new repository does not trigger the warning from A6.
+- Q14: Which `Type` values are valid?
+- A14: Nonempty, only ASCII letters, digits and `-`.
+- Q15: Do the Objective and Success criteria in `TASK.md` describe the desired outcome?
+- A15: Yes, the operator agreed and DEFINE may close.
+- Q16: Which JSON parser does gir use?
+- A16: `serde_json`, parsed to `serde_json::Value` and validated by hand, without `serde_derive`.
+  Measured before asking: four transitive crates and about 38 KB on a release build, with line and column in syntax errors.
+- Q17: What does a relative `gir.typesFile` set with `git -c` resolve against?
+- A17: The repository root, as a `.girconfig` value does.
+- Q18: Does the operator accept the choices made without asking: `fixup` dropped from c3, an empty array rejected, a leading byte order mark skipped, and aliases applying only to allowed targets even without a types file?
+- A18: Yes, all four.

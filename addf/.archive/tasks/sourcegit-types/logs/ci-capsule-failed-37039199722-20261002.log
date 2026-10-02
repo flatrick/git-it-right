@@ -1,0 +1,25 @@
+capsule (windows-latest)	Check the addf capsule	﻿2026-10-02T17:14:17.9995375Z ##[group]Run python addf/scripts/check-capsule --root addf
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:17.9995887Z ^[[36;1mpython addf/scripts/check-capsule --root addf^[[0m
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0065713Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0066055Z env:
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0066313Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.9.13\x64
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0067125Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.9.13\x64/lib/pkgconfig
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0067575Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.9.13\x64
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0067966Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.9.13\x64
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0068368Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.9.13\x64
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.0068677Z ##[endgroup]
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.4651139Z addf/INDEX.md:20: INDEX_STATE: tasks/sourcegit-types/TASK.md is `VERIFY`, index says `?`
+capsule (windows-latest)	Check the addf capsule	2026-10-02T17:14:18.5951436Z ##[error]Process completed with exit code 1.
+capsule (ubuntu-latest)	Check the addf capsule	﻿2026-10-02T17:13:26.6750908Z ##[group]Run python addf/scripts/check-capsule --root addf
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6751384Z ^[[36;1mpython addf/scripts/check-capsule --root addf^[[0m
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6817578Z shell: /usr/bin/bash -e {0}
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6817855Z env:
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6818143Z   pythonLocation: /opt/hostedtoolcache/Python/3.9.25/x64
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6818637Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.9.25/x64/lib/pkgconfig
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6819122Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6819560Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6819997Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6820423Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.9.25/x64/lib
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.6820788Z ##[endgroup]
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.8201777Z addf/INDEX.md:20: INDEX_STATE: tasks/sourcegit-types/TASK.md is `VERIFY`, index says `?`
+capsule (ubuntu-latest)	Check the addf capsule	2026-10-02T17:13:26.8278166Z ##[error]Process completed with exit code 1.

@@ -164,3 +164,146 @@ fn malformed_config_fails_and_config_without_gir_keys_uses_defaults() {
     let unrelated = repo.gir(&["lint", "MSG"]);
     assert_eq!(unrelated.status.code(), Some(0), "{}", stderr(&unrelated));
 }
+
+const TYPES_JSON: &str = r#"[
+  { "Name": "New Feature", "Type": "feat", "Description": "Adding a new feature", "PrefillShortDesc": "" },
+  { "Name": "Work In Progress", "Type": "wip", "Description": "Still being developed", "Extra": 1 }
+]"#;
+
+fn lint_type(repo: &Repo, ty: &str) -> Output {
+    repo.write("MSG", &format!("{ty}: add x\n"));
+    repo.gir(&["lint", "MSG"])
+}
+
+#[test]
+fn types_file_replaces_types_keeps_names_and_drops_aliases_to_left_out_types() {
+    let repo = Repo::new();
+    repo.write("types.json", TYPES_JSON);
+    let cfg = load(&repo, "[gir]\ntypesFile = types.json\n");
+    assert_eq!(cfg.types, ["feat", "wip"]);
+    let file = cfg.types_file.unwrap();
+    assert_eq!(file.path, repo.dir.join("types.json"));
+    let names: Vec<&str> = file.defs.iter().map(|d| d.name.as_str()).collect();
+    assert_eq!(names, ["New Feature", "Work In Progress"]);
+
+    for ty in ["feat", "wip"] {
+        let out = lint_type(&repo, ty);
+        assert_eq!(out.status.code(), Some(0), "{ty}: {}", stderr(&out));
+    }
+    for ty in ["fix", "hotfix"] {
+        let out = lint_type(&repo, ty);
+        assert_eq!(out.status.code(), Some(1), "{ty}: {}", stderr(&out));
+        assert!(stderr(&out).contains(&format!("`{ty}` is not an allowed type")), "{ty}: {}", stderr(&out));
+    }
+    let out = lint_type(&repo, "feature");
+    assert_eq!(out.status.code(), Some(0), "an alias to a type the file keeps still applies: {}", stderr(&out));
+
+    let explain = repo.gir(&["explain", "types"]);
+    let text = stdout(&explain);
+    assert!(text.contains("Allowed types (from "), "{text}");
+    assert!(text.contains("  wip       Still being developed"), "{text}");
+    assert!(text.contains("feature->feat"), "{text}");
+    assert!(!text.contains("bugfix->fix"), "{text}");
+}
+
+#[test]
+fn types_file_from_git_config_resolves_against_its_file_and_girconfig_overrides_it() {
+    let repo = Repo::new();
+    let home = repo.global.parent().unwrap();
+    std::fs::write(home.join("global-types.json"), r#"[{ "Name": "G", "Type": "global", "Description": "from global" }]"#).unwrap();
+    repo.git(&["config", "--global", "gir.typesFile", "global-types.json"]);
+    assert_eq!(lint_type(&repo, "global").status.code(), Some(0), "global value resolves next to the global config");
+    assert_eq!(lint_type(&repo, "fix").status.code(), Some(1), "global types file replaces the defaults");
+
+    std::fs::write(repo.dir.join(".git").join("local-types.json"), r#"[{ "Name": "L", "Type": "local", "Description": "from .git/config" }]"#).unwrap();
+    repo.git(&["config", "--local", "gir.typesFile", "local-types.json"]);
+    repo.write("nested/MSG", "local: add x\n");
+    let from_subdir = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(repo.dir.join("nested")).args(["lint", "MSG"]).output().unwrap();
+    assert_eq!(from_subdir.status.code(), Some(0), "repository value resolves next to .git/config: {}", stderr(&from_subdir));
+
+    repo.write("girconfig-types.json", r#"[{ "Name": "R", "Type": "repo", "Description": "from .girconfig" }]"#);
+    repo.write(".girconfig", "[gir]\ntypesFile = girconfig-types.json\n");
+    assert_eq!(lint_type(&repo, "repo").status.code(), Some(0), ".girconfig wins over git config");
+    assert_eq!(lint_type(&repo, "local").status.code(), Some(1), ".girconfig wins over git config");
+
+    repo.write(".girconfig", "[gir]\ntypesFile =\n");
+    assert_eq!(lint_type(&repo, "fix").status.code(), Some(0), "an empty .girconfig value turns the types file off");
+    assert_eq!(lint_type(&repo, "local").status.code(), Some(1), "an empty .girconfig value turns the types file off");
+}
+
+#[test]
+fn types_file_from_command_line_config_resolves_against_repo_root() {
+    let repo = Repo::new();
+    repo.write("cli-types.json", r#"[{ "Name": "C", "Type": "cli", "Description": "from -c" }]"#);
+    repo.write("nested/MSG", "cli: add x\n");
+    let envs = [("GIT_CONFIG_COUNT", "1"), ("GIT_CONFIG_KEY_0", "gir.typesFile"), ("GIT_CONFIG_VALUE_0", "cli-types.json")];
+    let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(repo.dir.join("nested")).envs(envs).args(["lint", "MSG"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+}
+
+#[test]
+fn invalid_types_file_refuses_naming_file_origin_and_reason() {
+    let repo = Repo::new();
+    repo.write(".girconfig", "[gir]\ntypesFile = types.json\n");
+    let missing = lint_type(&repo, "feat");
+    assert_eq!(missing.status.code(), Some(2), "{}", stderr(&missing));
+    assert!(stderr(&missing).contains("types.json (gir.typesFile in .girconfig): "), "{}", stderr(&missing));
+
+    let entry = |fields: &str| format!("[{{ {fields} }}]");
+    let cases = [
+        ("[\n  { \"Type\": \"feat\", }\n]".to_string(), "not valid JSON: trailing comma at line 2"),
+        ("{}".to_string(), "expected a JSON array of types"),
+        ("[]".to_string(), "defines no types"),
+        ("[1]".to_string(), "entry 1: expected an object"),
+        (entry(r#""Name": "N", "Description": "D""#), "entry 1: `Type` is missing"),
+        (entry(r#""Type": 3, "Name": "N", "Description": "D""#), "entry 1: `Type` must be a string"),
+        (entry(r#""Type": "fe at", "Name": "N", "Description": "D""#), "entry 1: `Type` is `fe at`, expected ASCII letters, digits and `-`"),
+        (entry(r#""Type": "", "Name": "N", "Description": "D""#), "entry 1: `Type` is ``"),
+        (entry(r#""Type": "feat", "Description": "D""#), "entry 1 (`feat`): `Name` is missing"),
+        (entry(r#""Type": "feat", "Name": "N", "Description": null"#), "entry 1 (`feat`): `Description` must be a string"),
+        (r#"[{ "Type": "feat", "Name": "N", "Description": "D" }, { "Type": "feat", "Name": "N", "Description": "D" }]"#.to_string(), "entry 2 (`feat`): `Type` is already defined"),
+    ];
+    for (json, reason) in cases {
+        repo.write("types.json", &json);
+        for args in [&["lint", "MSG"][..], &["hook", "commit-msg", "MSG"]] {
+            let out = repo.gir(args);
+            assert_eq!(out.status.code(), Some(2), "{args:?} {json}: {}", stderr(&out));
+            let err = stderr(&out);
+            assert!(err.starts_with("gir: types file "), "{json}: {err}");
+            assert!(err.contains("types.json (gir.typesFile in .girconfig): "), "{json}: {err}");
+            assert!(err.contains(reason), "{json}: {err}");
+        }
+        let explain = repo.gir(&["explain", "types"]);
+        assert_eq!(explain.status.code(), Some(0), "{json}: {}", stderr(&explain));
+        assert!(stdout(&explain).contains("Allowed types (gir.types in .girconfig):"), "{json}: {}", stdout(&explain));
+        let doctor = repo.gir(&["doctor"]);
+        assert!(stdout(&doctor).contains(reason), "{json}: {}", stdout(&doctor));
+    }
+}
+
+#[test]
+fn types_file_overrides_girconfig_types_with_a_warning() {
+    let repo = Repo::new();
+    repo.write("types.json", TYPES_JSON);
+    repo.write(".girconfig", "[gir]\ntypes = alpha beta\ntypesFile = types.json\n");
+    let out = lint_type(&repo, "wip");
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stderr(&out).contains("gir: warning: gir.types in .girconfig is ignored; types come from "), "{}", stderr(&out));
+    assert_eq!(lint_type(&repo, "alpha").status.code(), Some(1));
+}
+
+#[test]
+fn init_comments_out_types_when_git_config_names_a_types_file() {
+    let repo = Repo::new();
+    let home = repo.global.parent().unwrap();
+    std::fs::write(home.join("types.json"), TYPES_JSON).unwrap();
+    repo.git(&["config", "--global", "gir.typesFile", "types.json"]);
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    let girconfig = std::fs::read_to_string(repo.dir.join(".girconfig")).unwrap();
+    assert!(girconfig.contains("\t# types = feat fix"), "{girconfig}");
+    assert!(!stderr(&out).contains("warning"), "{}", stderr(&out));
+    let cliff = std::fs::read_to_string(repo.dir.join("cliff.toml")).unwrap();
+    assert!(cliff.contains("^wip"), "{cliff}");
+    assert!(!cliff.contains("^fix"), "{cliff}");
+}

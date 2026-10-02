@@ -1,0 +1,65 @@
+$ git --version
+  exit=0 stdout=b'git version 2.56.0\n' stderr=b''
+$ git init -q /tmp/tmpwkzrbeab/repo
+  exit=0 stdout=b'' stderr=b''
+## unset
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=1 stdout=b'' stderr=b''
+## global relative
+$ git config --global gir.typesFile types.json
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'global\x00file:/tmp/tmpwkzrbeab/home/.gitconfig\x00types.json\x00' stderr=b''
+## global ~/ with --type=path
+$ git config --global gir.typesFile ~/x.json
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'global\x00file:/tmp/tmpwkzrbeab/home/.gitconfig\x00~/x.json\x00' stderr=b''
+$ git config --show-origin --show-scope -z --type=path --get gir.typesFile
+  exit=0 stdout=b'global\x00file:/tmp/tmpwkzrbeab/home/.gitconfig\x00/tmp/tmpwkzrbeab/home/x.json\x00' stderr=b''
+## local overrides global
+$ git config --local gir.typesFile local.json
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'local\x00file:.git/config\x00local.json\x00' stderr=b''
+## -c on the command line
+  exit=0 stdout=b'command\x00command line:\x00cli.json\x00'
+## empty local value
+$ git config --local gir.typesFile 
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'local\x00file:.git/config\x00\x00' stderr=b''
+## included file
+$ git config --local --unset gir.typesFile
+  exit=0 stdout=b'' stderr=b''
+$ git config --global include.path inc.gitconfig
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'global\x00file:/tmp/tmpwkzrbeab/home/inc.gitconfig\x00inc.json\x00' stderr=b''
+## path with spaces
+$ git config --global --unset include.path
+  exit=0 stdout=b'' stderr=b''
+$ git config --global gir.typesFile my dir/t.json
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'global\x00file:/tmp/tmpwkzrbeab/home/.gitconfig\x00my dir/t.json\x00' stderr=b''
+## .girconfig via --file
+$ git config --file .girconfig --show-origin -z --get gir.typesFile
+  exit=1 stdout=b'' stderr=b''
+$ git config --file /tmp/tmpwkzrbeab/repo/.girconfig --show-origin -z --get gir.typesFile
+  exit=0 stdout=b'file:/tmp/tmpwkzrbeab/repo/.girconfig\x00rel/t.json\x00' stderr=b''
+## local origin seen from a subdirectory and a linked worktree
+$ git config --global --unset gir.typesFile
+  exit=0 stdout=b'' stderr=b''
+$ git config --local gir.typesFile local.json
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'local\x00file:.git/config\x00local.json\x00' stderr=b''
+$ git -c user.name=p -c user.email=p@p commit -q --allow-empty -m init
+  exit=0 stdout=b'' stderr=b''
+$ git worktree add -q /tmp/tmpwkzrbeab/wt
+  exit=0 stdout=b'' stderr=b''
+$ git config --show-origin --show-scope -z --get gir.typesFile
+  exit=0 stdout=b'local\x00file:/tmp/tmpwkzrbeab/repo/.git/config\x00local.json\x00' stderr=b''
+$ git rev-parse --git-common-dir
+  exit=0 stdout=b'/tmp/tmpwkzrbeab/repo/.git\n' stderr=b''

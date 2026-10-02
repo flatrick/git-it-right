@@ -1,0 +1,39 @@
+
+✓ feat/sourcegit-types ci flatrick/git-it-right#9 · 37039567751
+Triggered via pull_request about 3 minutes ago
+
+JOBS
+✓ test (ubuntu-latest) in 28s (ID 110946048835)
+✓ capsule (windows-latest) in 1m25s (ID 110946049097)
+✓ capsule (ubuntu-latest) in 24s (ID 110946049141)
+✓ test (macos-latest) in 57s (ID 110946049162)
+✓ test (windows-latest) in 2m49s (ID 110946049172)
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+test (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+test (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+capsule (windows-latest): .github#2
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+capsule (ubuntu-latest): .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+capsule (ubuntu-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+test (macos-latest): .github#2
+
+- Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times.
+test (macos-latest): .github#1
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+test (windows-latest): .github#3
+
+
+For more information about a job, try: gh run view --job=<job-id>
+View this run on GitHub: https://github.com/flatrick/git-it-right/actions/runs/37039567751

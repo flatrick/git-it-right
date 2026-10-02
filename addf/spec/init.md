@@ -48,6 +48,7 @@ Otherwise it SHALL leave the file absent and print nothing about it.
 
 <a id="req-init-config-file"></a>
 **config-file.** `gir init` SHALL create `.girconfig` with `[gir]` entries `types = feat fix docs style refactor perf test build ci chore revert` and `subjectMax = 72`, a `[gir "alias"]` section with `feature = feat` and `bugfix = fix`, and commented examples for `scopes`, `scopeRequired`, `descCase`, and `hookMissing`.
+When git config already names a types file (see the config module), the `types` entry SHALL be written commented out.
 
 <a id="req-init-cliff-file"></a>
 **cliff-file.** When [optional-files](#req-init-optional-files) permits, `gir init` SHALL create `cliff.toml` with `[changelog]` and `[git]` sections, `conventional_commits = true`, `filter_unconventional = true`, `protect_breaking_commits = true`, and `sort_commits = "oldest"`.
@@ -107,6 +108,7 @@ It SHALL explain what gir is and why the repository uses it; the per-clone contr
 
 <a id="req-init-config-error"></a>
 **config-error.** If the effective `.girconfig` has an unknown `gir.` key or a value that the config module's invalid-value requirement rejects, `gir init` SHALL exit `2` and print an error beginning `gir: .girconfig:` to stderr before generating `cliff.toml` or running Git setup.
+An invalid types file SHALL do the same, with the error the config module's types-file-invalid requirement names.
 
 <a id="req-init-git-error"></a>
 **git-error.** If staging the hooks or setting the local hook path fails, `gir init` SHALL exit `2` and print `gir: ` followed by Git's error to stderr.
