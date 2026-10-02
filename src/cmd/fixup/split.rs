@@ -61,7 +61,8 @@ pub(super) fn split(mode: Mode, trace: Trace, base: Option<&str>, dry_run: bool,
             Choice::Split | Choice::Cancel => return Ok(cancelled()),
         }
     }
-    let order: Vec<String> = targets(&hunks).into_keys().chain(placed.iter().map(|(_, sha)| sha.clone())).collect::<BTreeSet<_>>().into_iter().collect();
+    let order: Vec<String> =
+        targets(&hunks).into_keys().chain(placed.iter().map(|(_, sha)| sha.clone())).collect::<BTreeSet<_>>().into_iter().collect();
     if dry_run {
         for sha in &order {
             crate::outln!("{} {}", &sha[..10], subject(sha));
@@ -128,7 +129,9 @@ fn place_whole_file(index: &git::TempIndex, goal: &str, path: &[u8]) -> Result<(
     let entry = String::from_utf8_lossy(&entry);
     let fields: Vec<&str> = entry.split_whitespace().take(3).collect();
     let args: Vec<&OsStr> = match fields[..] {
-        [mode, _, object] => vec![OsStr::new("update-index"), OsStr::new("--add"), OsStr::new("--cacheinfo"), OsStr::new(mode), OsStr::new(object), &path],
+        [mode, _, object] => {
+            vec![OsStr::new("update-index"), OsStr::new("--add"), OsStr::new("--cacheinfo"), OsStr::new(mode), OsStr::new(object), &path]
+        }
         _ => vec![OsStr::new("update-index"), OsStr::new("--force-remove"), OsStr::new("--"), &path],
     };
     index.run_raw(&args).map(|_| ())
@@ -166,9 +169,15 @@ mod tests {
         let diff = "diff --git a/f b/f\n--- a/f\n+++ b/f\n@@ -1,0 +2 @@\n+X\n@@ -3,0 +5 @@\n+Y\n@@ -6,0 +9 @@\n+Z\n@@ -8 +10,0 @@\n-gone\n";
         let hunks = parse_hunks(diff.as_bytes());
         let header = "diff --git a/f b/f\n--- a/f\n+++ b/f\n";
-        assert_eq!(patch(hunks.iter()), format!("{header}@@ -1,0 +2,1 @@\n+X\n@@ -3,0 +5,1 @@\n+Y\n@@ -6,0 +9,1 @@\n+Z\n@@ -8,1 +10,0 @@\n-gone\n").into_bytes());
+        assert_eq!(
+            patch(hunks.iter()),
+            format!("{header}@@ -1,0 +2,1 @@\n+X\n@@ -3,0 +5,1 @@\n+Y\n@@ -6,0 +9,1 @@\n+Z\n@@ -8,1 +10,0 @@\n-gone\n").into_bytes()
+        );
         let skip_y = [&hunks[0], &hunks[2], &hunks[3]];
-        assert_eq!(patch(skip_y.into_iter()), format!("{header}@@ -1,0 +2,1 @@\n+X\n@@ -6,0 +8,1 @@\n+Z\n@@ -8,1 +9,0 @@\n-gone\n").into_bytes());
+        assert_eq!(
+            patch(skip_y.into_iter()),
+            format!("{header}@@ -1,0 +2,1 @@\n+X\n@@ -6,0 +8,1 @@\n+Z\n@@ -8,1 +9,0 @@\n-gone\n").into_bytes()
+        );
         assert_eq!(patch(std::iter::once(&hunks[1])), format!("{header}@@ -3,0 +4,1 @@\n+Y\n").into_bytes());
     }
 }

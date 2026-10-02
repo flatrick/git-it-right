@@ -45,7 +45,8 @@ fn validate(text: &str, format: &Format) -> Vec<String> {
             continue;
         };
         let at = |msg: &str| format!("{id}: {msg}");
-        match id.strip_prefix(format.prefix).and_then(|r| r.strip_prefix('-')).filter(|n| n.len() == 3).and_then(|n| n.parse::<u32>().ok()) {
+        match id.strip_prefix(format.prefix).and_then(|r| r.strip_prefix('-')).filter(|n| n.len() == 3).and_then(|n| n.parse::<u32>().ok())
+        {
             Some(n) if n > last_id => last_id = n,
             Some(_) => errors.push(at("IDs must be unique and increasing")),
             None => errors.push(at(&format!("ID must look like {}-001", format.prefix))),
@@ -86,7 +87,8 @@ fn validate(text: &str, format: &Format) -> Vec<String> {
                 let ok = pairs.len() == 3
                     && pairs.iter().zip(OS_KEYS).all(|(p, key)| p.is_some_and(|(k, s)| k == key && OS_STATES.contains(&s)));
                 if !ok {
-                    errors.push(at(&format!("`OS: {os}` must be `windows=<state> linux=<state> macos=<state>`, state one of {OS_STATES:?}")));
+                    errors
+                        .push(at(&format!("`OS: {os}` must be `windows=<state> linux=<state> macos=<state>`, state one of {OS_STATES:?}")));
                 }
             }
         }
@@ -125,7 +127,16 @@ fn validator_catches_each_mistake() {
 ### F-003 bad os order\n\n- OS: linux=seen windows=untested macos=untested\n- Area: lint\n- Status: open\n- Found: 2026-09-24\n\ntext\n\n\
 ### F-004 bad state, area, status, date, field, no text\n\n- OS: windows=maybe linux=untested macos=untested\n- Area: misc\n- Status: done\n- Found: 24/09/2026\n- Owner: me\n";
     let errors = validate(bad, &FRICTION);
-    for want in ["F-002: IDs must be unique", "F-003: `OS:", "F-004: `OS:", "F-004: `Area:", "F-004: `Status:", "F-004: `Found:", "F-004: unknown field `Owner`", "F-004: needs a description"] {
+    for want in [
+        "F-002: IDs must be unique",
+        "F-003: `OS:",
+        "F-004: `OS:",
+        "F-004: `Area:",
+        "F-004: `Status:",
+        "F-004: `Found:",
+        "F-004: unknown field `Owner`",
+        "F-004: needs a description",
+    ] {
         assert!(errors.iter().any(|e| e.starts_with(want)), "expected `{want}` in {errors:#?}");
     }
     assert_eq!(errors.len(), 8, "{errors:#?}");

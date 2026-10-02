@@ -212,7 +212,10 @@ fn successful_fixup_prints_target_and_base_and_preserves_config() {
     stage(&repo, "a.txt", "one\nTWO\nthree\n");
     let out = repo.gir(&["fixup"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stderr(&out), format!("gir: created fixup! for {} feat: add a\n  fold: git rebase --autosquash {}\n", &target[..10], &base[..10]));
+    assert_eq!(
+        stderr(&out),
+        format!("gir: created fixup! for {} feat: add a\n  fold: git rebase --autosquash {}\n", &target[..10], &base[..10])
+    );
     assert_eq!(repo.git(&["log", "-1", "--format=%s"]), "fixup! feat: add a");
     assert_eq!(std::fs::read(&repo.global).unwrap(), config_before);
     assert_eq!(std::fs::read(repo.dir.join(".git/config")).unwrap(), local_before);
@@ -263,7 +266,10 @@ fn mixed_base_and_topic_replacement_is_refused() {
     stage(&repo, "lines.txt", "BASE\nTOPIC\n");
     let out = repo.gir(&["fixup", "--dry-run"]);
     assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
-    assert_eq!(stderr(&out), format!("gir: lines.txt:1 was last changed by {} which is already on the base branch; commit it normally instead\n", &base[..10]));
+    assert_eq!(
+        stderr(&out),
+        format!("gir: lines.txt:1 was last changed by {} which is already on the base branch; commit it normally instead\n", &base[..10])
+    );
     assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "lines.txt");
 }
 

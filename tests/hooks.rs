@@ -7,7 +7,8 @@ use common::{Repo, stderr};
 
 fn pre_push(repo: &Repo, local_sha: &str, remote_sha: &str) -> Output {
     let input = format!("refs/heads/topic {local_sha} refs/heads/topic {remote_sha}\n");
-    let mut child = repo.cmd(env!("CARGO_BIN_EXE_gir"))
+    let mut child = repo
+        .cmd(env!("CARGO_BIN_EXE_gir"))
         .args(["hook", "pre-push", "origin", "unused-url"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -20,10 +21,13 @@ fn pre_push(repo: &Repo, local_sha: &str, remote_sha: &str) -> Output {
 
 fn missing_gir_script(repo: &Repo, name: &str) -> Output {
     let gir = if cfg!(windows) { "gir.exe" } else { "gir" };
-    let dirs = std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()).filter(|dir| !dir.join(gir).exists()).collect::<Vec<_>>();
+    let dirs =
+        std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()).filter(|dir| !dir.join(gir).exists()).collect::<Vec<_>>();
     let mut command = repo.cmd("git");
     match name {
-        "commit-msg" => { command.args(["commit", "-q", "--allow-empty", "-m", "chore: missing gir"]); }
+        "commit-msg" => {
+            command.args(["commit", "-q", "--allow-empty", "-m", "chore: missing gir"]);
+        }
         "pre-push" => {
             let remote = repo.dir.parent().unwrap().join("missing-gir-remote.git");
             repo.git(&["init", "-q", "--bare", remote.to_str().unwrap()]);
@@ -113,7 +117,11 @@ fn installed_hooks_block_when_gir_is_missing_and_configured_to_fail() {
     for name in ["commit-msg", "pre-push"] {
         let out = missing_gir_script(&repo, name);
         assert_eq!(out.status.code(), Some(1), "{name}: {}", stderr(&out));
-        assert!(stderr(&out).lines().any(|line| line == format!("gir: not installed, {name} check blocked (gir.hookMissing=fail)")), "{name}: {}", stderr(&out));
+        assert!(
+            stderr(&out).lines().any(|line| line == format!("gir: not installed, {name} check blocked (gir.hookMissing=fail)")),
+            "{name}: {}",
+            stderr(&out)
+        );
         assert!(out.stdout.is_empty(), "{name} printed stdout");
     }
 }
@@ -139,8 +147,11 @@ fn pre_push_skips_malformed_lines_and_lints_following_valid_line() {
     let base = repo.git(&["rev-parse", "HEAD"]);
     repo.commit_file("bad.txt", "bad\n", "invalid subject");
     let bad = repo.git(&["rev-parse", "HEAD"]);
-    let input = format!("refs/heads/topic {bad} refs/heads/topic\nrefs/heads/topic {bad} refs/heads/topic {base} extra\nrefs/heads/topic {bad} refs/heads/topic {base}\n");
-    let mut child = repo.cmd(env!("CARGO_BIN_EXE_gir"))
+    let input = format!(
+        "refs/heads/topic {bad} refs/heads/topic\nrefs/heads/topic {bad} refs/heads/topic {base} extra\nrefs/heads/topic {bad} refs/heads/topic {base}\n"
+    );
+    let mut child = repo
+        .cmd(env!("CARGO_BIN_EXE_gir"))
         .args(["hook", "pre-push", "origin", "unused-url"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -150,6 +161,12 @@ fn pre_push_skips_malformed_lines_and_lints_following_valid_line() {
     child.stdin.take().unwrap().write_all(input.as_bytes()).unwrap();
     let out = child.wait_with_output().unwrap();
     assert_eq!(out.status.code(), Some(1), "{}", stderr(&out));
-    assert_eq!(stderr(&out), format!("gir: {} push rejected [type-missing] header must start with `<type>[(scope)][!]: `\n  try: <type>: invalid subject   types: feat fix docs style refactor perf test build ci chore revert\n  more: gir explain type-missing\n", &bad[..10]));
+    assert_eq!(
+        stderr(&out),
+        format!(
+            "gir: {} push rejected [type-missing] header must start with `<type>[(scope)][!]: `\n  try: <type>: invalid subject   types: feat fix docs style refactor perf test build ci chore revert\n  more: gir explain type-missing\n",
+            &bad[..10]
+        )
+    );
     assert!(out.stdout.is_empty());
 }

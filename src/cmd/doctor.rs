@@ -84,7 +84,12 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
     if root.join(".githooks").is_dir() {
         match git::get_config("core.hooksPath") {
             Some(p) if p == ".githooks" => out.push(check(Level::Ok, "core.hooksPath", "", None)),
-            _ => out.push(check(Level::Warn, "core.hooksPath", "hooks in .githooks/ are not active in this clone", Some(Fix::LocalConfig("core.hooksPath", ".githooks")))),
+            _ => out.push(check(
+                Level::Warn,
+                "core.hooksPath",
+                "hooks in .githooks/ are not active in this clone",
+                Some(Fix::LocalConfig("core.hooksPath", ".githooks")),
+            )),
         }
     } else {
         out.push(check(Level::Warn, "hooks", "no .githooks/; run: gir init", None));
@@ -102,7 +107,12 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
         }
     }
     if cfg!(windows) && git::get_config("core.longpaths").is_none() {
-        out.push(check(Level::Warn, "core.longpaths", "unset; paths over 260 chars fail on Windows", Some(Fix::LocalConfig("core.longpaths", "true"))));
+        out.push(check(
+            Level::Warn,
+            "core.longpaths",
+            "unset; paths over 260 chars fail on Windows",
+            Some(Fix::LocalConfig("core.longpaths", "true")),
+        ));
     }
 
     for key in ["user.name", "user.email"] {
@@ -130,7 +140,12 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
         Err(_) => {
             let crlf = git::get_config("core.autocrlf").filter(|v| v != "false");
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();
-            out.push(check(Level::Warn, ".gitattributes", format!("missing{extra}"), Some(Fix::WriteFile(".gitattributes", templates::GITATTRIBUTES))));
+            out.push(check(
+                Level::Warn,
+                ".gitattributes",
+                format!("missing{extra}"),
+                Some(Fix::WriteFile(".gitattributes", templates::GITATTRIBUTES)),
+            ));
         }
         Ok(text) if !has_text_auto_rule(&text) => {
             out.push(check(Level::Info, ".gitattributes", "no `* text=auto` line; line endings are not normalised", None));
@@ -139,7 +154,12 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     }
 
     if !root.join(".editorconfig").exists() {
-        out.push(check(Level::Info, ".editorconfig", "missing; editors will not agree on indentation and newlines", Some(Fix::WriteFile(".editorconfig", templates::EDITORCONFIG))));
+        out.push(check(
+            Level::Info,
+            ".editorconfig",
+            "missing; editors will not agree on indentation and newlines",
+            Some(Fix::WriteFile(".editorconfig", templates::EDITORCONFIG)),
+        ));
     }
 
     match Config::load_at(root) {
@@ -186,21 +206,22 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
 }
 
 const RESERVED: &[&str] = &[
-    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4",
+    "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
 ];
 
 /// Whether Windows cannot hold `path`: bytes that are not UTF-8, a control character, a
 /// reserved device name, a trailing dot or space, or a reserved character.
 pub fn windows_unsafe(path: &[u8]) -> bool {
     let Ok(path) = std::str::from_utf8(path) else { return true };
-    path.bytes().any(|b| (1..=31).contains(&b)) || path.split('/').any(|seg| {
-        let stem = seg.split('.').next().unwrap_or(seg).to_ascii_uppercase();
-        RESERVED.contains(&stem.as_str())
-            || seg.ends_with('.')
-            || seg.ends_with(' ')
-            || seg.contains(['<', '>', ':', '"', '\\', '|', '?', '*'])
-    })
+    path.bytes().any(|b| (1..=31).contains(&b))
+        || path.split('/').any(|seg| {
+            let stem = seg.split('.').next().unwrap_or(seg).to_ascii_uppercase();
+            RESERVED.contains(&stem.as_str())
+                || seg.ends_with('.')
+                || seg.ends_with(' ')
+                || seg.contains(['<', '>', ':', '"', '\\', '|', '?', '*'])
+        })
 }
 
 /// A path for a report line: as stored, or C-quoted the way git quotes it when it has a
@@ -270,15 +291,17 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
             not_exec.push(ChmodPath { path: path.to_vec(), object: object.to_vec(), skip_worktree: tag == b"S" });
         }
     }
-    let collisions: Vec<String> = by_lower
-        .values()
-        .filter(|v| v.len() > 1)
-        .map(|v| v.iter().map(|p| display_path(p)).collect::<Vec<_>>().join(" = "))
-        .collect();
+    let collisions: Vec<String> =
+        by_lower.values().filter(|v| v.len() > 1).map(|v| v.iter().map(|p| display_path(p)).collect::<Vec<_>>().join(" = ")).collect();
     let mut index_ok = true;
     if !collisions.is_empty() {
         index_ok = false;
-        out.push(check(Level::Warn, "case-collision", format!("paths differ only in case, which breaks Windows/macOS checkouts: {}", collisions.join(", ")), None));
+        out.push(check(
+            Level::Warn,
+            "case-collision",
+            format!("paths differ only in case, which breaks Windows/macOS checkouts: {}", collisions.join(", ")),
+            None,
+        ));
     }
     if !unsafe_names.is_empty() {
         index_ok = false;
@@ -382,7 +405,15 @@ mod tests {
 
     #[test]
     fn text_auto_rule_ignores_whitespace_and_attribute_order() {
-        for good in ["* text=auto", "*\ttext=auto", "*   text=auto eol=lf", "* eol=lf text=auto", "  * text=auto", "* text=auto\r", "# notes\n*\t\ttext=auto\n"] {
+        for good in [
+            "* text=auto",
+            "*\ttext=auto",
+            "*   text=auto eol=lf",
+            "* eol=lf text=auto",
+            "  * text=auto",
+            "* text=auto\r",
+            "# notes\n*\t\ttext=auto\n",
+        ] {
             assert!(has_text_auto_rule(good), "{good:?}");
         }
         for bad in ["", "* text=autofoo", "# * text=auto", "*.txt text=auto", "* text", "* -text", "*text=auto"] {

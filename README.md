@@ -132,7 +132,7 @@ git rebase --autosquash main     # folds the fixup into its target
 ## Git clients
 
 gir is tested from terminals.
-If you use a git client such as Visual Studio, VS Code, SourceGit or SourceTree, [CLIENT-TESTING.md](CLIENT-TESTING.md) walks through checking that the hooks, `gir fixup` and its prompt work there, and how to report what breaks.
+If you use a git client such as Visual Studio, VS Code, SourceGit or SourceTree, [CLIENT-TESTING.md](https://github.com/flatrick/git-it-right/blob/main/CLIENT-TESTING.md) walks through checking that the hooks, `gir fixup` and its prompt work there, and how to report what breaks.
 
 ## Commands
 
@@ -208,8 +208,8 @@ git-cliff --bumped-version
 
 - `cargo test` runs unit tests, end-to-end tests with real git repositories, and a 750 ms latency budget for the commit-msg hook.
 - `cargo clippy --all-targets -- -D warnings` must pass.
-- Log any friction you hit, with the OS it happened on, in [FRICTION.md](FRICTION.md).
-- Log any bug you find but do not fix right away in [BUGS.md](BUGS.md).
+- Log any friction you hit, with the OS it happened on, in [FRICTION.md](https://github.com/flatrick/git-it-right/blob/main/FRICTION.md).
+- Log any bug you find but do not fix right away in [BUGS.md](https://github.com/flatrick/git-it-right/blob/main/BUGS.md).
 - Merge a pull request with a merge commit, never a squash or rebase merge: `addf/` records cite a branch's commits by ID, and git-cliff builds the changelog from individual commits.
 - Commit `addf/` process records with the `addf` scope, for example `docs(addf): ...`; `cliff.toml` keeps that scope out of the changelog, so checkpoint commits cost nothing there.
 

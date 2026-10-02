@@ -99,10 +99,8 @@ pub fn run(mode: Mode, target: Option<String>, opts: Options) -> Result<i32, Str
                 } else if !ask {
                     return Err(several_targets(mode, &targets, can_split));
                 } else {
-                    let items: Vec<String> = targets
-                        .iter()
-                        .map(|(sha, places)| format!("{} {}  <- {}", &sha[..10], subject(sha), places.join(" ")))
-                        .collect();
+                    let items: Vec<String> =
+                        targets.iter().map(|(sha, places)| format!("{} {}  <- {}", &sha[..10], subject(sha), places.join(" "))).collect();
                     eprintln!("gir: staged changes belong to several commits:");
                     let split = format!("one {} per commit", mode.prefix());
                     match pick::choose(&items, can_split.then_some(split.as_str()), std::io::stdin().lock(), std::io::stderr()) {
@@ -130,8 +128,7 @@ pub fn run(mode: Mode, target: Option<String>, opts: Options) -> Result<i32, Str
 }
 
 fn explicit_target(t: &str, base: Option<&str>) -> Result<String, String> {
-    let sha = git::run(&["rev-parse", "--verify", "--quiet", &format!("{t}^{{commit}}")])
-        .map_err(|_| format!("`{t}` is not a commit"))?;
+    let sha = git::run(&["rev-parse", "--verify", "--quiet", &format!("{t}^{{commit}}")]).map_err(|_| format!("`{t}` is not a commit"))?;
     if git::run(&["merge-base", "--is-ancestor", &sha, "HEAD"]).is_err() {
         return Err(format!("`{t}` is not in the current branch's history"));
     }
@@ -259,8 +256,17 @@ fn targets(hunks: &[Traced]) -> BTreeMap<String, Vec<String>> {
 /// at the first file it cannot trace, as only that one is reported.
 fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
     let diff = git::run_raw(&[
-        "-c", "core.quotePath=false", "diff", "--cached", "-U0", "--no-color", "--no-ext-diff", "--no-textconv",
-        "--no-renames", "--src-prefix=a/", "--dst-prefix=b/",
+        "-c",
+        "core.quotePath=false",
+        "diff",
+        "--cached",
+        "-U0",
+        "--no-color",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--no-renames",
+        "--src-prefix=a/",
+        "--dst-prefix=b/",
     ])?;
     let hunks = parse_hunks(&diff);
     let traced: BTreeSet<&[u8]> = hunks.iter().map(|h| h.path.as_slice()).collect();
@@ -282,7 +288,11 @@ fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
             (status == b"A", Untraced { path: path.to_vec(), reason })
         })
         .fold((Vec::new(), Vec::new()), |(mut new, mut other), (is_new, u)| {
-            if is_new { new.push(u) } else { other.push(u) }
+            if is_new {
+                new.push(u)
+            } else {
+                other.push(u)
+            }
             (new, other)
         });
     untraced.extend(others);
@@ -345,11 +355,8 @@ fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
             let mut ranges = h.split_whitespace();
             let (start, count) = range(ranges.next().unwrap_or(""));
             let (_, new_count) = range(ranges.next().unwrap_or("").trim_start_matches('+'));
-            let lines = if count == 0 {
-                [start, start + 1].into_iter().filter(|l| *l >= 1).collect()
-            } else {
-                (start..start + count).collect()
-            };
+            let lines =
+                if count == 0 { [start, start + 1].into_iter().filter(|l| *l >= 1).collect() } else { (start..start + count).collect() };
             if let Some(p) = &path {
                 hunks.push(Hunk {
                     path: p.clone(),
@@ -445,7 +452,6 @@ fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
     shas
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -483,7 +489,8 @@ mod tests {
 
     #[test]
     fn header_paths_drop_the_tab_terminator_and_decode_quoting() {
-        let header_path = |text: &str, prefix: &str| super::header_path(text.as_bytes(), prefix.as_bytes()).map(|p| String::from_utf8(p).unwrap());
+        let header_path =
+            |text: &str, prefix: &str| super::header_path(text.as_bytes(), prefix.as_bytes()).map(|p| String::from_utf8(p).unwrap());
         assert_eq!(header_path("a/src/x.rs", "a/"), Some("src/x.rs".to_string()));
         assert_eq!(header_path("a/my file.txt\t", "a/"), Some("my file.txt".to_string()));
         assert_eq!(header_path("/dev/null", "a/"), None);

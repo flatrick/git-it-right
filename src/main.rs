@@ -51,7 +51,7 @@ fn run() -> Result<i32, String> {
     let mut range = None;
     while let Some(arg) = parser.next().map_err(err)? {
         match arg {
-            Long("range") if sub == "lint" => range =Some(parser.value().map_err(err)?.string().map_err(err)?),
+            Long("range") if sub == "lint" => range = Some(parser.value().map_err(err)?.string().map_err(err)?),
             Long(f) => flags.push(f.to_string()),
             Short('h') => flags.push("help".into()),
             Short(c) => return Err(format!("unknown option -{c}")),
@@ -94,8 +94,7 @@ fn run() -> Result<i32, String> {
         }
         ("explain", [topic]) => {
             let cfg = load_config().unwrap_or_default();
-            let page = explain::page(topic, &cfg)
-                .ok_or_else(|| format!("no topic `{topic}`; topics: {}", explain::topics().join(" ")))?;
+            let page = explain::page(topic, &cfg).ok_or_else(|| format!("no topic `{topic}`; topics: {}", explain::topics().join(" ")))?;
             gir::outln!("{page}");
             Ok(0)
         }
@@ -105,7 +104,7 @@ fn run() -> Result<i32, String> {
             let source = match (range, rest) {
                 (Some(_), []) if opts.fix => return Err("gir lint --range cannot --fix recorded commits".into()),
                 (Some(r), []) => lint::Source::Range(r),
-                (None, [] ) => lint::Source::Stdin,
+                (None, []) => lint::Source::Stdin,
                 (None, [p]) if p == "-" => lint::Source::Stdin,
                 (None, [p]) => lint::Source::File(p.clone()),
                 _ => return Err("gir lint takes one file, `-`, or --range".into()),

@@ -51,12 +51,8 @@ fn output(cmd: &mut Command) -> Result<String, String> {
 }
 
 fn output_with_stdin(cmd: &mut Command, input: &[u8]) -> Result<String, String> {
-    let mut child = cmd
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("could not run git: {e}"))?;
+    let mut child =
+        cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().map_err(|e| format!("could not run git: {e}"))?;
     child.stdin.take().unwrap().write_all(input).map_err(|e| e.to_string())?;
     let out = child.wait_with_output().map_err(|e| e.to_string())?;
     if out.status.success() {
@@ -133,17 +129,9 @@ pub fn enter_toplevel() -> Result<PathBuf, String> {
 
 /// `core.commentString` (git >= 2.45) wins over `core.commentChar`; `auto` falls back to `#`.
 pub fn comment_string() -> String {
-    get_config("core.commentString")
-        .or_else(|| get_config("core.commentChar"))
-        .filter(|c| c != "auto")
-        .unwrap_or_else(|| "#".to_string())
+    get_config("core.commentString").or_else(|| get_config("core.commentChar")).filter(|c| c != "auto").unwrap_or_else(|| "#".to_string())
 }
 
 pub fn on_path(program: &str) -> bool {
-    Command::new(program)
-        .arg("--version")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
-        .is_ok_and(|s| s.success())
+    Command::new(program).arg("--version").stdout(Stdio::null()).stderr(Stdio::null()).status().is_ok_and(|s| s.success())
 }

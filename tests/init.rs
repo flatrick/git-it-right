@@ -38,7 +38,18 @@ fn init_creates_files_and_reports_each_write() {
         }
     }
     let cfg = content(&repo, ".girconfig");
-    for item in ["[gir]", "types = feat fix docs style refactor perf test build ci chore revert", "subjectMax = 72", "[gir \"alias\"]", "feature = feat", "bugfix = fix", "# scopes =", "# scopeRequired =", "# descCase =", "# hookMissing ="] {
+    for item in [
+        "[gir]",
+        "types = feat fix docs style refactor perf test build ci chore revert",
+        "subjectMax = 72",
+        "[gir \"alias\"]",
+        "feature = feat",
+        "bugfix = fix",
+        "# scopes =",
+        "# scopeRequired =",
+        "# descCase =",
+        "# hookMissing =",
+    ] {
         assert!(cfg.contains(item), ".girconfig contains {item}");
     }
     assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "init sets the local hook path");
@@ -50,11 +61,36 @@ fn init_generates_cliff_format_and_default_parsers() {
     let repo = Repo::new();
     assert!(repo.gir(&["init"]).status.success());
     let cliff = content(&repo, "cliff.toml");
-    for item in ["[changelog]", "[git]", "conventional_commits = true", "filter_unconventional = true", "protect_breaking_commits = true", "sort_commits = \"oldest\"", "trim = true", "## {{ version }}", "## Unreleased", "group_by(attribute=\"group\")", "commit.scope", "commit.breaking"] {
+    for item in [
+        "[changelog]",
+        "[git]",
+        "conventional_commits = true",
+        "filter_unconventional = true",
+        "protect_breaking_commits = true",
+        "sort_commits = \"oldest\"",
+        "trim = true",
+        "## {{ version }}",
+        "## Unreleased",
+        "group_by(attribute=\"group\")",
+        "commit.scope",
+        "commit.breaking",
+    ] {
         assert!(cliff.contains(item), "cliff.toml contains {item}");
     }
     assert!(cliff.contains("^(fixup|squash|amend)!\", skip = true"), "cliff.toml skips autosquash messages");
-    for (ty, group) in [("feat", "Features"), ("fix", "Bug Fixes"), ("docs", "Documentation"), ("style", "Styling"), ("refactor", "Refactor"), ("perf", "Performance"), ("test", "Testing"), ("build", "Build"), ("ci", "CI"), ("chore", "Miscellaneous"), ("revert", "Reverts")] {
+    for (ty, group) in [
+        ("feat", "Features"),
+        ("fix", "Bug Fixes"),
+        ("docs", "Documentation"),
+        ("style", "Styling"),
+        ("refactor", "Refactor"),
+        ("perf", "Performance"),
+        ("test", "Testing"),
+        ("build", "Build"),
+        ("ci", "CI"),
+        ("chore", "Miscellaneous"),
+        ("revert", "Reverts"),
+    ] {
         assert!(cliff.contains(&format!("message = \"^{ty}(\\\\(|!|:)\", group = \"{group}\"")), "{ty} parser uses {group}");
     }
 }
@@ -82,7 +118,10 @@ fn init_keeps_differing_files_and_processes_the_rest() {
     assert_eq!(content(&repo, ".githooks/commit-msg"), "custom hook\n", "init keeps a changed hook");
     assert_eq!(content(&repo, ".girconfig"), "[gir]\n types = feat\n", "init keeps a changed config");
     for path in [".githooks/commit-msg", ".girconfig"] {
-        assert!(stderr(&out).contains(&format!("gir: kept {path} (differs from the template; --force overwrites)")), "init reports keeping {path}");
+        assert!(
+            stderr(&out).contains(&format!("gir: kept {path} (differs from the template; --force overwrites)")),
+            "init reports keeping {path}"
+        );
     }
     assert!(repo.dir.join("cliff.toml").exists(), "init continues to generate cliff.toml");
     assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "init continues Git setup");
@@ -171,7 +210,11 @@ fn clean_rerun_does_not_restage_or_repeat_hook_path_message() {
     let out = repo.gir(&["init"]);
     assert!(out.status.success(), "a clean rerun succeeds with a locked index because it never stages");
     assert_eq!(index(&repo), staged, "a clean rerun preserves index entries");
-    assert_eq!(fs::metadata(repo.dir.join(".git/index")).unwrap().modified().unwrap(), before, "a clean rerun leaves the index file untouched");
+    assert_eq!(
+        fs::metadata(repo.dir.join(".git/index")).unwrap().modified().unwrap(),
+        before,
+        "a clean rerun leaves the index file untouched"
+    );
     assert!(!stderr(&out).contains("gir: staged"), "a clean rerun reports no staging");
     assert!(!stderr(&out).contains("gir: set core.hooksPath=.githooks (this clone)"), "a clean rerun does not report setting hooksPath");
 }
@@ -185,7 +228,10 @@ fn invalid_config_stops_before_cliff_and_git_setup() {
         assert_eq!(out.status.code(), Some(2), "invalid config exits 2");
         assert!(stderr(&out).contains("gir: .girconfig:"), "invalid config names .girconfig");
         assert!(!repo.dir.join("cliff.toml").exists(), "invalid config prevents cliff generation");
-        assert!(repo.git_out(&["config", "--local", "--get", "core.hooksPath"]).stdout.is_empty(), "invalid config prevents hook-path setup");
+        assert!(
+            repo.git_out(&["config", "--local", "--get", "core.hooksPath"]).stdout.is_empty(),
+            "invalid config prevents hook-path setup"
+        );
     }
 }
 
@@ -292,7 +338,10 @@ fn adopted_init_restores_missing_required_files() {
     let out = repo.gir(&["init"]);
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert!(stderr(&out).contains("gir: wrote .githooks/pre-push"), "adopted init restores the missing hook");
-    assert!(index(&repo).lines().any(|line| line.starts_with("100755 ") && line.ends_with(".githooks/pre-push")), "restored hook is staged executable");
+    assert!(
+        index(&repo).lines().any(|line| line.starts_with("100755 ") && line.ends_with(".githooks/pre-push")),
+        "restored hook is staged executable"
+    );
     assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "adopted init sets the hook path");
 }
 

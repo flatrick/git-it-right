@@ -50,7 +50,10 @@ fn amend_creates_an_amend_commit_with_the_staged_changes() {
     stage(&repo, "a.txt", "one\nTWO\nthree\n");
     let out = repo.gir_with(&["amend"], &[EDITOR], "");
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    assert_eq!(stderr(&out), format!("gir: created amend! for {} feat: add a\n  fold: git rebase --autosquash {}\n", &target[..10], &base[..10]));
+    assert_eq!(
+        stderr(&out),
+        format!("gir: created amend! for {} feat: add a\n  fold: git rebase --autosquash {}\n", &target[..10], &base[..10])
+    );
     assert_eq!(repo.git(&["log", "-1", "--format=%s"]), "amend! feat: add a");
     assert_eq!(repo.git(&["show", "HEAD:a.txt"]), "one\nTWO\nthree");
 }
@@ -61,7 +64,10 @@ fn amend_with_nothing_staged_points_to_reword() {
     let head = repo.git(&["rev-parse", "HEAD"]);
     let out = repo.gir_with(&["amend", "HEAD"], &[EDITOR], "");
     assert_eq!(out.status.code(), Some(2));
-    assert_eq!(stderr(&out), "gir: nothing staged; `git add` the fix first, or change only the message: gir reword (more: gir explain fixup)\n");
+    assert_eq!(
+        stderr(&out),
+        "gir: nothing staged; `git add` the fix first, or change only the message: gir reword (more: gir explain fixup)\n"
+    );
     assert_eq!(repo.git(&["rev-parse", "HEAD"]), head);
 }
 
