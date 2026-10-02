@@ -4,7 +4,7 @@ Edge cases in `gir fixup` and `--split` found by a `/code-review high` of `feat/
 Copied here unchanged from the `ledger.md` of the Task `ledger-threads-and-concurrent-tasks`, which received them only because the retired root Ledger handed off all its entries at once.
 
 Append-only: never edit or delete a prior entry; append new ones at the end.
-An entry is named by its position among the `Q:` entries, `Q1` being the first.
+Number each entry by its position among the questions, `Q1` being the first; its answer takes the same number, as a separate list item.
 Settle an entry with a `D:` line that names it.
 See `skills/work-control.md`'s Ledger section for the full contract, including how a Task takes entries and when the thread is archived.
 

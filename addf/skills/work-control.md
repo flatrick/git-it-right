@@ -52,10 +52,11 @@ Append every question and its answer, or its still-open state, that comes up whi
 A thread is append-only: never edit or delete a prior entry, only add new ones at the end.
 One entry per question:
 
-- Q: `<question>`
-  A: `<answer, or OPEN if still unresolved>`
+- Q`<n>`: `<question>`
+- A`<n>`: `<answer, or OPEN if still unresolved>`
 
-An entry is named by its position among the thread's `Q:` entries, `Q1` being the first; append-only keeps that position stable.
+Number each entry by its position among the thread's questions, `Q1` being the first, and give its answer the same number; append-only keeps that position stable.
+Write the question and the answer as separate list items, so a rendered answer does not run into its question's paragraph.
 Settle an entry by appending a disposition line that names it, never by editing the entry:
 
 - D: `<Q positions, or all>` -> `<taken by Task name | rejected: reason | moved to place>`
@@ -71,7 +72,7 @@ When a Task is created (Start or resume, below), it takes the thread entries it 
 Fold anything still material into Material empirical premises, Open questions, or Constraints.
 Once the Task exists, its own `ledger.md` holds the rest of its DEFINE dialogue.
 
-A thread whose every `Q:` has a disposition is settled; load [Stewardship](stewardship.md) to archive it.
+A thread whose every question has a disposition is settled; load [Stewardship](stewardship.md) to archive it.
 Entries no Task has taken stay open in their thread, listed through `INDEX.md`, until each is taken, rejected, or moved.
 
 ## Define

@@ -133,7 +133,7 @@ current-only artifact for its own reasoning to make sense.
 
 ## Archive a settled thread
 
-A Ledger thread is settled when every `Q:` entry in it has a disposition line (Work control's Ledger section).
+A Ledger thread is settled when every question in it has a disposition line (Work control's Ledger section).
 Move a settled thread to `.archive/ledger/` and remove it from the index in the same pass.
 A thread with an entry still open stays under `ledger/`, however old it is.
 
