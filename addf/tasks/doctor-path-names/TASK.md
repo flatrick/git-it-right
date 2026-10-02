@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Probe each suspicion in `c1-suspicions-settled` against the current build, and record each as confirmed or refuted.
+**Resume at:** Probe each suspicion in `c1-suspicions-settled` against the current build.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
