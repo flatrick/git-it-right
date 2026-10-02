@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Reproduce `c1-reproduced` on the current build, then prepare Codex's throwaway clone and check that cargo can build in its sandbox.
+**Resume at:** Reproduce `c1-reproduced` and probe `p1-cacheinfo-works` on the current build.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
