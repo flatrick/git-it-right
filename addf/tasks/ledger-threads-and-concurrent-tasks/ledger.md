@@ -85,3 +85,11 @@ For each one, whether to fix it on this branch is still OPEN.
   A: No new one: worktree `.worktrees/fixup-modes`, branch `feat/fixup-modes`. The earlier ledger commit `e3e3c3b` was made before this question was asked, which the Isolate rule did not allow.
 - Q: Are the objective, scope and success criteria viable and desirable?
   A: Agreed by the operator, as written in `TASK.md`.
+- Q: Does writing to a ledger thread trigger the Isolate question?
+  A: No; only creating a Task does. A thread is committed where it is written, and before a new workspace is branched from it.
+- Q: When one Task takes every entry of a thread, what happens to the thread?
+  A: It moves into the Task's folder as its `ledger.md`; copying with a disposition line is only for a Task that takes part of a thread.
+- Q: What should `check-capsule` enforce?
+  A: All four offered: refuse a root `LEDGER.md`; `INDEX.md` lists exactly the open threads; refuse more than 3 active Tasks; check threads in prose mode.
+- Q: What does declaring an order between overlapping Tasks commit them to?
+  A: The order of spec publication: the earlier Task publishes and finishes first, and the later one re-reads the current spec before its own `VERIFY`. Work may run in parallel.

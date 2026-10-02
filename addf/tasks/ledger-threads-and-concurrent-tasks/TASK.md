@@ -147,7 +147,24 @@ No probe is needed. Dispositions:
 
 ## Decide
 
-`PENDING`
+Selected design; the operator chose each open point (`ledger.md`).
+
+-   **Threads.** Pre-Task exploration lives in `ledger/<slug>.md`, one append-only file per exploration, from `templates/LEDGER-THREAD.md` (renamed from `templates/LEDGER.md`). The root `LEDGER.md` is deleted. An entry is named by its position among the thread's `Q:` entries.
+-   **Dispositions.** An entry is settled by appending a `D:` line, never by editing it: taken by a named Task, rejected with a reason, or moved to a named place.
+-   **Handoff.** A Task that takes every entry of a thread moves the file into its bundle as `ledger.md`. A Task that takes some entries copies them into its `ledger.md` and appends a `D:` line to the thread.
+-   **Archival.** A thread whose every `Q:` has a `D:` is settled; Stewardship moves it to `.archive/ledger/` and removes it from `INDEX.md` in the same pass. `INDEX.md` lists every open thread.
+-   **Isolate.** Asked once per Task, when the Task is created; an answer given for another Task does not carry over. Writing to a thread does not trigger it; a thread is committed before a new workspace is branched from it.
+-   **Several Tasks.** At most 3 active Tasks. With more than one active, resuming asks the operator which one, unless the operator named it. Tasks that overlap in spec modules or files record the overlap and their order in both Tasks' Constraints. The order is the order of spec publication: the earlier Task publishes and finishes first, and the later one re-reads the current spec before its own `VERIFY`.
+-   **Checker.** `check-capsule` refuses a root `LEDGER.md`, requires `INDEX.md`'s Ledger section to list exactly the files under `ledger/`, refuses more than 3 active Tasks, and checks `ledger/` in prose mode. Each check gets a test.
+-   **Migration.** The ten fixup findings, with the paragraph introducing them, are copied byte for byte from this Task's `ledger.md` into `ledger/fixup-review-20261002.md`.
+
+Rejected: tagging entries in one root file (still one shared file that conflicts across worktrees); creating the Task early instead of threads (fails when one exploration leads to several Tasks or none); `ROADMAP.md` or a new `backlog/` for untasked findings (operator chose open thread entries).
+
+Residual uncertainty: none known. Verification strategy: each success criterion by inspection of the changed files and a reference search, `c4-checker-layout` by the checker's test suite and a run on this repository.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design is complete, every open point has the operator's answer, and each success criterion has a planned check.
 
 ## Implement
 
