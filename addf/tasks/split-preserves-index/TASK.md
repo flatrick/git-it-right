@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Confirm `p1-split-drops-flags` at the current `HEAD`, then read `src/cmd/fixup/split.rs`; this Task's `VERIFY` waits for `diff-header-parsing` to terminalize.
+**Resume at:** Probe whether a temporary index (`GIT_INDEX_FILE`) leaves the real index unchanged through read-tree, apply and commit.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-drops-flags` blocks `UNDERSTAND`; re-reading the spec after `diff-header-parsing` terminalizes blocks `VERIFY`.
 
