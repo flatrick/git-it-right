@@ -1,0 +1,75 @@
+gir at a6ae550 plus the uncommitted fix, git version 2.56.0
+
+## c1 CRLF line endings (* -text)
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for be98e474c0 feat: first\ngir: created fixup! for bf98568f90 feat: second\n  fold: git rebase --autosquash 335afa11a4'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c2 Latin-1 content
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 537bb89a2f feat: first\ngir: created fixup! for 9d145b510c feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c3a trailing whitespace, last staged line ending in spaces
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 7e74795571 feat: first\ngir: created fixup! for c263361ae3 feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c3b last staged line ending in spaces, no newline at end of file
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 7e74795571 feat: first\ngir: created fixup! for c263361ae3 feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c4 apply.whitespace=error with trailing whitespace
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 7e74795571 feat: first\ngir: created fixup! for c263361ae3 feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c4 apply.whitespace=fix with trailing whitespace
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 7e74795571 feat: first\ngir: created fixup! for c263361ae3 feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c4 a textconv driver for the file
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 5a7d743ff1 feat: second\ngir: created fixup! for ad9eb43263 feat: first\n  fold: git rebase --autosquash 7fbba73391'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c7 non-UTF-8 file name (Unix only)
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 31a6edb1a5 feat: first\ngir: created fixup! for d2f5f48206 feat: second\n  fold: git rebase --autosquash d9e8136bfd'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+48 PASS, 0 FAIL

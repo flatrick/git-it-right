@@ -8,7 +8,7 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Write the integration tests, see them fail, then read the diff as bytes and apply with `--whitespace=nowarn`.
+**Resume at:** Transition to `VERIFY` and verify each success Claim against the committed logs.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-loses-bytes` blocks `UNDERSTAND`.
 
@@ -16,6 +16,11 @@
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `acceptance.py` - Probe and acceptance: each byte-sensitive case through `--split` and `git rebase --autosquash`, comparing each commit's bytes; the non-UTF-8 name case is Unix-only.
+-   `logs/acceptance-fixed-20261002-1156.log` - Evidence: `acceptance.py` with the fix (the tree committed as `0dac9db`).
+-   `logs/test-final-20261002-1156.log` - Evidence: `cargo test --no-fail-fast` on that tree.
+-   `logs/clippy-20261002-1156.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
+-   `logs/tests-on-start-a6ae550-20261002-1156.log` - Evidence: the new integration tests against the committed source before the fix (`a6ae550`).
+-   `logs/regression-sweep-20261002-1157.log` - Evidence: the previous acceptance script, the review scripts (`d246ab2` against this build), and `gir fixup --dry-run` on a non-UTF-8 name.
 -   `logs/acceptance-head-7b5b2d2-20261002-1153.log` - Evidence: `acceptance.py` at the Task's start.
 
 ## Specification impact
@@ -166,7 +171,11 @@ No further probe is needed: `acceptance.py` already reproduces every case, and t
 
 ## Implement
 
-`PENDING`
+-   `0dac9db` implements Decide: `git::run_raw`; `Hunk.path`, `header` and `changes` as `Vec<u8>`; `parse_hunks` over `split_inclusive(b'\n')`; `header_path` and `unquote` on bytes; `os_path` with a Unix and a non-Unix branch for `git blame`; `--no-textconv` on `git diff`; `--whitespace=nowarn` on `git apply`; byte input for `TempIndex::run_with_stdin`.
+-   Existing unit tests changed only in types: `&str` inputs passed as bytes, and expected strings compared as bytes.
+-   New integration tests in `tests/fixup_modes.rs`, through the helper `split_and_fold_keeps_bytes` (split, `rebase --autosquash`, compare each commit's bytes): `split_keeps_crlf_line_endings`, `split_keeps_non_utf8_content`, `split_keeps_trailing_whitespace` (with and without a final newline), `split_ignores_apply_whitespace_and_textconv_settings`, and `split_traces_non_utf8_file_names` (`#[cfg(unix)]`, with the reason in a comment). All five fail before the fix (`logs/tests-on-start-a6ae550-20261002-1156.log`).
+-   No deviation from Decide.
+-   In the review-script comparison (`logs/regression-sweep-20261002-1157.log`), `edge.py` case 3b now reports `nothing staged`. That is the script, not gir: it reuses case 3's repository, and case 3 now succeeds and commits everything. `apply.whitespace=fix` itself is covered by `acceptance.py` and `split_ignores_apply_whitespace_and_textconv_settings`, which pass.
 
 ## Verify
 
