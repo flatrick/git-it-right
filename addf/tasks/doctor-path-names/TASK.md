@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
+**Open obligations:** Publish the specification delta in the terminal checkpoint (blocks `COMPLETED`).
 
 ## Owned artifacts
 
@@ -51,28 +51,28 @@
 #### `c2-real-names`
 
 -   Claim: For every confirmed defect, `gir doctor` reports the real name and decides from it: `case-collision`, `windows-names`, `exec-bit` and the ignore-rule detection work for names with spaces, double quotes, backslashes, tabs, non-ASCII characters and, on Unix, non-UTF-8 bytes.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: doctor misjudges or misreports repositories with such names.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-real-names).
 
 <a id="c3-tests"></a>
 #### `c3-tests`
 
 -   Claim: Regression tests cover each confirmed defect and fail on the build at this Task's start; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision; tests for names Windows cannot hold are Unix-only with the reason stated.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-tests).
 
 <a id="c4-spec"></a>
 #### `c4-spec`
 
 -   Claim: If a requirement changes (for example control characters in `windows-names`), the delta is recorded in `DECIDE` and published at completion; otherwise Specification impact stays `NONE`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the specification no longer describes doctor.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-spec).
 
 ### Constraints
 
@@ -181,6 +181,35 @@ The operator chose each open point (`ledger.md`).
 - Evidence considered: this Task's `ledger.md` and DEFINE commit; `logs/probe-head-4da58e7-20261002-1221.log`.
 - Conclusion: `VERIFIED`.
 - Limitations: none.
+
+<a id="verification-c2-real-names"></a>
+### Verification: `c2-real-names`
+
+- Claim: [c2-real-names](#c2-real-names)
+- Method: `probe_doctor_names.py` and the integration tests, on the build of `7068733` and on the source before the change.
+- Evidence considered: `logs/probe-fixed-20261002-1325.log` against `logs/probe-head-4da58e7-20261002-1221.log`: exec-bit now finds and `--fix` sets `.githooks/pre "x"`; `windows-names` and `case-collision` report `say "hi".txt`, `back\slash.txt` and `Q "a".txt = q "a".txt` as stored; `Ångström.csproj` now gets `bin/ obj/`; `bell<BEL>.txt`, `tab<TAB>here.txt` and `caf<E9>.txt` are flagged and shown in git's quoted form; the non-UTF-8 hook is reported as `".githooks/hook\351"` and fixed without an error. `Å.txt`/`å.txt` still collide. The seven integration tests pass (`logs/test-final-20261002-1325.log`) and fail before the change (`logs/tests-on-start-47e22c4-20261002-1325.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0. On Windows, `--fix` on a name that is not UTF-8 cannot work, since such a name cannot be passed as an argument there; such a name is flagged by `windows-names`.
+
+<a id="verification-c3-tests"></a>
+### Verification: `c3-tests`
+
+- Claim: [c3-tests](#c3-tests)
+- Method: `probe_doctor_names.py` and the integration tests, on the build of `7068733` and on the source before the change.
+- Evidence considered: `logs/tests-on-start-47e22c4-20261002-1325.log` (7 of the new tests fail before the change); `logs/test-final-20261002-1325.log` (230 passed, 0 failed); `logs/clippy-20261002-1325.log` (no warnings). The two `--fix` tests are `#[cfg(unix)]` with the reason in a comment; the other five run on every platform.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only here; the five platform-independent tests run on Windows only in CI, not observed.
+
+<a id="verification-c4-spec"></a>
+### Verification: `c4-spec`
+
+- Claim: [c4-spec](#c4-spec)
+- Method: `probe_doctor_names.py` and the integration tests, on the build of `7068733` and on the source before the change.
+- Evidence considered: The delta under Decide (`windows-names` extended, new `path-display`) is published to `spec/doctor.md` in the terminal checkpoint, the commit that marks this Task `COMPLETED`.
+- Conclusion: `VERIFIED`.
+- Limitations: Publication and this Verification share one checkpoint, as Stewardship's terminal checkpoint requires.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c4-spec` with its publication in the terminal checkpoint. The Windows assumptions stay a deferred verification for the operator's Windows testing.
 
 ## Learn
 
