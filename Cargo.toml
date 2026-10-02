@@ -4,6 +4,11 @@ version = "0.2.0"
 edition = "2024"
 description = "Keeps git usage honest: Conventional Commits lint + autofix, fixup workflow, repo hygiene doctor"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/flatrick/git-it-right"
+readme = "README.md"
+keywords = ["git", "conventional-commits", "commit-msg", "lint", "fixup"]
+categories = ["command-line-utilities", "development-tools"]
+include = ["/src/**", "/CHEATSHEET.md", "/README.md", "/CHANGELOG.md", "/LICENSE-*"]
 
 [dependencies]
 git-conventional = "1.1"
