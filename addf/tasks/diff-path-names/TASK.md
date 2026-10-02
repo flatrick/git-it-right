@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Confirm `p1-space-name-fails` at the current `HEAD`, then read how `parse_hunks` takes the path from `---`/`+++` lines.
+**Resume at:** Record that the probe settles every uncertainty, then transition to `DECIDE`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-space-name-fails` blocks `UNDERSTAND`.
 
