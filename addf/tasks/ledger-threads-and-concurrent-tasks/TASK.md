@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Transition to `INVESTIGATE`; the UNDERSTAND gate is recorded under Understand.
+**Resume at:** Give every decision-relevant uncertainty a disposition under Investigate, then transition to `DECIDE`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 

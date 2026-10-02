@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [ledger-threads-and-concurrent-tasks](tasks/ledger-threads-and-concurrent-tasks/TASK.md) -
-  ledger threads and several active Tasks. State: `UNDERSTAND`.
+  ledger threads and several active Tasks. State: `INVESTIGATE`.
 
 ## Ledger
 
