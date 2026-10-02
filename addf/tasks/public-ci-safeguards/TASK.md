@@ -34,28 +34,28 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 #### `main-protected`
 
 - Claim: GitHub protects `main` against force pushes and deletion, including for administrators, without requiring a disabled CI check.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: `flatrick/git-it-right` after the settings change.
 - Consequence if false: an authorized account could rewrite or delete `main`, or branch protection could block normal work while CI is disabled.
-- Basis: Pending readback from GitHub.
+- Basis: [Verification](#verification-main-protected).
 
 <a id="fork-approval"></a>
 #### `fork-approval`
 
 - Claim: GitHub requires approval before Actions runs a workflow from every external fork PR.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: `flatrick/git-it-right` after the settings change.
 - Consequence if false: unreviewed external PRs can start runs.
-- Basis: Pending readback from GitHub.
+- Basis: [Verification](#verification-fork-approval).
 
 <a id="workflow-bounded"></a>
 #### `workflow-bounded`
 
 - Claim: The CI workflow grants read-only repository access, uses standard hosted runners, and has bounded job duration and redundant-run cancellation.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: the final revision of `.github/workflows/ci.yml`.
 - Consequence if false: a permitted run can consume more resources or receive more authority than needed.
-- Basis: Pending workflow inspection and validation.
+- Basis: [Verification](#verification-workflow-bounded).
 
 <a id="actions-state"></a>
 #### `actions-state`
@@ -154,6 +154,33 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 `ESTABLISHED`: branch protection and approval policy are live, the revised workflow is committed and pushed, and all can be evaluated while Actions remains disabled.
 
 ## Verify
+
+<a id="verification-main-protected"></a>
+### Verification: `main-protected`
+
+- Claim: [main-protected](#main-protected).
+- Method: Set branch protection, then read its configuration back with a separate GitHub API call on 2026-10-02.
+- Evidence considered: GitHub returned `enforce_admins:true`, `allow_force_pushes:false`, `allow_deletions:false`, `required_status_checks:null`, and `required_pull_request_reviews:null`.
+- Conclusion: `VERIFIED` for the live branch protection configuration.
+- Limitations: This does not attempt a destructive push. An admin with settings access can later change branch protection.
+
+<a id="verification-fork-approval"></a>
+### Verification: `fork-approval`
+
+- Claim: [fork-approval](#fork-approval).
+- Method: Set the policy, read it back through GitHub's API, and check its documented meaning.
+- Evidence considered: GitHub returned `approval_policy:all_external_contributors`. GitHub's repository Actions settings documentation says this policy requires approval for users who are not a repository member or owner. The workflow uses `pull_request`, which the policy covers, and has no `pull_request_target` trigger.
+- Conclusion: `VERIFIED` for the policy and current trigger set.
+- Limitations: No external fork PR was opened to exercise the approval UI. A later workflow or repository membership change may alter the effective boundary.
+
+<a id="verification-workflow-bounded"></a>
+### Verification: `workflow-bounded`
+
+- Claim: [workflow-bounded](#workflow-bounded).
+- Method: Parse and inspect the workflow, then compare its local Git blob with the GitHub copy on `feat/fixup-modes`.
+- Evidence considered: PyYAML parsed the workflow and the focused check passed. Its jobs use `ubuntu-latest`, `windows-latest`, and `macos-latest`; top-level permissions are `contents: read`; checkout uses `persist-credentials: false`; job timeouts are 30 and 10 minutes; concurrency cancels the older run for the same ref. There is no artifact upload or cache step. GitHub and `git hash-object` both reported workflow blob `baf6f632afeb43d522e6e42274b32f14765d05f3`.
+- Conclusion: `VERIFIED` for the pushed workflow contents.
+- Limitations: GitHub has not yet interpreted and run the workflow. The hosted run is evaluated under `actions-state`.
 
 <a id="verification-public-unprotected"></a>
 ### Verification: `public-unprotected`
