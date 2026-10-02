@@ -1,4 +1,54 @@
 # Changelog
+## v0.1.0 - 2026-10-02
+
+### Bug Fixes
+
+- **fixup:** Read ---/+++ only as file headers, not hunk lines
+- **fixup:** Build --split commits in a temporary index
+- **fixup:** Trace files whose names git quotes or ends with a tab
+- **fixup:** Make --split commit exactly the staged bytes
+- **fixup:** Make --split ask, or refuse with advice that works
+- **doctor:** Read file names as git stores them
+- **doctor:** Set the exec bit without needing the hook file
+- **doctor:** Make exec-bit fixes executable on disk too
+- **doctor:** Find `* text=auto` regardless of whitespace
+
+### Build
+
+- **ide:** Add JetBrains RustRover related files
+- **ide:** Add WSL as a target-env for running
+- **ide:** Add "girconfig" and "githooks" to proj-dictionary
+
+### CI
+
+- Bound public workflow runs
+
+### Documentation
+
+- The investigation work that lead to v0.0.3
+- Add a guide for testing gir from git clients
+- Add ROADMAP.md for planned features
+- Plan skipping CI jobs whose inputs were already tested
+- Merge pull requests with a merge commit, scope addf commits
+- Note that GitHub allows only merge commits
+
+### Features
+
+- **fixup:** Add amend, reword and squash, a terminal picker and --split
+
+### Miscellaneous
+
+- Keep addf process commits out of the changelog
+- Keep pull request merge subjects out of the changelog
+
+### Testing
+
+- **fixup:** Cover --split end to end and in more index setups
+- **doctor:** Allow Windows-unsafe index fixtures
+- **hooks:** Invoke installed shims through git
+- Keep non-UTF-8 hook name in git index
+- **fixup:** Skip non-UTF-8 file name split test on macOS
+- Disable background git maintenance in test repos
 ## v0.0.3 - 2026-09-26
 
 ### Documentation
