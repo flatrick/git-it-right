@@ -75,3 +75,6 @@ For each one, whether to fix it on this branch is still OPEN.
   `git::TempIndex` removes `gir-split-index-<pid>` in the git directory when it is dropped, which does not happen when the process is killed (for example Ctrl+C during a commit hook or editor).
   The leftover file is harmless to git but is never cleaned up.
   Found while verifying the Task `fixup-fixes-acceptance`.
+- Q: In what order, and in which Tasks, are the open *NIX issues fixed?
+  A: Decided by the operator on 2026-10-02: Q11 first, as its own Task; then Q3 and Q4 together (the split patch reaching git exactly as staged); then Q5 and Q6 together (split refusals and advice that cannot work). Each Task is created when its turn comes.
+- D: Q11 -> taken by Task diff-path-names

@@ -17,13 +17,14 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [diff-path-names](tasks/diff-path-names/TASK.md) -
+  gir fixup traces files whatever their names. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - twelve edge
-  cases in `gir fixup` and `--split` from a code review and its acceptance
-  run; nine open (Q1, Q2, Q8 taken).
+  cases in `gir fixup` and `--split` and the order to fix them; nine open
+  (Q1, Q2, Q8, Q11 taken).
 
 ## Skills
 
