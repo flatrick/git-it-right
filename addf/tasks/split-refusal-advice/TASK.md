@@ -21,7 +21,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-split-refusals`, `framework:spec/fixup.md#req-fixup-ask-several`, `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-insertion-target`
-- Proposed delta: `split-refusals`: without a terminal, an untraceable file is refused with advice to commit or unstage it and run `--split` again, and an insertion between two commits' lines is refused naming both commits, without `git add -p` advice. New requirements: at a terminal, `--split` asks which commit each untraceable file and each such insertion belongs to, and splits accordingly; `ask-several` offers `s` only when the split can go ahead. Exact wording settled in `DECIDE`.
+- Proposed delta: `split-refusals`, `ask-several` and `split-flag-hint` reworded, and a new `split-ask`, as written under Decide.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -143,7 +143,21 @@ No probe is needed: `acceptance.py` reproduces every case, and the one assumptio
 
 ## Decide
 
-`PENDING`
+-   **Trace result.** `trace` returns every hunk it can trace and every file it cannot (new, binary, mode-only, or a hunk `git blame` cannot name), each with the reason already used today, instead of stopping at the first such file. `parse_hunks` no longer errors on a new file; the `--name-status -z` cross-check reports it with the same message. Plain `gir fixup` keeps its behavior: it uses the first untraced file's reason, new files first, exactly as before.
+-   **Split order of checks.** Before any question or commit: a hunk that changes lines of several commits is refused as today. Then, without a terminal, the first untraced file is refused with `gir: <reason>; --split cannot place it: commit it on its own or unstage it (git restore --staged -- <path>), then run gir <subcommand> --split again`, and an insertion between two commits' lines with `gir: <path>:<line> is an insertion between lines of <sha> <subject> and <sha> <subject>; run gir <subcommand> --split in a terminal to choose, or stage it on its own and run gir <subcommand> <commit>`; both exit `2`.
+-   **Questions.** At a terminal, gir asks for each untraced file `gir: <reason>; pick the commit it belongs to:` with the branch's newest commits (as `ask-branch-commit` does), then for each such insertion `gir: <path>:<line> is an insertion between lines of two commits; pick the one it belongs to:` with those two commits. A cancel exits `1` with nothing committed.
+-   **Whole-file placement.** In each round of the temporary index, after the patch, every untraced file assigned to a done target gets its staged entry from the staged tree (`git update-index --cacheinfo <mode> <object> <path>`), or is removed when the staged tree has none. `TempIndex` gains `run_raw` for byte paths.
+-   **When split can go ahead.** No hunk changes lines of several commits (insertions can be asked about). Only then does the picker offer `s`, and only then does the several-targets refusal print `or: gir <subcommand> --split ...`. The second follows from the objective, though no criterion names it.
+-   **Spec delta**, published at completion:
+    -   `split-refusals`: the hunk refusal applies to a hunk that changes lines last changed by several commits; without a terminal, the two refusals above.
+    -   new `split-ask`: the two questions above, where the answers go, and that a cancel exits `1` with no commit.
+    -   `ask-several` and `split-flag-hint`: `s` and the `--split` hint only when the split can go ahead.
+-   **Rejected:** splitting what can be traced and leaving the rest staged (operator chose to refuse); attributing an insertion to the line above (operator chose to ask).
+-   **Verification strategy.** Integration tests first for each `acceptance.py` case, and see them fail; then the change; `acceptance.py` on the new build; the new tests against the unfixed source; the earlier acceptance scripts; `cargo test` and clippy.
+
+### DECIDE gate
+
+`ESTABLISHED`: every operator decision is reflected, and each success Claim has a planned test.
 
 ## Implement
 
