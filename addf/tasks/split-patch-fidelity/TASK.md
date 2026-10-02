@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then complete.
+**Resume at:** `NONE`
 
-**Open obligations:** The Windows branch of `os_path` is unverified until the operator's Windows testing (Deferred verification); it does not block completion, since no success Claim covers Windows.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -27,7 +27,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-split`, `framework:spec/fixup.md#req-fixup-staged-line-target`
 - Proposed delta: `NONE` expected: `split` already requires `HEAD`'s tree to equal the staged tree. To be confirmed in `DECIDE` if non-UTF-8 names need a new requirement.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -292,8 +292,9 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir fixup --split` now commits exactly the staged bytes (`0dac9db`): CRLF files, non-UTF-8 content, lines ending in whitespace, `apply.whitespace` and textconv settings, and non-UTF-8 file names all split correctly and fold to the staged content.
+No specification change: `split` already required `HEAD`'s tree to equal the staged tree.
 
 ### Gate basis
 
-`PENDING`
+All seven success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0. The Windows branch of `os_path` is a deferred verification for the operator's Windows testing.
