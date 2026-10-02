@@ -88,3 +88,4 @@ For each one, whether to fix it on this branch is still OPEN.
 - Q: After `gir doctor --fix` sets a script's exec bit, does the file on disk match?
   A: No, observed while verifying the Task `doctor-fix-missing-hook`, on both the old (`--chmod=+x`) and the new code: the index entry becomes `100755`, but the file stays `100644`. With `core.filemode=true`, `git status` then shows every fixed script as modified, and a later `git add` would stage `100644` again, undoing the fix.
   Possible fix: also set the executable bit on the file when it exists (Unix only; Windows has no such bit). Not tested.
+- D: Q15 -> taken by Task doctor-fix-file-mode

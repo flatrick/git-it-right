@@ -17,13 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [doctor-fix-file-mode](tasks/doctor-fix-file-mode/TASK.md) -
+  gir doctor --fix makes fixed scripts executable on disk. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
-  in `gir fixup`, `--split` and `gir doctor`; five open (Q7, Q9, Q10, Q12,
-  Q15).
+  in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
 
 ## Skills
 
