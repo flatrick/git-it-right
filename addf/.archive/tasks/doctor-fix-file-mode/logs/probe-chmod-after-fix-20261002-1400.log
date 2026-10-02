@@ -1,0 +1,23 @@
+umask: 0022
+$ gir doctor --fix
+fixed exec-bit: scripts not executable in git: .githooks/pre-commit tools/run.sh
+$ stat before chmod
+644 .githooks/pre-commit
+644 tools/run.sh
+$ git status --porcelain (before chmod)
+MM .githooks/pre-commit
+MM tools/run.sh
+$ stat after chmod
+755 .githooks/pre-commit
+755 tools/run.sh
+$ git status --porcelain (after chmod)
+M  .githooks/pre-commit
+M  tools/run.sh
+$ git diff (worktree vs index)
+(end diff)
+$ git ls-files -s after git add
+100755 e3e15dc5ea20793bc8d12b825d2db4f8285f9135 0	.githooks/pre-commit
+100755 85ba14df52f8c72688537de6e7555fb402217b1e 0	tools/run.sh
+$ git commit
+exit 0
+hook ran: yes

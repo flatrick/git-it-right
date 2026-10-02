@@ -1,0 +1,46 @@
+
+=== 14 CRLF file split
+(2, 'gir: error: patch failed: b:2\nerror: b: patch does not apply; restored HEAD and the index')
+feat: b | feat: a | chore: attrs | chore: base
+
+=== 15 sparse checkout + split
+before: 'M  in/a\nM  in/b\n'
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+fixup! feat: a | fixup! feat: b | feat: c | feat: b
+after: ''
+
+=== 16 assume-unchanged / skip-worktree bit after split
+before: 'M  a\nM  b\n'
+(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+after: ''
+
+=== 17 interactive picker with several targets where a hunk spans -> choose s
+2 gir: staged changes belong to several commits:
+  1) <sha> feat: one  <- f:1
+  2) <sha> feat: two  <- f:1
+  s) split: one fixup! per commit
+pick [1-2, s, q]: gir: f:1 spans several commits; split it with git add -p
+
+
+=== 18 --split with a new file, interactive picker
+0 gir: new is a new file, so it has no earlier commit; pick the commit it belongs to:
+  1) <sha> feat: b
+  2) <sha> feat: a
+pick [1-2, q]: gir: created fixup! for <sha> feat: b
+  fold: git rebase --autosquash <sha>
+
+fixup! feat: b | feat: b | feat: a | chore: base  a   | 2 +-
+ b   | 2 +-
+ new | 1 +
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+
+=== 19 hunk blamed to a merge-side commit; pick list from base..HEAD includes merged branch commits
+1 gir: new is a new file, so it has no earlier commit; pick the commit it belongs to:
+  1) <sha> Merge side
+  2) <sha> feat: a
+  3) <sha> feat: side
+pick [1-3, q]: gir: cancelled; nothing committed
+
+
+[script exit 0]

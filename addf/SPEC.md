@@ -18,14 +18,15 @@ implementation conforms. Use Knowledge and Verification for observed facts.
 git usage honest for humans and coding agents alike. It lints commit messages
 against Conventional Commits 1.0.0, fixing safe mistakes automatically and
 rejecting the rest with actionable messages (`lint`, `hook`); creates
-`fixup!` commits for `git rebase --autosquash` (`fixup`); checks repository
+`fixup!`, `amend!` and `squash!` commits for `git rebase --autosquash`
+(`fixup`, `amend`, `reword`, `squash`); checks repository
 hygiene (`doctor`); sets up hooks and configuration (`init`); and explains its
 rules (`explain`).
 
 ## Boundaries
 
 - `gir` works alongside git and never rewrites existing commits; squashing
-  `fixup!` commits is left to `git rebase --autosquash`.
+  `fixup!`, `amend!` and `squash!` commits is left to `git rebase --autosquash`.
 
 ## Specification map
 
@@ -36,7 +37,7 @@ file contains the complete specification.
 2. [Configuration](spec/config.md) - `.girconfig` keys, defaults and errors.
 3. [Lint](spec/lint.md) - message rules, safe fixes, output and `gir lint`.
 4. [Hooks](spec/hooks.md) - `commit-msg`, `pre-push` and the installed scripts.
-5. [Fixup](spec/fixup.md) - target selection and `fixup!` commits.
+5. [Fixup](spec/fixup.md) - target selection, the picker, splitting, and `fixup!`, `amend!` and `squash!` commits.
 6. [Doctor](spec/doctor.md) - repository hygiene checks and fixes.
 7. [Init](spec/init.md) - generated files and git setup.
 8. [Explain](spec/explain.md) - topics and pages.

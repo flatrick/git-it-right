@@ -1,0 +1,119 @@
+++ export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_EDITOR=true GIT_AUTHOR_NAME=T GIT_AUTHOR_EMAIL=t@e GIT_COMMITTER_NAME=T GIT_COMMITTER_EMAIL=t@e
+++ GIT_CONFIG_GLOBAL=/dev/null
+++ GIT_CONFIG_NOSYSTEM=1
+++ GIT_EDITOR=true
+++ GIT_AUTHOR_NAME=T
+++ GIT_AUTHOR_EMAIL=t@e
+++ GIT_COMMITTER_NAME=T
+++ GIT_COMMITTER_EMAIL=t@e
+++ git init -q -b main .
+++ printf 'a1\na2\na3\na4\na5\n'
+++ git add f
+++ git commit -qm 'feat: a'
++++ git rev-parse HEAD
+++ A=95337a70c3dccc622454e4b2256d7c5ab0cebc24
+++ printf 'a1\na2\na3\na4\na5\nb6\nb7\nb8\n'
+++ git add f
+++ git commit -qm 'feat: b'
++++ git rev-parse HEAD
+++ B=944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++ printf 'a1\nA2\na3\na4\nNEW\na5\nb6\nB7\nb8\n'
+++ git add f
++++ git write-tree
+++ GOAL=658592759efe885777593dab9beb47c608adaf76
+++ for round in 1 2 3
++++ git diff -U0 HEAD 658592759efe885777593dab9beb47c608adaf76
+++ D=$'diff --git a/f b/f\nindex aa7c392..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -2 +2 @@ a1\n-a2\n+A2\n@@ -4,0 +5 @@ a4\n+NEW\n@@ -7 +8 @@ b6\n-b7\n+B7'
+++ '[' -z $'diff --git a/f b/f\nindex aa7c392..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -2 +2 @@ a1\n-a2\n+A2\n@@ -4,0 +5 @@ a4\n+NEW\n@@ -7 +8 @@ b6\n-b7\n+B7' ']'
+++ echo $'diff --git a/f b/f\nindex aa7c392..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -2 +2 @@ a1\n-a2\n+A2\n@@ -4,0 +5 @@ a4\n+NEW\n@@ -7 +8 @@ b6\n-b7\n+B7'
+diff --git a/f b/f
+index aa7c392..1d1d504 100644
+--- a/f
++++ b/f
+@@ -2 +2 @@ a1
+-a2
++A2
+@@ -4,0 +5 @@ a4
++NEW
+@@ -7 +8 @@ b6
+-b7
++B7
+++ git blame -l -s -L 7,7 HEAD -- f
+++ cut -c1-40
+944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++ '[' 1 = 1 ']'
+++ printf '%s\n' $'diff --git a/f b/f\nindex aa7c392..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -2 +2 @@ a1\n-a2\n+A2\n@@ -4,0 +5 @@ a4\n+NEW\n@@ -7 +8 @@ b6\n-b7\n+B7'
+++ awk '/^@@ -7/{skip=1} !skip'
+++ T=95337a70c3dccc622454e4b2256d7c5ab0cebc24
+++ git read-tree HEAD
+++ git apply --cached --unidiff-zero /tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right/be5d2752-33ae-44b4-b215-584ade0d4387/scratchpad/p.diff
+++ git commit -q --fixup=95337a70c3dccc622454e4b2256d7c5ab0cebc24
+++ echo 'round 1 exit=0'
+round 1 exit=0
+++ for round in 1 2 3
++++ git diff -U0 HEAD 658592759efe885777593dab9beb47c608adaf76
+++ D=$'diff --git a/f b/f\nindex e7df7b1..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -8 +8 @@ b6\n-b7\n+B7'
+++ '[' -z $'diff --git a/f b/f\nindex e7df7b1..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -8 +8 @@ b6\n-b7\n+B7' ']'
+++ echo $'diff --git a/f b/f\nindex e7df7b1..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -8 +8 @@ b6\n-b7\n+B7'
+diff --git a/f b/f
+index e7df7b1..1d1d504 100644
+--- a/f
++++ b/f
+@@ -8 +8 @@ b6
+-b7
++B7
+++ git blame -l -s -L 7,7 HEAD -- f
+++ cut -c1-40
+944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++ '[' 2 = 1 ']'
+++ printf '%s\n' $'diff --git a/f b/f\nindex e7df7b1..1d1d504 100644\n--- a/f\n+++ b/f\n@@ -8 +8 @@ b6\n-b7\n+B7'
+++ T=944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++ git read-tree HEAD
+++ git apply --cached --unidiff-zero /tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right/be5d2752-33ae-44b4-b215-584ade0d4387/scratchpad/p.diff
+++ git commit -q --fixup=944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++ echo 'round 2 exit=0'
+round 2 exit=0
+++ for round in 1 2 3
++++ git diff -U0 HEAD 658592759efe885777593dab9beb47c608adaf76
+++ D=
+++ '[' -z '' ']'
+++ break
+++ echo 'A=95337a70c3dccc622454e4b2256d7c5ab0cebc24 B=944a3332b7356e5fdcdaeb6b59b5298a4ea80e86'
+A=95337a70c3dccc622454e4b2256d7c5ab0cebc24 B=944a3332b7356e5fdcdaeb6b59b5298a4ea80e86
+++++ git rev-parse 'HEAD^{tree}'
++++ '[' 658592759efe885777593dab9beb47c608adaf76 = 658592759efe885777593dab9beb47c608adaf76 ']'
++++ echo yes
+++ echo 'final tree==goal: yes'
+final tree==goal: yes
+++ git log '--format=%h %s'
+86fb967 fixup! feat: b
+bb4e65a fixup! feat: a
+944a333 feat: b
+95337a7 feat: a
+++ git show --stat --format=%s HEAD~1 HEAD
+++ cat
+fixup! feat: a
+
+ f | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+fixup! feat: b
+
+ f | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+++ git show HEAD
+++ tail -4
+ b6
+-b7
++B7
+ b8
+++ git status --short
+++ cat f
+a1
+A2
+a3
+a4
+NEW
+a5
+b6
+B7
+b8

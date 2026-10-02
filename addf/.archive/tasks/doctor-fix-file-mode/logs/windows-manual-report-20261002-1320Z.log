@@ -1,0 +1,9 @@
+2026-10-02 13:20 UTC
+Source: operator messages in the supervising session.
+
+The operator reported that all tests pass on Windows after the test-fixture
+and hook-test corrections. The operator then reported that acceptance.py on
+commit c017481 ended with 32 PASS, 0 FAIL. These are operator-reported results;
+the command output and Windows environment details were not archived here.
+
+Hosted Windows CI: no run. GitHub workflow ci remains disabled_manually.

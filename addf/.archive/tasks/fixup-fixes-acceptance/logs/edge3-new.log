@@ -1,0 +1,10 @@
+
+=== 20 trailing whitespace on the last line of the diff
+(2, 'gir: the split commits do not add up to the staged changes; restored HEAD and the index')
+feat: b | feat: a | chore: base
+
+=== 21 latin-1 content
+(2, 'gir: error: patch failed: a:1\nerror: a: patch does not apply; restored HEAD and the index')
+feat: b | feat: a | chore: base
+
+[script exit 0]

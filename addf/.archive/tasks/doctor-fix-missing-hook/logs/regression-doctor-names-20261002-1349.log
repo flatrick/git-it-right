@@ -1,0 +1,75 @@
+
+## a1 exec-bit control: .githooks/plain
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  exec-bit: scripts not executable in git: .githooks/plain
+  --- gir doctor --fix
+  fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  fixed exec-bit: scripts not executable in git: .githooks/plain
+  index modes after --fix: [b'100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/plain', b'']
+
+## a1 exec-bit: .githooks/pre "x" (quoted by git)
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: .githooks/pre "x"
+  warn  exec-bit: scripts not executable in git: .githooks/pre "x"
+  --- gir doctor --fix
+  fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: .githooks/pre "x"
+  fixed exec-bit: scripts not executable in git: .githooks/pre "x"
+  index modes after --fix: [b'100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/pre "x"', b'']
+
+## a1 exec-bit: .githooks/my hook (space, not quoted)
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  exec-bit: scripts not executable in git: .githooks/my hook
+  --- gir doctor --fix
+  fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  fixed exec-bit: scripts not executable in git: .githooks/my hook
+  index modes after --fix: [b'100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/my hook', b'']
+
+## a2 windows-names: say "hi".txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: say "hi".txt
+
+## a2 windows-names: back\slash.txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: back\slash.txt
+
+## a2 windows-names: tab<TAB>here.txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: "tab\there.txt"
+
+## a3 case-collision control: A.txt / a.txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: A.txt = a.txt
+
+## a3 case-collision: Q "a".txt / q "a".txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: Q "a".txt = q "a".txt
+  warn  windows-names: cannot be checked out on Windows: Q "a".txt q "a".txt
+
+## a3 case-collision: Å.txt / å.txt (non-ASCII)
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: Å.txt = å.txt
+
+## b ignore rules control: Angstrom.csproj
+  warn  .gitignore: does not ignore: bin/ obj/ .DS_Store Thumbs.db .env
+
+## b ignore rules: Ångström.csproj (non-ASCII)
+  warn  .gitignore: does not ignore: bin/ obj/ .DS_Store Thumbs.db .env
+
+## c control character: bell<BEL>.txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: "bell\a.txt"
+
+## d non-UTF-8 name: caf<E9>.txt
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: "caf\351.txt"
+
+## d non-UTF-8 name in .githooks: hook<E9>
+  warn  .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: ".githooks/hook\351"
+  warn  exec-bit: scripts not executable in git: ".githooks/hook\351"
+  --- gir doctor --fix
+  fixed .gitignore: does not ignore: .DS_Store Thumbs.db .env
+  warn  windows-names: cannot be checked out on Windows: ".githooks/hook\351"
+  fixed exec-bit: scripts not executable in git: ".githooks/hook\351"
+  index modes after --fix: [b'100755 1a2485251c33a70432394c93fb89330ef214bfc9 0\t.githooks/hook\xe9', b'']

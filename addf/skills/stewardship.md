@@ -50,7 +50,9 @@ the published `framework:` references, or record `NONE` when the Task has no
 delta. A Stop outcome publishes no proposed delta. In the same checkpoint, set
 State to the selected outcome, append it to State path, set Resume at to `NONE`,
 reconcile obligations, and update the current-artifact index. Do not move a
-bundle while its State still names an active phase.
+bundle while its State still names an active phase. Commit this checkpoint
+as the terminal transition, as Work control's Work and transition requires;
+the archival move may follow in the same commit or the next one.
 
 ## Consider Learning
 
@@ -129,11 +131,17 @@ outside the bundle is supplemental evidence, not required for reconstructing
 the Task's outcome. Do not archive a bundle that silently depends on a
 current-only artifact for its own reasoning to make sense.
 
+## Archive a settled thread
+
+A Ledger thread is settled when every question in it has a disposition line (Work control's Ledger section).
+Move a settled thread to `.archive/ledger/` and remove it from the index in the same pass.
+A thread with an entry still open stays under `ledger/`, however old it is.
+
 ## Update the index
 
 Remove a Task from the current-artifact index the same time it becomes
 terminal, regardless of which terminal outcome it reached. Add or remove
-promoted Knowledge, carried-forward or retired open Claims, corrected
+promoted Knowledge, carried-forward or retired open Claims, archived Ledger threads, corrected
 Skills, Rules, or Commands, and any other current-artifact change in the
 same pass. The index is a derived view; a stale entry is a discovery
 defect; the archived or corrected source artifact remains authoritative.
@@ -141,6 +149,7 @@ defect; the archived or corrected source artifact remains authoritative.
 The index has two writers, and they do not overlap. Work control adds an
 active Task and keeps its State current while the Task lives; Stewardship
 removes it at terminalization and owns every promotion and correction entry.
+Likewise, Work control adds Ledger threads and removes one it moves whole into a Task; Stewardship removes a thread it archives.
 
 ## Responsibility handoff
 
@@ -158,6 +167,7 @@ Stewardship does not itself decide Claim state or active lifecycle traversal.
 - A Stop outcome has a Stop record naming its re-entry condition, or `NONE`.
 - A stopped Task's State is its selected outcome, State path ends with that
   outcome, Resume at is `NONE`, and no unresolved obligation is hidden.
+- No settled Ledger thread remains under `ledger/`, and no thread with an open entry was archived.
 - No Task terminalizes while carrying a still-relevant `UNVERIFIED` or
   `DISPUTED` Claim that was neither resolved nor carried forward to
   `open-claims/`.

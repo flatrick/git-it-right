@@ -460,3 +460,317 @@ fn doctor_fix_keeps_read_data_denied_gitattributes() {
     assert!(!fixed.contains("fixed .gitattributes"), "{fixed}");
     assert_eq!(content_after_reset(&repo, ".gitattributes"), "# mine\n");
 }
+
+/// Adds index entries with exactly these path bytes and no files, so names that Windows
+/// cannot hold as files can still be tested there.
+fn add_index_entries(repo: &Repo, mode: &str, paths: &[&[u8]]) {
+    use std::io::Write;
+    repo.write("blob.txt", "content\n");
+    let blob = repo.git(&["hash-object", "-w", "blob.txt"]);
+    let mut input = Vec::new();
+    for path in paths {
+        input.extend_from_slice(format!("{mode} {blob}\t").as_bytes());
+        input.extend_from_slice(path);
+        input.push(0);
+    }
+    let mut child = repo
+        .cmd("git")
+        .args(["-c", "core.protectNTFS=false", "update-index", "--add", "-z", "--index-info"])
+        .stdin(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    child.stdin.take().unwrap().write_all(&input).unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert!(out.status.success(), "git update-index: {}", String::from_utf8_lossy(&out.stderr));
+}
+
+fn report_line<'a>(report: &'a str, id: &str) -> Option<&'a str> {
+    report.lines().find(|l| l.contains(&format!(" {id}: ")))
+}
+
+fn index_modes(repo: &Repo) -> Vec<Vec<u8>> {
+    repo.git_out(&["ls-files", "-s", "-z"]).stdout.split(|&b| b == 0).filter(|r| !r.is_empty()).map(<[u8]>::to_vec).collect()
+}
+
+#[test]
+fn doctor_reports_exec_bit_for_hook_names_git_quotes() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b".githooks/pre \"x\"", b".githooks/back\\slash", b".githooks/my hook"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "exec-bit"),
+        Some("warn  exec-bit: scripts not executable in git: .githooks/back\\slash .githooks/my hook .githooks/pre \"x\""),
+        "{report}"
+    );
+}
+
+/// Commits files with exactly these names.
+fn commit_files_named(repo: &Repo, names: &[&[u8]]) {
+    for name in names {
+        #[cfg(unix)]
+        let path = {
+            use std::os::unix::ffi::OsStrExt;
+            repo.dir.join(std::ffi::OsStr::from_bytes(name))
+        };
+        #[cfg(not(unix))]
+        let path = repo.dir.join(std::str::from_utf8(name).unwrap());
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, "#!/bin/sh\n").unwrap();
+    }
+    repo.git(&["add", "-A"]);
+    repo.git(&["commit", "-q", "-m", "chore: hooks"]);
+}
+
+#[test]
+fn doctor_fix_sets_exec_bit_for_deleted_hook_without_restoring_file() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+    std::fs::remove_file(repo.dir.join(hook)).unwrap();
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    let report = stdout(&out);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(report.lines().last().is_some_and(|line| line.starts_with("gir doctor:")), "{report}");
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert!(!repo.dir.join(hook).exists());
+}
+
+#[test]
+fn doctor_fix_does_not_stage_unstaged_hook_edit() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+    repo.write(hook, "#!/bin/sh\necho edited\n");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert_eq!(repo.git(&["show", ":.githooks/pre-commit"]), "#!/bin/sh");
+    assert_eq!(repo.git(&["diff", "--name-only"]), hook);
+}
+
+#[test]
+fn doctor_fix_keeps_hooks_outside_sparse_cone_skipped() {
+    let repo = Repo::new();
+    let hooks = [".githooks/pre-commit", ".githooks/pre-push"];
+    commit_files_named(&repo, &[hooks[0].as_bytes(), hooks[1].as_bytes()]);
+    repo.git(&["sparse-checkout", "set", "--no-cone", "/*", "!/.githooks/"]);
+    for hook in hooks {
+        assert!(!repo.dir.join(hook).exists());
+    }
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let modes = index_modes(&repo);
+    let tagged = repo.git(&["ls-files", "-v"]);
+    for hook in hooks {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{hook}").as_bytes())), "{modes:?}");
+        assert!(tagged.lines().any(|line| line == format!("S {hook}")), "{tagged}");
+        assert!(!repo.dir.join(hook).exists());
+    }
+}
+
+#[test]
+fn doctor_fix_sets_exec_bit_for_unchanged_hook() {
+    let repo = Repo::new();
+    let hook = ".githooks/pre-commit";
+    commit_files_named(&repo, &[hook.as_bytes()]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/pre-commit")));
+    assert!(repo.dir.join(hook).exists());
+}
+
+#[test]
+fn doctor_fix_leaves_unmerged_hook_stages_untouched() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/h", b".githooks/other"]);
+    repo.git(&["switch", "-q", "-c", "other"]);
+    repo.commit_file(".githooks/h", "#!/bin/sh\necho other\n", "feat: other hook");
+    repo.git(&["switch", "-q", "main"]);
+    repo.commit_file(".githooks/h", "#!/bin/sh\necho main\n", "feat: main hook");
+    assert!(!repo.git_out(&["merge", "-q", "other"]).status.success(), "the merge must conflict");
+
+    let before = repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout;
+    assert_eq!(String::from_utf8_lossy(&before).lines().count(), 3, "{}", String::from_utf8_lossy(&before));
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/other")), "{report}");
+    assert!(!report_line(&report, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{report}");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    let fixed = stdout(&out);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(!report_line(&fixed, "exec-bit").is_some_and(|line| line.contains(".githooks/h")), "{fixed}");
+    assert_eq!(repo.git_out(&["ls-files", "-s", "--", ".githooks/h"]).stdout, before);
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\t.githooks/other")));
+}
+
+// Windows file names cannot contain a double quote or a backslash.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_sets_exec_bit_on_hook_names_git_quotes() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre \"x\"", b".githooks/back\\slash"]);
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let hooks: Vec<Vec<u8>> = index_modes(&repo).into_iter().filter(|r| r.windows(10).any(|w| w == b".githooks/")).collect();
+    assert_eq!(hooks.len(), 2, "{hooks:?}");
+    assert!(hooks.iter().all(|r| r.starts_with(b"100755")), "{hooks:?}");
+}
+
+#[test]
+fn doctor_reports_windows_unsafe_names_as_stored() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"say \"hi\".txt", b"back\\slash.txt"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "windows-names"),
+        Some("warn  windows-names: cannot be checked out on Windows: back\\slash.txt say \"hi\".txt"),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_flags_control_characters_and_non_utf8_names_in_git_quoted_form() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"tab\there.txt", b"bell\x07.txt", b"caf\xe9.txt"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "windows-names"),
+        Some("warn  windows-names: cannot be checked out on Windows: \"bell\\a.txt\" \"caf\\351.txt\" \"tab\\there.txt\""),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_compares_names_as_stored_for_case_collisions() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b"Q \"a\".txt", b"q \"a\".txt", b"x\xe8", b"x\xe9"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(
+        report_line(&report, "case-collision"),
+        Some("warn  case-collision: paths differ only in case, which breaks Windows/macOS checkouts: Q \"a\".txt = q \"a\".txt"),
+        "{report}"
+    );
+}
+
+#[test]
+fn doctor_suggests_ignore_rules_for_a_non_ascii_marker_name() {
+    let repo = Repo::new();
+    repo.write("\u{c5}ngstr\u{f6}m.csproj", "<Project/>\n");
+    let report = stdout(&repo.gir(&["doctor"]));
+    let line = report_line(&report, ".gitignore").unwrap_or_default();
+    assert!(line.contains(" bin/ obj/"), "{report}");
+}
+
+// Windows cannot pass non-UTF-8 path bytes as arguments, and macOS cannot create this name
+// in the working tree. Git can store the raw bytes in its index on Unix.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name() {
+    let repo = Repo::new();
+    add_index_entries(&repo, "100644", &[b".githooks/hook\xe9"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert_eq!(report_line(&report, "exec-bit"), Some("warn  exec-bit: scripts not executable in git: \".githooks/hook\\351\""), "{report}");
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755") && r.ends_with(b"hook\xe9")), "{:?}", index_modes(&repo));
+}
+
+#[test]
+fn doctor_fix_leaves_no_unstaged_change_for_fixed_scripts() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre-commit", b"tools/run.sh"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let modes = index_modes(&repo);
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{path}").as_bytes())), "{modes:?}");
+        assert_eq!(std::fs::read_to_string(repo.dir.join(path)).unwrap(), "#!/bin/sh\n");
+    }
+    assert_eq!(repo.git(&["diff", "--name-only"]), "");
+}
+
+#[cfg(unix)]
+fn disk_mode(repo: &Repo, rel: &str) -> u32 {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::symlink_metadata(repo.dir.join(rel)).unwrap().permissions().mode() & 0o777
+}
+
+// Windows has no executable bit to check.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_makes_fixed_scripts_executable_on_disk() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b".githooks/pre-commit", b"tools/run.sh", b"README.md"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert_ne!(disk_mode(&repo, path) & 0o100, 0, "{path}: {:o}", disk_mode(&repo, path));
+    }
+    assert_eq!(disk_mode(&repo, "README.md") & 0o111, 0);
+    repo.git(&["add", "--", ".githooks/pre-commit", "tools/run.sh"]);
+    let modes = index_modes(&repo);
+    for path in [".githooks/pre-commit", "tools/run.sh"] {
+        assert!(modes.iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(format!("\t{path}").as_bytes())), "{modes:?}");
+    }
+}
+
+// Git ignores a hook that is not executable, and only Unix has that bit.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_lets_git_run_the_fixed_hook() {
+    let repo = Repo::new();
+    repo.write(".githooks/pre-commit", "#!/bin/sh\n: > .git/pre-commit-ran\n");
+    repo.git(&["add", "-A"]);
+    repo.git(&["commit", "-q", "--no-verify", "-m", "chore: hook"]);
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    let commit = repo.git_out(&["commit", "-q", "-m", "chore: fixed hook mode"]);
+    assert!(commit.status.success(), "{}", stderr(&commit));
+    assert!(!stderr(&commit).contains("hook was ignored"), "{}", stderr(&commit));
+    assert!(repo.dir.join(".git/pre-commit-ran").exists());
+}
+
+// Windows has no executable bit, so git shows no mode change there either way.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_makes_an_edited_script_executable_and_keeps_the_edit_unstaged() {
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b"tools/run.sh"]);
+    repo.write("tools/run.sh", "#!/bin/sh\necho edited\n");
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert_eq!(std::fs::read_to_string(repo.dir.join("tools/run.sh")).unwrap(), "#!/bin/sh\necho edited\n");
+    assert_eq!(repo.git(&["show", ":tools/run.sh"]), "#!/bin/sh");
+    let diff = repo.git(&["diff", "--", "tools/run.sh"]);
+    assert!(diff.contains("+echo edited"), "{diff}");
+    assert!(!diff.contains("old mode"), "{diff}");
+}
+
+// Creating a symlink on Windows needs a privilege that test machines may not have.
+#[cfg(unix)]
+#[test]
+fn doctor_fix_does_not_change_the_target_of_a_symlink_in_place_of_a_script() {
+    use std::os::unix::fs::PermissionsExt;
+    let repo = Repo::new();
+    commit_files_named(&repo, &[b"tools/run.sh"]);
+    let target = repo.dir.with_file_name("outside.txt");
+    std::fs::write(&target, "not a script\n").unwrap();
+    std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o644)).unwrap();
+    std::fs::remove_file(repo.dir.join("tools/run.sh")).unwrap();
+    std::os::unix::fs::symlink(&target, repo.dir.join("tools/run.sh")).unwrap();
+
+    let out = repo.gir(&["doctor", "--fix"]);
+    assert!(!stderr(&out).contains("fatal"), "{}", stderr(&out));
+    assert!(index_modes(&repo).iter().any(|r| r.starts_with(b"100755 ") && r.ends_with(b"\ttools/run.sh")));
+    assert!(repo.dir.join("tools/run.sh").is_symlink());
+    assert_eq!(std::fs::metadata(&target).unwrap().permissions().mode() & 0o777, 0o644);
+}

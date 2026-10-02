@@ -139,11 +139,10 @@ class CheckCapsuleTest(unittest.TestCase):
                 self.assertIn("error:", result.stderr)
 
     def test_durable_anchor_is_not_an_unfilled_placeholder(self):
-        for relative in ("knowledge/claim.md", "LEDGER.md"):
-            with self.subTest(path=relative):
-                artifact = self.write(relative, '<a id="claim-name"></a>\n')
-                self.clean()
-                artifact.unlink()
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n- [Thread](ledger/thread.md) - open.\n")
+        for relative in ("knowledge/claim.md", "ledger/thread.md"):
+            self.write(relative, '<a id="claim-name"></a>\n')
+        self.clean()
 
     def test_placeholder_after_anchor_keeps_its_line_number(self):
         self.write("knowledge/claim.md", '<a id="claim-name"></a>\n<claim-name>\n')
@@ -167,10 +166,46 @@ class CheckCapsuleTest(unittest.TestCase):
 
     def test_conversion_debris_and_strict_instance_placeholders(self):
         self.write("CORE.md", "{=html}\n\\<oops\\>\n")
-        self.write("LEDGER.md", "`<question>`\n")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n`<question>`\n")
         self.finding("addf/CORE.md:1: CONVERSION: pandoc artifact `{=html}`")
         self.finding("addf/CORE.md:2: CONVERSION: escaped angle bracket from conversion")
-        self.finding("addf/LEDGER.md:1: PLACEHOLDER: unfilled placeholder `<question>`")
+        self.finding("addf/INDEX.md:4: PLACEHOLDER: unfilled placeholder `<question>`")
+
+    def test_root_ledger_is_refused(self):
+        self.write("LEDGER.md", "# Ledger\n")
+        self.finding("addf/LEDGER.md:1: LEDGER_ROOT: the root Ledger is retired; keep pre-Task exploration in a thread under ledger/")
+
+    def test_ledger_thread_is_checked_in_prose_mode(self):
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n- [Review](ledger/review.md) - open.\n")
+        self.write("ledger/review.md", "# Ledger\n- Q: What does git print?\n  A: `pass one: gir fixup <commit>`\n")
+        self.clean()
+        self.write("ledger/review.md", "# Ledger\n- Q: <question>\n")
+        self.finding("addf/ledger/review.md:2: PLACEHOLDER: unfilled placeholder `<question>`")
+
+    def test_index_lists_exactly_the_open_threads(self):
+        self.write("ledger/review.md", "# Ledger\n")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n`NONE`.\n")
+        self.finding("addf/INDEX.md:4: INDEX_LEDGER: open thread is not listed: ledger/review.md")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n")
+        self.finding("addf/INDEX.md:1: INDEX_LEDGER: open thread is not listed: ledger/review.md")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n- [Review](ledger/review.md) - open.\n- [Again](ledger/review.md) - open.\n")
+        self.finding("addf/INDEX.md:6: INDEX_LEDGER: duplicate thread entry: ledger/review.md")
+        self.write("knowledge/note.md", "# Note\n")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n- [Review](ledger/review.md) - open.\n- [Note](knowledge/note.md) - not a thread.\n")
+        self.finding("addf/INDEX.md:6: INDEX_LEDGER: lists a thread that is not under ledger/: knowledge/note.md")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n`NONE`.\n## Ledger\n- [Review](ledger/review.md) - open.\n")
+        self.clean()
+
+    def test_at_most_three_active_tasks(self):
+        names = ("one", "two", "three", "four")
+        for name in names:
+            self.write("tasks/" + name + "/TASK.md", TASK)
+        entries = "".join("- [" + n + "](tasks/" + n + "/TASK.md), State: `IMPLEMENT`.\n" for n in names)
+        self.write("INDEX.md", "# Index\n## Active Tasks\n" + entries)
+        self.finding("addf/INDEX.md:2: TASK_LIMIT: 4 active Tasks; at most 3 may be active")
+        shutil.rmtree(self.root / "tasks/four")
+        self.write("INDEX.md", "# Index\n## Active Tasks\n" + entries.replace("- [four](tasks/four/TASK.md), State: `IMPLEMENT`.\n", ""))
+        self.clean()
 
     def test_relative_links_and_explicit_and_heading_anchors(self):
         self.write("knowledge/a.md", "[explicit](b.md#durable)\n[heading](b.md#some-heading)\n")

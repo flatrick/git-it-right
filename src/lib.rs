@@ -4,5 +4,6 @@ pub mod config;
 pub mod explain;
 pub mod git;
 pub mod message;
+pub mod pick;
 pub mod report;
 pub mod stdout;

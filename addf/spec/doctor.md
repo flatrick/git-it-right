@@ -68,7 +68,7 @@
 **gitattributes-autocrlf.** When `.gitattributes` does not exist and `core.autocrlf` is set to a value other than `false`, `gir doctor` SHALL append `and core.autocrlf=VALUE, so line endings depend on each clone` to its missing-file warning.
 
 <a id="req-doctor-gitattributes-rule"></a>
-**gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose leading whitespace is followed by `* text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
+**gitattributes-rule.** An existing `.gitattributes`, valid UTF-8 or not, without a line whose first whitespace-separated word is `*` and one of whose remaining words is exactly `text=auto` SHALL produce an `info  .gitattributes:` line containing `no ` and `* text=auto`; `--fix` SHALL NOT replace that file.
 
 <a id="req-doctor-editorconfig"></a>
 **editorconfig.** When `.editorconfig` does not exist, `gir doctor` SHALL print `info  .editorconfig: missing`; `--fix` SHALL create it with `root = true`; a `[*]` section setting `charset = utf-8`, `end_of_line = lf`, `insert_final_newline = true`, `trim_trailing_whitespace = true`, `indent_style = space` and `indent_size = 4`; `trim_trailing_whitespace = false` for Markdown; `indent_size = 2` for YAML, JSON and TOML; `end_of_line = crlf` for `*.cmd`, `*.bat` and `*.sln`; and `indent_style = tab` for `Makefile`.
@@ -94,10 +94,13 @@
 **case-collision.** For indexed paths that differ only in case, `gir doctor` SHALL print `warn  case-collision: paths differ only in case` with the paths; `--fix` SHALL NOT rename them. The stages of one unmerged path SHALL NOT count as a collision.
 
 <a id="req-doctor-windows-names"></a>
-**windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, or the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
+**windows-names.** For indexed paths with Windows-reserved device names, trailing dots or spaces, the characters `<`, `>`, `:`, `"`, `\`, `|`, `?`, or `*`, a control character (a byte from 1 to 31), or bytes that are not valid UTF-8, `gir doctor` SHALL print `warn  windows-names: cannot be checked out on Windows` with the paths; `--fix` SHALL NOT rename them.
 
 <a id="req-doctor-exec-bit"></a>
-**exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/`, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL run `git update-index --chmod=+x --` for those paths.
+**exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/` and without unresolved conflict entries, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL set those index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree. On systems with an executable bit, `--fix` SHALL also make each of those files that exists in the working tree as a regular file executable, without changing its content, and SHALL NOT create a missing file or change the target of a symbolic link; on Windows it SHALL NOT change the working tree.
+
+<a id="req-doctor-path-display"></a>
+**path-display.** `gir doctor` SHALL read indexed and listed paths as Git stores them, and its report lines SHALL show each path as stored, except that a path with a control character or bytes that are not valid UTF-8 SHALL be shown C-quoted as Git quotes it.
 
 <a id="req-doctor-index-clean"></a>
 **index-clean.** When no indexed case collision, Windows-unsafe name, or missing executable bit exists, `gir doctor` SHALL count the index check as OK and SHALL print no index warning.

@@ -1,0 +1,28 @@
+## revision
+32db650
+## c1: root LEDGER.md present?
+absent
+## c1: ledger/ contents
+fixup-review-20261002.md
+## c1: every current mention of LEDGER.md outside .archive/
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:36:-   Claim: Pre-Task exploration lives in append-only thread files under `ledger/`; the root `LEDGER.md` no longer exists, and no current addf file outside `.archive/` still refers to it.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:63:-   Claim: `scripts/check-capsule` validates the new layout (thread files under `ledger/`, no root `LEDGER.md`) and its test suite passes.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:112:-   Files that name the root Ledger and change under `c1-ledger-threads`: `CORE.md` (Is this Task-worthy?, Route), `skills/work-control.md` (Isolate, Ledger, Define, Start or resume, Exit check), `ADOPT.md` (instance data, Adoption invariants), `INDEX.md` and `templates/INDEX.md` (Ledger section, invariants), `templates/LEDGER.md`, `templates/SELF-IMPROVEMENT.md`, `rules/self-improvement-log.md` (Scope), `scripts/check-capsule` (`check_placeholders`) and `scripts/tests/test_check_capsule.py`.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:115:-   `check_placeholders` checks `LEDGER.md` strictly, including inline code; files under the directories it lists are checked only in prose with inline code stripped. A thread quoting git output such as `<commit>` needs the prose mode.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:152:-   **Threads.** Pre-Task exploration lives in `ledger/<slug>.md`, one append-only file per exploration, from `templates/LEDGER-THREAD.md` (renamed from `templates/LEDGER.md`). The root `LEDGER.md` is deleted. An entry is named by its position among the thread's `Q:` entries.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:158:-   **Checker.** `check-capsule` refuses a root `LEDGER.md`, requires `INDEX.md`'s Ledger section to list exactly the files under `ledger/`, refuses more than 3 active Tasks, and checks `ledger/` in prose mode. Each check gets a test.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:171:-   `7554b3d` changes the docs, templates and layout: `CORE.md`, `skills/work-control.md`, `skills/stewardship.md`, `ADOPT.md`, `INDEX.md`, `templates/INDEX.md`, `templates/LEDGER.md` renamed to `templates/LEDGER-THREAD.md`, `templates/SELF-IMPROVEMENT.md`, `rules/self-improvement-log.md`; deletes the root `LEDGER.md`; adds `ledger/fixup-review-20261002.md` and the `SELF-IMPROVEMENT/` entry.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:172:-   `6a8bec8` changes `scripts/check-capsule` and its tests: `check_ledger` (root `LEDGER.md`, thread listing), the `TASK_LIMIT` check in `check_index`, and `ledger` in prose-mode placeholder checking. Two existing tests that wrote a root `LEDGER.md` now use `INDEX.md` and a thread instead.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:5:## Moved from the root `LEDGER.md`
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:7:The root `LEDGER.md` held these entries when the Task started; they are moved here unchanged, as Work control's handoff requires.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:93:  A: All four offered: refuse a root `LEDGER.md`; `INDEX.md` lists exactly the open threads; refuse more than 3 active Tasks; check threads in prose mode.
+addf/scripts/check-capsule:753:    retired = config.root / "LEDGER.md"
+addf/scripts/tests/test_check_capsule.py:175:        self.write("LEDGER.md", "# Ledger\n")
+addf/scripts/tests/test_check_capsule.py:176:        self.finding("addf/LEDGER.md:1: LEDGER_ROOT: the root Ledger is retired; keep pre-Task exploration in a thread under ledger/")
+addf/ADOPT.md:87:A destination adopted before threads existed may still have a root `LEDGER.md`, which `scripts/check-capsule` refuses.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:8:The root `LEDGER.md` could not take that shape.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:16:The root `LEDGER.md` is replaced by Ledger threads: one append-only file per exploration under `ledger/`.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:22:`scripts/check-capsule` enforces the parts that can be checked from files: it refuses a root `LEDGER.md`, requires `INDEX.md` to list exactly the threads under `ledger/`, refuses more than three active Tasks, and checks threads in prose mode so they can quote output such as `<commit>` in inline code.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:29:-   `ADOPT.md` — `ledger/` is instance data; a destination with an old root `LEDGER.md` moves it into a thread.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:30:-   `templates/LEDGER.md` — renamed to `templates/LEDGER-THREAD.md` and rewritten as a thread.
+addf/SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md:32:-   `templates/SELF-IMPROVEMENT.md`, `rules/self-improvement-log.md` — Scope names `ledger/` threads instead of `LEDGER.md` entries.

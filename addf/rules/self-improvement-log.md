@@ -27,7 +27,7 @@ mechanics, independent of any one Task's lifecycle.
 in this repository (`templates/`, `scripts/`, `skills/`, `rules/`,
 `RECOMMENDATIONS.md`, `CORE.md`, `REFERENCES.md`, `ADOPT.md`). Does not
 apply to Task-instance content — `tasks/`, `SPEC.md`'s product content,
-`LEDGER.md` entries, or `knowledge/` — which is already tracked through the
+`ledger/` threads, or `knowledge/` — which is already tracked through the
 Task lifecycle and Ledger.
 
 ## Invariants

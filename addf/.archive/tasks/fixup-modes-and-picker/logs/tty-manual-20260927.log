@@ -1,0 +1,63 @@
+### 1. real pty, answer s (split)
+s
+gir: staged changes belong to several commits:
+  1) 734af95693 feat: add a  <- a.txt:2
+  2) caf2539b4e feat: add b  <- b.txt:1
+  s) split: one fixup! per commit
+pick [1-2, s, q]: gir: created fixup! for 734af95693 feat: add a
+gir: created fixup! for caf2539b4e feat: add b
+  fold: git rebase --autosquash 1d4a880df5
+exit=0
+fixup! feat: add b
+fixup! feat: add a
+feat: add b
+### 2. real pty, answer 1
+1
+gir: staged changes belong to several commits:
+  1) 734af95693 feat: add a  <- a.txt:2
+  2) caf2539b4e feat: add b  <- b.txt:1
+  s) split: one fixup! per commit
+pick [1-2, s, q]: gir: all staged changes go into one fixup! for 734af95693
+gir: created fixup! for 734af95693 feat: add a
+  fold: git rebase --autosquash 1d4a880df5
+exit=0
+fixup! feat: add a
+### 3. stdin not a terminal (pipe), stderr captured
+gir: staged changes belong to several commits:
+  734af95693 feat: add a  <- a.txt:2
+  caf2539b4e feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+  or: gir fixup --split creates one fixup! per commit
+exit=2
+### 4. real pty with GIR_INTERACTIVE=0
+1
+gir: staged changes belong to several commits:
+  734af95693 feat: add a  <- a.txt:2
+  caf2539b4e feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+  or: gir fixup --split creates one fixup! per commit
+exit=2
+### 5. real pty, reword without target, answer 1
+1
+gir: nothing to trace for a reword; pick the commit it belongs to:
+  1) b7d7c4d9b7 feat: add b
+  2) 7852bc5dc1 feat: add a
+pick [1-2, q]: hint: Waiting for your editor to close the file... [Kgir: created amend! for b7d7c4d9b7 feat: add b
+  fold: git rebase --autosquash 79691ab135
+exit=0
+amend! feat: add b
+### 6. real pty, split then autosquash rebase pairs them
+feat: add b
+feat: add a
+one
+TWO
+B
+### 5b. after prompt wording fix: real pty, reword without target, answer 2
+2
+gir: nothing to trace for a reword; pick the commit to reword:
+  1) 3f37cb4722 feat: add b
+  2) eda41f7a96 feat: add a
+pick [1-2, q]: hint: Waiting for your editor to close the file... [Kgir: created amend! for eda41f7a96 feat: add a
+  fold: git rebase --autosquash 6d780846bd
+exit=0
+amend! feat: add a

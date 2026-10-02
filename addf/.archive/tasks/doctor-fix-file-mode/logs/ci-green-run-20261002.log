@@ -1,0 +1,63 @@
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37017909114
+Event: pull_request
+Head: 57801fb800cf99f80db9d9ecda89f156f51ab2f3
+
+test (windows-latest): success
+test (ubuntu-latest): success
+test (macos-latest): failure
+capsule (windows-latest): success
+capsule (ubuntu-latest): success
+
+macOS test job 110873255795:
+Run cargo clippy --all-targets -- -D warnings: success
+Run cargo test: failure
+test doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name ... ok
+test split_traces_non_utf8_file_names ... FAILED
+tests/fixup_modes.rs:496:51: called Result::unwrap() on an Err value:
+Os { code: 92, kind: Uncategorized, message: "Illegal byte sequence" }
+test result: FAILED. 38 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+
+The fixup test writes a working-tree file named with byte 0xe9 and later
+rebases, which checks the file out; macOS rejects the name. e507d42 limits
+the test to Unix systems other than macOS.
+
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37019900927
+Event: pull_request
+Head: e507d42397db1af250827f018ee3375da4e7bac9
+
+test (windows-latest): success
+test (ubuntu-latest): success
+test (macos-latest): failure
+capsule (windows-latest): success
+capsule (ubuntu-latest): success
+
+macOS test job 110879997534:
+Run cargo clippy --all-targets -- -D warnings: success
+Run cargo test: failure
+test explain_does_not_change_repository_files_or_git_config ... FAILED
+tests/explain.rs:148:5: explain must not create or modify repository files
+Only difference: .git/objects/maintenance.lock present before explain ran,
+absent after.
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+
+The lock comes from Git's detached auto maintenance after the test's setup
+commit. Local probe, Linux, git 2.56.0: a commit left that lock in 28 of 30
+commits by default and in 0 of 30 with maintenance.auto=false. 6813712 sets
+maintenance.auto=false in the test harness's global Git config.
+
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37020537546
+Event: pull_request
+Head: 68137128eafbbe8bf02d30649fb95ddfa6061e8c
+Conclusion: success
+
+test (windows-latest): success
+test (ubuntu-latest): success
+test (macos-latest): success
+capsule (windows-latest): success
+capsule (ubuntu-latest): success
+
+macOS test job 110882171030:
+Run cargo clippy --all-targets -- -D warnings: success
+Run cargo test: success
+Hook latency: success
+Lint commit messages: success

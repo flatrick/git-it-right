@@ -1,0 +1,277 @@
+   Compiling libc v0.2.189
+   Compiling winnow v1.0.4
+   Compiling rustix v1.1.5
+   Compiling unicase v2.9.0
+   Compiling getrandom v0.4.3
+   Compiling bitflags v2.13.2
+   Compiling linux-raw-sys v0.12.1
+   Compiling cfg-if v1.0.5
+   Compiling lexopt v0.3.2
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/home/flatrick/src/github/flatrick/git-it-right/.worktrees/feat-fixup-modes)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.62s
+     Running tests/fixup_modes.rs (target/debug/deps/fixup_modes-4278a23c65b67193)
+
+running 20 tests
+test refusals_name_the_subcommand_that_was_run ... FAILED
+test picker_offers_branch_commits_for_reword ... FAILED
+test amend_with_nothing_staged_points_to_reword ... FAILED
+test dry_run_prints_the_target_for_every_subcommand ... FAILED
+test explicit_target_checks_apply_to_every_subcommand ... FAILED
+test reword_changes_no_content_and_leaves_the_index_alone ... FAILED
+test amend_creates_an_amend_commit_with_the_staged_changes ... FAILED
+test picker_offers_branch_commits_for_a_new_file ... FAILED
+test reword_needs_nothing_staged ... FAILED
+test reword_without_a_target_needs_one_when_not_interactive ... FAILED
+test picker_number_puts_all_staged_changes_in_that_commit ... FAILED
+test squash_creates_a_squash_commit_for_the_traced_target ... FAILED
+test picker_split_creates_one_commit_per_target ... FAILED
+test picker_cancel_creates_no_commit ... FAILED
+test split_creates_one_commit_per_target ... FAILED
+test split_handles_several_targets_in_one_file ... FAILED
+test split_refuses_a_hunk_spanning_several_commits_before_committing ... FAILED
+test split_restores_head_and_index_when_a_commit_fails ... FAILED
+test picker_can_be_disabled_and_never_runs_for_dry_run ... ok
+test several_targets_without_a_terminal_refuse_and_suggest_split ... FAILED
+
+failures:
+
+---- refusals_name_the_subcommand_that_was_run stdout ----
+
+thread 'refusals_name_the_subcommand_that_was_run' (52127) panicked at tests/fixup_modes.rs:123:5:
+assertion `left == right` failed
+  left: "gir: bad arguments for `squash`\ngir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)\n\nusage:\n  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath\n  gir lint [<file>|-] [--fix] [--json]\n  gir lint --range <A..B> [--json]\n  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to\n  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index\n  gir explain [<topic>]           rule details; `gir explain` lists topics\n  gir hook commit-msg <file>      (called by .githooks)\n  gir hook pre-push <remote> <url>\n"
+ right: "gir: new.txt is a new file, so it has no earlier commit; pass one: gir squash <commit>\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- picker_offers_branch_commits_for_reword stdout ----
+
+thread 'picker_offers_branch_commits_for_reword' (52123) panicked at tests/fixup_modes.rs:282:5:
+assertion `left == right` failed: gir: bad arguments for `reword`
+gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
+
+usage:
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir lint [<file>|-] [--fix] [--json]
+  gir lint --range <A..B> [--json]
+  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir explain [<topic>]           rule details; `gir explain` lists topics
+  gir hook commit-msg <file>      (called by .githooks)
+  gir hook pre-push <remote> <url>
+
+  left: Some(2)
+ right: Some(0)
+
+---- amend_with_nothing_staged_points_to_reword stdout ----
+
+thread 'amend_with_nothing_staged_points_to_reword' (52116) panicked at tests/fixup_modes.rs:62:5:
+assertion `left == right` failed
+  left: "gir: bad arguments for `amend`\ngir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)\n\nusage:\n  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath\n  gir lint [<file>|-] [--fix] [--json]\n  gir lint --range <A..B> [--json]\n  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to\n  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index\n  gir explain [<topic>]           rule details; `gir explain` lists topics\n  gir hook commit-msg <file>      (called by .githooks)\n  gir hook pre-push <remote> <url>\n"
+ right: "gir: nothing staged; `git add` the fix first, or change only the message: gir reword (more: gir explain fixup)\n"
+
+---- dry_run_prints_the_target_for_every_subcommand stdout ----
+
+thread 'dry_run_prints_the_target_for_every_subcommand' (52117) panicked at tests/fixup_modes.rs:133:9:
+assertion `left == right` failed: ["amend", "--dry-run"]: gir: unknown option --dry-run for `gir amend` (see: gir --help)
+
+  left: Some(2)
+ right: Some(0)
+
+---- explicit_target_checks_apply_to_every_subcommand stdout ----
+
+thread 'explicit_target_checks_apply_to_every_subcommand' (52118) panicked at tests/fixup_modes.rs:113:9:
+assertion `left == right` failed: amend
+  left: "gir: bad arguments for `amend`\ngir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)\n\nusage:\n  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath\n  gir lint [<file>|-] [--fix] [--json]\n  gir lint --range <A..B> [--json]\n  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to\n  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index\n  gir explain [<topic>]           rule details; `gir explain` lists topics\n  gir hook commit-msg <file>      (called by .githooks)\n  gir hook pre-push <remote> <url>\n"
+ right: "gir: `main` is already on the base branch\n"
+
+---- reword_changes_no_content_and_leaves_the_index_alone stdout ----
+
+thread 'reword_changes_no_content_and_leaves_the_index_alone' (52129) panicked at tests/fixup_modes.rs:72:5:
+assertion `left == right` failed: gir: bad arguments for `reword`
+gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
+
+usage:
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir lint [<file>|-] [--fix] [--json]
+  gir lint --range <A..B> [--json]
+  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir explain [<topic>]           rule details; `gir explain` lists topics
+  gir hook commit-msg <file>      (called by .githooks)
+  gir hook pre-push <remote> <url>
+
+  left: Some(2)
+ right: Some(0)
+
+---- amend_creates_an_amend_commit_with_the_staged_changes stdout ----
+
+thread 'amend_creates_an_amend_commit_with_the_staged_changes' (52115) panicked at tests/fixup_modes.rs:50:5:
+assertion `left == right` failed: gir: bad arguments for `amend`
+gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
+
+usage:
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir lint [<file>|-] [--fix] [--json]
+  gir lint --range <A..B> [--json]
+  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir explain [<topic>]           rule details; `gir explain` lists topics
+  gir hook commit-msg <file>      (called by .githooks)
+  gir hook pre-push <remote> <url>
+
+  left: Some(2)
+ right: Some(0)
+
+---- picker_offers_branch_commits_for_a_new_file stdout ----
+
+thread 'picker_offers_branch_commits_for_a_new_file' (52122) panicked at tests/fixup_modes.rs:271:5:
+assertion `left == right` failed: gir: new.txt is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+
+  left: Some(2)
+ right: Some(0)
+
+---- reword_needs_nothing_staged stdout ----
+
+thread 'reword_needs_nothing_staged' (52274) panicked at tests/fixup_modes.rs:83:5:
+assertion `left == right` failed: gir: bad arguments for `reword`
+gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
+
+usage:
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir lint [<file>|-] [--fix] [--json]
+  gir lint --range <A..B> [--json]
+  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir explain [<topic>]           rule details; `gir explain` lists topics
+  gir hook commit-msg <file>      (called by .githooks)
+  gir hook pre-push <remote> <url>
+
+  left: Some(2)
+ right: Some(0)
+
+---- reword_without_a_target_needs_one_when_not_interactive stdout ----
+
+thread 'reword_without_a_target_needs_one_when_not_interactive' (52276) panicked at tests/fixup_modes.rs:93:5:
+assertion `left == right` failed
+  left: "gir: bad arguments for `reword`\ngir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)\n\nusage:\n  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath\n  gir lint [<file>|-] [--fix] [--json]\n  gir lint --range <A..B> [--json]\n  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to\n  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index\n  gir explain [<topic>]           rule details; `gir explain` lists topics\n  gir hook commit-msg <file>      (called by .githooks)\n  gir hook pre-push <remote> <url>\n"
+ right: "gir: nothing to trace for a reword; pass one: gir reword <commit>\n"
+
+---- picker_number_puts_all_staged_changes_in_that_commit stdout ----
+
+thread 'picker_number_puts_all_staged_changes_in_that_commit' (52121) panicked at tests/fixup_modes.rs:225:5:
+assertion `left == right` failed: gir: staged changes belong to several commits:
+  9bab875e32 feat: add a  <- a.txt:2
+  d055783a57 feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+
+  left: Some(2)
+ right: Some(0)
+
+---- squash_creates_a_squash_commit_for_the_traced_target stdout ----
+
+thread 'squash_creates_a_squash_commit_for_the_traced_target' (52330) panicked at tests/fixup_modes.rs:102:5:
+assertion `left == right` failed: gir: bad arguments for `squash`
+gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
+
+usage:
+  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir lint [<file>|-] [--fix] [--json]
+  gir lint --range <A..B> [--json]
+  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir explain [<topic>]           rule details; `gir explain` lists topics
+  gir hook commit-msg <file>      (called by .githooks)
+  gir hook pre-push <remote> <url>
+
+  left: Some(2)
+ right: Some(0)
+
+---- picker_split_creates_one_commit_per_target stdout ----
+
+thread 'picker_split_creates_one_commit_per_target' (52125) panicked at tests/fixup_modes.rs:238:5:
+assertion `left == right` failed: gir: staged changes belong to several commits:
+  9bab875e32 feat: add a  <- a.txt:2
+  d055783a57 feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+
+  left: Some(2)
+ right: Some(0)
+
+---- picker_cancel_creates_no_commit stdout ----
+
+thread 'picker_cancel_creates_no_commit' (52120) panicked at tests/fixup_modes.rs:248:9:
+assertion `left == right` failed: "\n": gir: staged changes belong to several commits:
+  9bab875e32 feat: add a  <- a.txt:2
+  d055783a57 feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+
+  left: Some(2)
+ right: Some(1)
+
+---- split_creates_one_commit_per_target stdout ----
+
+thread 'split_creates_one_commit_per_target' (52300) panicked at tests/fixup_modes.rs:156:5:
+assertion `left == right` failed: gir: unknown option --split for `gir fixup` (see: gir --help)
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_handles_several_targets_in_one_file stdout ----
+
+thread 'split_handles_several_targets_in_one_file' (52301) panicked at tests/fixup_modes.rs:177:5:
+assertion `left == right` failed: gir: unknown option --split for `gir fixup` (see: gir --help)
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_refuses_a_hunk_spanning_several_commits_before_committing stdout ----
+
+thread 'split_refuses_a_hunk_spanning_several_commits_before_committing' (52316) panicked at tests/fixup_modes.rs:194:5:
+assertion `left == right` failed
+  left: "gir: unknown option --split for `gir fixup` (see: gir --help)\n"
+ right: "gir: a.txt:3 spans several commits; split it with git add -p\n"
+
+---- split_restores_head_and_index_when_a_commit_fails stdout ----
+
+thread 'split_restores_head_and_index_when_a_commit_fails' (52319) panicked at tests/fixup_modes.rs:214:5:
+gir: unknown option --split for `gir fixup` (see: gir --help)
+
+
+---- several_targets_without_a_terminal_refuse_and_suggest_split stdout ----
+
+thread 'several_targets_without_a_terminal_refuse_and_suggest_split' (52277) panicked at tests/fixup_modes.rs:146:5:
+gir: staged changes belong to several commits:
+  9bab875e32 feat: add a  <- a.txt:2
+  d055783a57 feat: add b  <- b.txt:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+
+
+
+failures:
+    amend_creates_an_amend_commit_with_the_staged_changes
+    amend_with_nothing_staged_points_to_reword
+    dry_run_prints_the_target_for_every_subcommand
+    explicit_target_checks_apply_to_every_subcommand
+    picker_cancel_creates_no_commit
+    picker_number_puts_all_staged_changes_in_that_commit
+    picker_offers_branch_commits_for_a_new_file
+    picker_offers_branch_commits_for_reword
+    picker_split_creates_one_commit_per_target
+    refusals_name_the_subcommand_that_was_run
+    reword_changes_no_content_and_leaves_the_index_alone
+    reword_needs_nothing_staged
+    reword_without_a_target_needs_one_when_not_interactive
+    several_targets_without_a_terminal_refuse_and_suggest_split
+    split_creates_one_commit_per_target
+    split_handles_several_targets_in_one_file
+    split_refuses_a_hunk_spanning_several_commits_before_committing
+    split_restores_head_and_index_when_a_commit_fails
+    squash_creates_a_squash_commit_for_the_traced_target
+
+test result: FAILED. 1 passed; 19 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test fixup_modes`

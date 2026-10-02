@@ -1,0 +1,3 @@
+control: plain git only, no gir; git git version 2.56.0
+## cfg.txt committed on topic (as in a3.2): git rebase -i --autosquash main -> exit 1: 'error: Your local changes to the following files would be overwritten by checkout:\n\tcfg.txt\nPlease commit your changes or stash them before you switch branches.\nAborting\nerror: could not detach HEAD'
+## cfg.txt committed on main (base): git rebase -i --autosquash main -> exit 0: ''

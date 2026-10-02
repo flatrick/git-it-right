@@ -15,7 +15,7 @@ impl Repo {
         let dir = tmp.path().join("repo");
         std::fs::create_dir(&dir).unwrap();
         let global = tmp.path().join("gitconfig");
-        std::fs::write(&global, "[user]\n\tname = T\n\temail = t@example.com\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n").unwrap();
+        std::fs::write(&global, "[user]\n\tname = T\n\temail = t@example.com\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n[maintenance]\n\tauto = false\n").unwrap();
         let repo = Repo { _tmp: tmp, dir, global };
         repo.git(&["init", "-q"]);
         repo
@@ -32,7 +32,8 @@ impl Repo {
             .env("XDG_CONFIG_HOME", self.global.with_file_name("xdg"))
             .env("GIT_CONFIG_NOSYSTEM", "1")
             .env_remove("GIT_DIR")
-            .env_remove("GIT_WORK_TREE");
+            .env_remove("GIT_WORK_TREE")
+            .env_remove("GIR_INTERACTIVE");
         c
     }
 
@@ -54,6 +55,23 @@ impl Repo {
 
     pub fn gir(&self, args: &[&str]) -> Output {
         self.cmd(env!("CARGO_BIN_EXE_gir")).args(args).output().unwrap()
+    }
+
+    /// Runs gir with extra environment and `input` on stdin.
+    pub fn gir_with(&self, args: &[&str], envs: &[(&str, &str)], input: &str) -> Output {
+        use std::io::Write;
+        let mut child = self
+            .cmd(env!("CARGO_BIN_EXE_gir"))
+            .args(args)
+            .envs(envs.iter().copied())
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        // gir may exit without reading stdin; a closed pipe is not a test failure.
+        let _ = child.stdin.take().unwrap().write_all(input.as_bytes());
+        child.wait_with_output().unwrap()
     }
 
     pub fn write(&self, rel: &str, content: &str) {

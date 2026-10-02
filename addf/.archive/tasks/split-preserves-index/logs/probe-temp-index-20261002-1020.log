@@ -1,0 +1,65 @@
+git version 2.56.0
+## sparse cone + sparse index, success
+errors: []
+real index bytes unchanged: True
+HEAD tree == goal: True | HEAD == orig: False
+status before: ['M  a', 'M  b']
+status after:  []
+subjects: ['fixup! feat: b', 'fixup! feat: a', 'feat: c'] 
+
+## sparse cone + sparse index, failure
+errors: ['b: ']
+real index bytes unchanged: True
+HEAD tree == goal: False | HEAD == orig: True
+status before: ['M  a', 'M  b']
+status after:  ['M  a', 'M  b']
+subjects: ['feat: c', 'feat: b', 'feat: a'] 
+
+## sparse no-cone, success
+errors: []
+real index bytes unchanged: True
+HEAD tree == goal: True | HEAD == orig: False
+status before: ['M  a', 'M  b']
+status after:  []
+subjects: ['fixup! feat: b', 'fixup! feat: a', 'feat: c'] 
+
+## sparse no-cone, failure
+errors: ['b: ']
+real index bytes unchanged: True
+HEAD tree == goal: False | HEAD == orig: True
+status before: ['M  a', 'M  b']
+status after:  ['M  a', 'M  b']
+subjects: ['feat: c', 'feat: b', 'feat: a'] 
+
+## skip-worktree, success
+errors: []
+real index bytes unchanged: True
+HEAD tree == goal: True | HEAD == orig: False
+status before: ['M  a', 'M  b']
+status after:  []
+subjects: ['fixup! feat: b', 'fixup! feat: a', 'feat: cfg'] 
+
+## skip-worktree, failure
+errors: ['b: ']
+real index bytes unchanged: True
+HEAD tree == goal: False | HEAD == orig: True
+status before: ['M  a', 'M  b']
+status after:  ['M  a', 'M  b']
+subjects: ['feat: cfg', 'feat: b', 'feat: a'] 
+
+## git add -N, success
+errors: []
+real index bytes unchanged: True
+HEAD tree == goal: True | HEAD == orig: False
+status before: ['M  a', 'M  b', ' A ita']
+status after:  [' A ita']
+subjects: ['fixup! feat: b', 'fixup! feat: a', 'feat: b'] 
+
+## git add -N, failure
+errors: ['b: ']
+real index bytes unchanged: True
+HEAD tree == goal: False | HEAD == orig: True
+status before: ['M  a', 'M  b', ' A ita']
+status after:  ['M  a', 'M  b', ' A ita']
+subjects: ['feat: b', 'feat: a', 'chore: base'] 
+

@@ -17,11 +17,12 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+`NONE`.
 
 ## Ledger
 
-`NONE`. `LEDGER.md` holds no entries.
+- [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
+  in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
 
 ## Skills
 
@@ -37,6 +38,9 @@ is available through its archived bundle, not through this index.
 - [Self-improvement log](rules/self-improvement-log.md) — record, in the
   same pass, any change to addf's own framework mechanics or any friction
   noticed while using it.
+- [OS-agnostic code](rules/os-agnostic-code.md) — all code the repository
+  produces, including scripts inside addf Tasks, behaves the same on Windows
+  and Linux.
 
 ## Self-improvement
 
@@ -60,7 +64,9 @@ is available through its archived bundle, not through this index.
 
 ## Open Claims
 
-`NONE`. No standing Claim is open.
+- [gui-clients-have-no-tty](open-claims/gui-clients-have-no-tty.md) - GUI
+  git clients run gir without a terminal, so they never see its prompt;
+  unverified.
 
 ## Reusable Evidence
 
@@ -80,11 +86,11 @@ is available through its archived bundle, not through this index.
     heading.
 -   Update this index in the same pass that adds, terminalizes, promotes,
     or corrects a current artifact. Work control owns the active-Task and
-    Ledger entries; Stewardship owns terminal removal, promotion, and
-    correction.
+    Ledger entries; Stewardship owns terminal removal, archived threads,
+    promotion, and correction.
 -   A stale entry is a discovery defect in this file, not evidence
     against the artifact it names.
 -   Do not copy another repository's populated `INDEX.md` during adoption.
     Create this file fresh and list only what exists at the destination.
--   The same applies to `SPEC.md`, `spec/`, and `LEDGER.md`. They are instance
+-   The same applies to `SPEC.md`, `spec/`, and `ledger/`. They are instance
     data, never source capsule content.

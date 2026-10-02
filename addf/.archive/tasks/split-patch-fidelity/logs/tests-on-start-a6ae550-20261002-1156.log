@@ -1,0 +1,85 @@
+tests/fixup_modes.rs with the new tests, run against the committed source at a6ae550 (no fix)
+   Compiling libc v0.2.189
+   Compiling getrandom v0.4.3
+   Compiling unicase v2.9.0
+   Compiling winnow v1.0.4
+   Compiling rustix v1.1.5
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling lexopt v0.3.2
+   Compiling cfg-if v1.0.5
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/pre-bytes)
+   Compiling tempfile v3.27.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.59s
+     Running tests/fixup_modes.rs (target/debug/deps/fixup_modes-c7fabf2f73f41bbb)
+
+running 5 tests
+test split_traces_non_utf8_file_names ... FAILED
+test split_keeps_crlf_line_endings ... FAILED
+test split_keeps_non_utf8_content ... FAILED
+test split_ignores_apply_whitespace_and_textconv_settings ... FAILED
+test split_keeps_trailing_whitespace ... FAILED
+
+failures:
+
+---- split_traces_non_utf8_file_names stdout ----
+
+thread 'split_traces_non_utf8_file_names' (130193) panicked at tests/fixup_modes.rs:503:5:
+assertion `left == right` failed: "caf\xE9.txt": gir: cannot tell which commit caf�.txt:1 belongs to; pass one: gir fixup <commit>
+
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- split_keeps_crlf_line_endings stdout ----
+
+thread 'split_keeps_crlf_line_endings' (130190) panicked at tests/fixup_modes.rs:503:5:
+assertion `left == right` failed: "f.txt": gir: error: patch failed: f.txt:4
+error: f.txt: patch does not apply; restored HEAD and the index
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_keeps_non_utf8_content stdout ----
+
+thread 'split_keeps_non_utf8_content' (130191) panicked at tests/fixup_modes.rs:503:5:
+assertion `left == right` failed: "f.txt": gir: error: patch failed: f.txt:1
+error: f.txt: patch does not apply; restored HEAD and the index
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_ignores_apply_whitespace_and_textconv_settings stdout ----
+
+thread 'split_ignores_apply_whitespace_and_textconv_settings' (130189) panicked at tests/fixup_modes.rs:503:5:
+assertion `left == right` failed: "f.txt": gir: <stdin>:7: trailing whitespace.
+ONE  
+error: 1 line adds whitespace errors.; restored HEAD and the index
+
+  left: Some(2)
+ right: Some(0)
+
+---- split_keeps_trailing_whitespace stdout ----
+
+thread 'split_keeps_trailing_whitespace' (130192) panicked at tests/fixup_modes.rs:503:5:
+assertion `left == right` failed: "f.txt": gir: the split commits do not add up to the staged changes; restored HEAD and the index
+
+  left: Some(2)
+ right: Some(0)
+
+
+failures:
+    split_ignores_apply_whitespace_and_textconv_settings
+    split_keeps_crlf_line_endings
+    split_keeps_non_utf8_content
+    split_keeps_trailing_whitespace
+    split_traces_non_utf8_file_names
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test fixup_modes`
+error: 1 target failed:
+    `--test fixup_modes`

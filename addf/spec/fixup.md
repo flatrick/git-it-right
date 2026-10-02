@@ -1,18 +1,35 @@
-# gir fixup
+# gir fixup, amend, reword and squash
 
 ## Subspecifications
 
 `NONE`.
 
+## Subcommands
+
+<a id="req-fixup-subcommands"></a>
+**subcommands.** `gir fixup`, `gir amend`, `gir reword` and `gir squash` SHALL create their commit with `git commit --quiet` and `--fixup=<sha>`, `--fixup=amend:<sha>`, `--fixup=reword:<sha>` and `--squash=<sha>` respectively, where `<sha>` is the full target commit ID.
+
+<a id="req-fixup-subcommand-scope"></a>
+**subcommand-scope.** A requirement in this file that names `gir fixup` SHALL apply to all four subcommands unless it names others; a message it quotes with `gir fixup` SHALL name the subcommand that was run, and a quoted `fixup!` SHALL read `amend!` for `gir amend` and `gir reword` and `squash!` for `gir squash`.
+
 ## Arguments and flags
 
 <a id="req-fixup-arguments"></a>
-**arguments.** `gir fixup` SHALL accept zero or one positional commit argument and the optional `--dry-run` flag in either order.
+**arguments.** `gir fixup` SHALL accept zero or one positional commit argument and the optional `--dry-run` and `--split` flags in any order; `gir reword` SHALL NOT accept `--split`.
 
 ## Target selection
 
 <a id="req-fixup-staged-required"></a>
-**staged-required.** With no staged changes, `gir fixup` SHALL print ``gir: nothing staged; `git add` the fix first (more: gir explain fixup)`` to stderr and exit `2`, including when a commit argument is supplied.
+**staged-required.** With no staged changes, `gir fixup` and `gir squash` SHALL print ``gir: nothing staged; `git add` the fix first (more: gir explain fixup)`` to stderr and exit `2`, including when a commit argument is supplied.
+
+<a id="req-fixup-amend-staged-required"></a>
+**amend-staged-required.** With no staged changes, `gir amend` SHALL print ``gir: nothing staged; `git add` the fix first, or change only the message: gir reword (more: gir explain fixup)`` to stderr and exit `2`, including when a commit argument is supplied.
+
+<a id="req-fixup-reword-ignores-index"></a>
+**reword-ignores-index.** `gir reword` SHALL NOT require staged changes; its commit SHALL have its parent's tree, and staged changes SHALL stay staged.
+
+<a id="req-fixup-reword-target"></a>
+**reword-target.** Without a commit argument and not interactive, `gir reword` SHALL print `gir: nothing to trace for a reword; pass one: gir reword <commit>` to stderr and exit `2`.
 
 <a id="req-fixup-explicit-target"></a>
 **explicit-target.** Given staged changes, `gir fixup COMMIT` SHALL target the named commit without checking which commit last changed the staged lines, including when a new file is staged, provided the target passes the checks below.
@@ -27,7 +44,7 @@
 **invalid-target.** Given staged changes, `gir fixup no-such-commit` SHALL print ``gir: `no-such-commit` is not a commit`` to stderr and exit `2`.
 
 <a id="req-fixup-staged-line-target"></a>
-**staged-line-target.** Without a commit argument, `gir fixup` SHALL select the commit that last changed the staged lines when they identify one eligible commit.
+**staged-line-target.** Without a commit argument, `gir fixup`, `gir amend` and `gir squash` SHALL select the commit that last changed the staged lines when they identify one eligible commit.
 
 <a id="req-fixup-insertion-target"></a>
 **insertion-target.** For a staged insertion with no replaced lines, `gir fixup` SHALL use the adjacent lines in `HEAD` to identify its target.
@@ -56,8 +73,48 @@
 <a id="req-fixup-split-hint"></a>
 **split-hint.** On a multiple-target refusal, `gir fixup` SHALL print `split: git restore --staged . && git add -p, then one gir fixup per commit` on stderr.
 
+<a id="req-fixup-split-flag-hint"></a>
+**split-flag-hint.** On a multiple-target refusal, `gir fixup` SHALL print `or: gir fixup --split creates one fixup! per commit` on stderr after the split hint, unless a staged hunk changes lines last changed by several commits.
+
 <a id="req-fixup-absorb-hint"></a>
-**absorb-hint.** On a multiple-target refusal with `git-absorb` installed, `gir fixup` SHALL print `or: git absorb (installed) creates one fixup per commit` on stderr.
+**absorb-hint.** On a multiple-target refusal of `gir fixup` itself with `git-absorb` installed, it SHALL print `or: git absorb (installed) creates one fixup per commit` on stderr.
+
+## Asking in a terminal
+
+<a id="req-fixup-interactive"></a>
+**interactive.** A run SHALL be interactive when `GIR_INTERACTIVE` is `1`, or when `GIR_INTERACTIVE` is not `0` and stdin and stderr are both terminals; a run with `--dry-run` SHALL NOT be interactive.
+
+<a id="req-fixup-ask-several"></a>
+**ask-several.** When interactive and the staged hunks identify several eligible commits, `gir fixup` SHALL, instead of refusing, list each target numbered from `1` with its 10-character commit ID, subject and file locations, then, unless a staged hunk changes lines last changed by several commits, `s) split: one fixup! per commit`, on stderr, and read an answer from stdin.
+
+<a id="req-fixup-ask-branch-commit"></a>
+**ask-branch-commit.** When interactive, and automatic selection meets a new file or a file or hunk it cannot trace, or `gir reword` has no commit argument, gir SHALL list up to 20 of the newest commits after the base commit, or on `HEAD` when no base is found, numbered from `1` with their 10-character commit ID and subject, on stderr, and read an answer from stdin.
+
+<a id="req-fixup-ask-answers"></a>
+**ask-answers.** A listed number SHALL select that commit as the target of all staged changes; `s`, where offered, SHALL split as `--split` does; any other answer except a cancel SHALL ask again.
+
+<a id="req-fixup-ask-cancel"></a>
+**ask-cancel.** An empty answer, `q`, or end of input SHALL cancel: gir SHALL print `gir: cancelled; nothing committed` to stderr, create no commit, and exit `1`.
+
+## Splitting
+
+<a id="req-fixup-split"></a>
+**split.** `gir fixup --split` without a commit argument SHALL create one commit per target the staged hunks identify, in ascending order of full commit ID, each holding only the hunks traced to its target, leaving the working tree and the index unchanged and `HEAD`'s tree equal to the tree staged before the command.
+
+<a id="req-fixup-split-refusals"></a>
+**split-refusals.** Before creating any commit, `--split` SHALL refuse a hunk that changes lines last changed by several commits with `gir: <path>:<line> spans several commits; split it with git add -p` on stderr and exit `2`. When not interactive, it SHALL refuse a staged file it cannot trace with `gir: <reason>; --split cannot place it: commit it on its own or unstage it (git restore --staged -- <path>), then run gir <subcommand> --split again`, and an insertion whose adjacent lines were last changed by two eligible commits with `gir: <path>:<line> is an insertion between lines of <sha> <subject> and <sha> <subject>; run gir <subcommand> --split in a terminal to choose, or stage it on its own and run gir <subcommand> <commit>`, each on stderr with exit `2`, where `<reason>` is the clause automatic selection reports for that file. The other refusals of automatic selection SHALL apply unchanged.
+
+<a id="req-fixup-split-ask"></a>
+**split-ask.** When interactive, before creating any commit, `--split` SHALL ask for each staged file it cannot trace, with `gir: <reason>; pick the commit it belongs to:` and the commits `ask-branch-commit` lists, and SHALL ask for each insertion whose adjacent lines were last changed by two eligible commits, with `gir: <path>:<line> is an insertion between lines of two commits; pick the one it belongs to:` and those two commits numbered from `1`, the line above's first, each with its 10-character commit ID, subject and `(line above)` or `(line below)`. The file's staged version SHALL go into the chosen commit's autosquash commit, and the insertion SHALL go with the chosen commit's hunks; a cancel SHALL print `gir: cancelled; nothing committed` and exit `1` with no commit.
+
+<a id="req-fixup-split-with-target"></a>
+**split-with-target.** `--split` with a commit argument SHALL print `gir: --split finds each commit itself; drop the commit argument` to stderr and exit `2`.
+
+<a id="req-fixup-split-rollback"></a>
+**split-rollback.** If creating a split commit fails, gir SHALL reset `HEAD` to the commit it started from, leave the index as it was before the command, print a message ending `; restored HEAD and the index` on stderr, and exit `2`.
+
+<a id="req-fixup-split-output"></a>
+**split-output.** After splitting, gir SHALL print `gir: created fixup! for <10-character-sha> <target-subject>` for each commit and then one `  fold: git rebase --autosquash <10-character-base-sha>` line to stderr; with `--dry-run` it SHALL instead print each target's 10-character commit ID and subject on its own stdout line and create no commit.
 
 ## Results and repository changes
 
@@ -77,7 +134,7 @@
 **config-unchanged.** `gir fixup` SHALL NOT change Git configuration.
 
 <a id="req-fixup-commit-failure"></a>
-**commit-failure.** If `git commit --quiet --fixup=<full-target-sha>` fails, `gir fixup` SHALL print `gir: git commit --quiet --fixup=` followed by the target SHA and ` failed` on stderr and exit `2`.
+**commit-failure.** If its `git commit` fails, gir SHALL print `gir: git commit --quiet ` followed by the subcommand's commit option with the full target SHA (for `gir fixup`, `--fixup=<sha>`) and ` failed` on stderr and exit `2`.
 
 ## Module invariants
 

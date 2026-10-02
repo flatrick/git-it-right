@@ -1,0 +1,18 @@
+gir at afd58e8, git version 2.56.0
+
+## 1 delete '-- header', edit a later line from the same commit
+$ gir fixup --dry-run  (exit 2)
+gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>
+
+## 2 delete '-- /dev/null' (commit A), edit a line from commit B
+$ gir fixup --dry-run  (exit 0)
+5b8d074c83 feat: A
+expected: the hunks trace to two commits (A and B), so no single target
+
+## 3 add a line '++ b/foo' to a file from one commit
+$ gir fixup --dry-run  (exit 0)
+b08232569f feat: y
+
+## 4 delete '-- /dev/null' and add '++ b/foo' later in the same file
+$ gir fixup --dry-run  (exit 2)
+gir: foo is a new file, so it has no earlier commit; pass one: gir fixup <commit>

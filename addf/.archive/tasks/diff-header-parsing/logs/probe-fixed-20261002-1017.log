@@ -1,0 +1,22 @@
+gir at 4b909f1 plus the uncommitted parse_hunks fix, git version 2.56.0
+
+## 1 delete '-- header', edit a later line from the same commit
+$ gir fixup --dry-run  (exit 0)
+acd90f3517 feat: lua
+
+## 2 delete '-- /dev/null' (commit A), edit a line from commit B
+$ gir fixup --dry-run  (exit 2)
+gir: staged changes belong to several commits:
+  03a7945b26 feat: B  <- x.lua:5
+  5b8d074c83 feat: A  <- x.lua:1
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+  or: gir fixup --split creates one fixup! per commit
+expected: the hunks trace to two commits (A and B), so no single target
+
+## 3 add a line '++ b/foo' to a file from one commit
+$ gir fixup --dry-run  (exit 0)
+b08232569f feat: y
+
+## 4 delete '-- /dev/null' and add '++ b/foo' later in the same file
+$ gir fixup --dry-run  (exit 0)
+2e6f2b33f4 feat: z

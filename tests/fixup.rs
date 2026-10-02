@@ -290,3 +290,88 @@ fn insertion_between_base_and_topic_lines_targets_topic() {
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
     assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: topic line\n", &topic[..10]));
 }
+
+#[test]
+fn deleted_line_starting_with_dashes_is_traced_like_any_other() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- header\nlocal a = 1\nlocal b = 2\nlocal c = 3\nlocal d = 4\n", "feat: lua");
+    let lua = repo.git(&["rev-parse", "HEAD"]);
+    stage(&repo, "x.lua", "local a = 1\nlocal b = 2\nlocal c = 3\nlocal d = 5\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: lua\n", &lua[..10]));
+}
+
+#[test]
+fn deleted_dev_null_comment_does_not_hide_later_hunks() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nl4\n", "feat: lua a");
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nL4\n", "feat: lua b");
+    stage(&repo, "x.lua", "l1\nl2\nl3\nL4x\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    let err = stderr(&out);
+    assert_eq!(out.status.code(), Some(2), "{err}");
+    assert!(err.contains("staged changes belong to several commits:"), "{err}");
+    assert!(err.contains("feat: lua a  <- x.lua:1"), "{err}");
+    assert!(err.contains("feat: lua b  <- x.lua:5"), "{err}");
+}
+
+#[test]
+fn added_line_starting_with_plus_b_is_not_a_new_file() {
+    let repo = topic_repo();
+    repo.commit_file("z.lua", "-- /dev/null\nm1\nm2\nm3\nm4\n", "feat: z");
+    let z = repo.git(&["rev-parse", "HEAD"]);
+    stage(&repo, "z.lua", "m1\nm2\nm3\n++ b/foo\nm4\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: z\n", &z[..10]));
+}
+
+#[test]
+fn dev_null_comment_split_folds_into_the_right_commits() {
+    let repo = topic_repo();
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nl4\n", "feat: lua a");
+    repo.commit_file("x.lua", "-- /dev/null\nl1\nl2\nl3\nL4\n", "feat: lua b");
+    stage(&repo, "x.lua", "l1\nl2\nl3\nL4x\n");
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: lua b\nfeat: lua a\nfeat: add a");
+    assert_eq!(repo.git(&["show", "HEAD~1:x.lua"]), "l1\nl2\nl3\nl4");
+    assert_eq!(repo.git(&["show", "HEAD:x.lua"]), "l1\nl2\nl3\nL4x");
+}
+
+/// Two commits change `name`; a fixup for the first line goes to the first, and `--split`
+/// followed by `rebase --autosquash` puts each change in its own commit.
+fn trace_and_split_two_commits_in(name: &str) {
+    let repo = topic_repo();
+    repo.commit_file(name, "one\ntwo\nthree\nfour\n", "feat: first");
+    let first = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file(name, "one\ntwo\nthree\nFOUR\n", "feat: second");
+    stage(&repo, name, "ONE\ntwo\nthree\nFOUR\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{name:?}: {}", stderr(&out));
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), format!("{} feat: first\n", &first[..10]), "{name:?}");
+    stage(&repo, name, "ONE\ntwo\nthree\nFOURx\n");
+    let out = repo.gir(&["fixup", "--split"]);
+    assert_eq!(out.status.code(), Some(0), "{name:?}: {}", stderr(&out));
+    repo.git_with(&["rebase", "-q", "-i", "--autosquash", "main"], &[("GIT_SEQUENCE_EDITOR", "true")]);
+    assert_eq!(repo.git(&["log", "--format=%s", "main..HEAD"]), "feat: second\nfeat: first\nfeat: add a", "{name:?}");
+    assert_eq!(repo.git(&["show", &format!("HEAD~1:{name}")]), "ONE\ntwo\nthree\nfour", "{name:?}");
+    assert_eq!(repo.git(&["show", &format!("HEAD:{name}")]), "ONE\ntwo\nthree\nFOURx", "{name:?}");
+}
+
+#[test]
+fn file_name_with_a_space_is_traced_and_split() {
+    trace_and_split_two_commits_in("my file.txt");
+}
+
+// Windows file names cannot contain a double quote, a backslash or a tab, which are the
+// characters that make git quote a name in diff headers.
+#[cfg(unix)]
+#[test]
+fn quoted_file_names_are_traced_and_split() {
+    for name in ["say \"hi\".txt", "back\\slash.txt", "tab\there.txt", "space and \"quote\".txt"] {
+        trace_and_split_two_commits_in(name);
+    }
+}

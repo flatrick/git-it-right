@@ -1,0 +1,15 @@
+Decide wording: On systems with an executable bit, `--fix` SHALL also make each of those files that exists in the working tree as a regular file executable, without changing its content, and SHALL NOT create a missing file or change the target of a symbolic link; on Windows it SHALL NOT change the working tree.
+Spec exec-bit: <a id="req-doctor-exec-bit"></a>
+**exec-bit.** For an indexed `100644` path ending in `.sh` or starting with `.githooks/` and without unresolved conflict entries, `gir doctor` SHALL print `warn  exec-bit: scripts not executable in git` with the path; `--fix` SHALL set those index entries to mode `100755`, keeping their staged content and skip-worktree state, without needing their files in the working tree. On systems with an executable bit, `--fix` SHALL also make each of those files that exists in the working tree as a regular file executable, without changing its content, and SHALL NOT create a missing file or change the target of a symbolic link; on Windows it SHALL NOT change the working tree.
+Decide wording present verbatim in exec-bit: True
+Anchor count: 1
+ addf/spec/doctor.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Code at HEAD:
+src/cmd/doctor.rs:335: make_executable_on_disk(root, paths)
+src/cmd/doctor.rs:342: #[cfg(unix)]
+src/cmd/doctor.rs:343: fn make_executable_on_disk(root: &Path, paths: &[ChmodPath]) -> Result<(), String> {
+src/cmd/doctor.rs:348: let Ok(meta) = std::fs::symlink_metadata(&file) else { continue };
+src/cmd/doctor.rs:363: #[cfg(not(unix))]
+src/cmd/doctor.rs:364: fn make_executable_on_disk(_root: &Path, _paths: &[ChmodPath]) -> Result<(), String> {

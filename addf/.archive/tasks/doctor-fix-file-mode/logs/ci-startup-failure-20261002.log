@@ -1,0 +1,27 @@
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37017288831
+Event: pull_request
+Head: 3dc8c4c67ec52a817487863319a9d49fa442b528
+Conclusion: startup_failure
+Jobs: none
+
+After the first CI run, GitHub's repository Actions setting changed from
+allowed_actions=all to allowed_actions=local_only. The ci workflow uses
+actions/checkout@v4, actions/setup-python@v5, and
+dtolnay/rust-toolchain@stable, which local_only does not permit.
+This is the leading explanation for startup_failure; a fresh run after the
+setting change will test it.
+
+The operator said the local-only choice was a misunderstanding and authorized
+correcting it. GitHub readback after the correction:
+enabled=true
+allowed_actions=selected
+github_owned_allowed=false
+verified_allowed=false
+patterns_allowed=[actions/checkout@v4, actions/setup-python@v5,
+                  dtolnay/rust-toolchain@stable]
+fork PR approval=all_external_contributors
+main enforce_admins=true, allow_force_pushes=false, allow_deletions=false
+
+`gh run rerun 37017288831` returned:
+run 37017288831 cannot be rerun; This workflow run cannot be retried
+The next branch push must trigger a new pull_request run.

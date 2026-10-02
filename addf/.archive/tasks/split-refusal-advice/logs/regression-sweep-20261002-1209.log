@@ -1,0 +1,140 @@
+## fixup-fixes-acceptance
+53 PASS, 0 FAIL
+## split-patch-fidelity
+48 PASS, 0 FAIL
+## diff-path-names probe
+  gir fixup --dry-run -> exit 0: '1adff1e0fa feat: add file'
+  gir fixup --dry-run -> exit 0: '5e8e042f9b feat: add file'
+  gir fixup --dry-run -> exit 0: 'dba0645e23 feat: add file'
+  gir fixup --dry-run -> exit 0: 'd5b4b2b404 feat: add file'
+  gir fixup --dry-run -> exit 0: '711d6b9779 feat: add file'
+  gir fixup --dry-run -> exit 0: 'af77ade744 feat: add file'
+## review scripts d246ab2 vs this build
+##### edge.py: differs
+--- edge.py old
++++ edge.py new
+@@ -1,38 +1,38 @@
+ 
+ === 1 deleting a '-- comment' line then another hunk
+-(2, 'gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>')
+-(2, 'gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>')
++(0, '<sha> feat: lua')
++(0, '<sha> feat: lua')
+ 
+ === 1b split with '-- comment' deletion across two targets
+-(2, 'gir: cannot tell which commit header:3 belongs to; pass one: gir fixup <commit>')
+-feat: lua two | feat: lua one | chore: base
++(0, 'gir: created fixup! for <sha> feat: lua two\ngir: created fixup! for <sha> feat: lua one\n  fold: git rebase --autosquash <sha>')
++fixup! feat: lua one | fixup! feat: lua two | feat: lua two | feat: lua one
+ 
+ === 2 file name with a space
+-(2, 'gir: cannot tell which commit my file.txt belongs to; pass one: gir fixup <commit>')
++(0, '<sha> feat: spaced')
+ 
+ === 3 apply.whitespace=error and trailing whitespace in split
+-(2, 'On branch topic\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n  (use "git restore <file>..." to discard changes in working directory)\n\tmodified:   a\n\tmodified:   b\n\nno changes added to commit (use "git add" and/or "git commit -a")\ngir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
+-feat: b | feat: a | chore: base
++(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
++fixup! feat: a | fixup! feat: b | feat: b | feat: a
+ 
+ === 3b apply.whitespace=fix
+-(2, 'On branch topic\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n  (use "git restore <file>..." to discard changes in working directory)\n\tmodified:   a\n\tmodified:   b\n\nno changes added to commit (use "git add" and/or "git commit -a")\ngir: git commit --quiet --fixup=<sha> failed; restored HEAD and the index')
+-feat: b | feat: a | chore: base
++(2, 'gir: nothing staged; `git add` the fix first (more: gir explain fixup)')
++fixup! feat: a | fixup! feat: b | feat: b | feat: a
+ 
+ === 4 insertion between two commits' lines with --split
+-(2, 'gir: f:1 spans several commits; split it with git add -p')
++(2, 'gir: f:1 is an insertion between lines of <sha> feat: one and <sha> feat: two; run gir fixup --split in a terminal to choose, or stage it on its own and run gir fixup <commit>')
+ 
+ === 5 new file + --split, non-interactive
+-(2, 'gir: new is a new file, so it has no earlier commit; pass one: gir fixup <commit>')
++(2, 'gir: new is a new file, so it has no earlier commit; --split cannot place it: commit it on its own or unstage it (git restore --staged -- new), then run gir fixup --split again')
+ 
+ === 6 intent-to-add entry survives split?
+ M  a
+ M  b
+  A ita
+ 
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+ fixup! feat: a | fixup! feat: b | feat: b | feat: a
+-status after: '?? ita\n'
++status after: ' A ita\n'
+ 
+ === 7 reword with staged changes
+ (0, 'gir: created amend! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+ amend! feat: a | feat: a | chore: base amend! feat: a
+##### edge2.py: differs
+--- edge2.py old
++++ edge2.py new
+@@ -1,39 +1,42 @@
+ 
+ === 14 CRLF file split
+-(2, 'gir: error: patch failed: b:2\nerror: b: patch does not apply; restored HEAD and the index')
+-feat: b | feat: a | chore: attrs | chore: base
++(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
++fixup! feat: a | fixup! feat: b | feat: b | feat: a
+ 
+ === 15 sparse checkout + split
+ before: 'M  in/a\nM  in/b\n'
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+ fixup! feat: a | fixup! feat: b | feat: c | feat: b
+-after: ' D out/c\n'
++after: ''
+ 
+ === 16 assume-unchanged / skip-worktree bit after split
+ before: 'M  a\nM  b\n'
+ (0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
+-after: ' M cfg\n'
++after: ''
+ 
+ === 17 interactive picker with several targets where a hunk spans -> choose s
+-2 gir: staged changes belong to several commits:
++1 gir: staged changes belong to several commits:
+   1) <sha> feat: one  <- f:1
+   2) <sha> feat: two  <- f:1
+   s) split: one fixup! per commit
+-pick [1-2, s, q]: gir: f:1 spans several commits; split it with git add -p
++pick [1-2, s, q]: gir: f:1 is an insertion between lines of two commits; pick the one it belongs to:
++  1) <sha> feat: one  (line above)
++  2) <sha> feat: two  (line below)
++pick [1-2, q]: 
++gir: cancelled; nothing committed
+ 
+ 
+ === 18 --split with a new file, interactive picker
+ 0 gir: new is a new file, so it has no earlier commit; pick the commit it belongs to:
+   1) <sha> feat: b
+   2) <sha> feat: a
+ pick [1-2, q]: gir: created fixup! for <sha> feat: b
++gir: created fixup! for <sha> feat: a
+   fold: git rebase --autosquash <sha>
+ 
+-fixup! feat: b | feat: b | feat: a | chore: base  a   | 2 +-
+- b   | 2 +-
+- new | 1 +
+- 3 files changed, 3 insertions(+), 2 deletions(-)
++fixup! feat: a | fixup! feat: b | feat: b | feat: a  a | 2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
+ 
+ 
+ === 19 hunk blamed to a merge-side commit; pick list from base..HEAD includes merged branch commits
+ 1 gir: new is a new file, so it has no earlier commit; pick the commit it belongs to:
+##### edge3.py: differs
+--- edge3.py old
++++ edge3.py new
+@@ -1,10 +1,10 @@
+ 
+ === 20 trailing whitespace on the last line of the diff
+-(2, 'gir: the split commits do not add up to the staged changes; restored HEAD and the index')
+-feat: b | feat: a | chore: base
++(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
++fixup! feat: a | fixup! feat: b | feat: b | feat: a
+ 
+ === 21 latin-1 content
+-(2, 'gir: error: patch failed: a:1\nerror: a: patch does not apply; restored HEAD and the index')
+-feat: b | feat: a | chore: base
++(0, 'gir: created fixup! for <sha> feat: b\ngir: created fixup! for <sha> feat: a\n  fold: git rebase --autosquash <sha>')
++fixup! feat: a | fixup! feat: b | feat: b | feat: a
+ 
+ [script exit 0]

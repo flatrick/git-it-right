@@ -1,0 +1,55 @@
+old=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right/be5d2752-33ae-44b4-b215-584ade0d4387/scratchpad/maintarget/debug/gir (git archive of main 14d3bd5)  new=/home/flatrick/src/github/flatrick/git-it-right/.worktrees/feat-fixup-modes/target/debug/gir (worktree); stdin is a pipe
+### nothing staged
+gir: nothing staged; `git add` the fix first (more: gir explain fixup)
+exit=2 head_same=y
+[identical to 14d3bd5]
+### nothing staged, explicit
+gir: nothing staged; `git add` the fix first (more: gir explain fixup)
+exit=2 head_same=y
+[identical to 14d3bd5]
+### not a commit
+gir: `no-such-commit` is not a commit
+exit=2 head_same=y
+[identical to 14d3bd5]
+### not on branch
+gir: `57de7f11c718d29bf39382dae5b0a1f32f748920` is not in the current branch's history
+exit=2 head_same=y
+[identical to 14d3bd5]
+### explicit on base
+gir: `main` is already on the base branch
+exit=2 head_same=y
+[identical to 14d3bd5]
+### new file
+gir: new.txt is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+exit=2 head_same=y
+[identical to 14d3bd5]
+### new binary file
+gir: n.bin is a new file, so it has no earlier commit; pass one: gir fixup <commit>
+exit=2 head_same=y
+[identical to 14d3bd5]
+### binary change
+gir: cannot tell which commit b.bin belongs to; pass one: gir fixup <commit>
+exit=2 head_same=y
+[identical to 14d3bd5]
+### unattributed (empty file)
+gir: cannot tell which commit e.txt:1 belongs to; pass one: gir fixup <commit>
+exit=2 head_same=y
+[identical to 14d3bd5]
+### line on base branch
+gir: base.txt:1 was last changed by 9820069cca which is already on the base branch; commit it normally instead
+exit=2 head_same=y
+[identical to 14d3bd5]
+### several targets
+gir: staged changes belong to several commits:
+  18bf46d09f feat: add b  <- b.txt:1
+  ff7c06ec90 feat: add a  <- a.txt:2
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+  or: gir fixup --split creates one fixup! per commit
+exit=2 head_same=y
+[differs from 14d3bd5:]
+@@ -2,4 +2,5 @@
+   18bf46d09f feat: add b  <- b.txt:1
+   ff7c06ec90 feat: add a  <- a.txt:2
+   split: git restore --staged . && git add -p, then one gir fixup per commit
++  or: gir fixup --split creates one fixup! per commit
+ exit=2 head_same=y

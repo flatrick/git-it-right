@@ -1,0 +1,25 @@
+You are working in a Rust repository (the `gir` CLI). The working tree already contains an uncommitted change to `src/cmd/doctor.rs`, `src/git.rs` and `tests/doctor.rs` that makes `gir doctor --fix` set the exec bit through `git update-index -z --index-info`. Keep that change and build on it. Do not commit, do not create branches, and do not edit anything under `addf/` or any Markdown file. Use `cargo ... --offline` for every cargo command.
+
+## The remaining defect
+
+During an unresolved merge conflict, the index holds several entries for one path (stages 1, 2 and 3 instead of stage 0). `index_checks` in `src/cmd/doctor.rs` flags such a hook for exec-bit using its first record (stage 1, the merge base), and `--fix` then writes one stage-0 entry with that object, which silently marks the conflict resolved with the base content.
+
+## Required behavior
+
+- A path that has any index record with a stage other than 0 must not be flagged by the exec-bit check at all: no exec-bit warning for it, and `--fix` must not touch any of its index entries. The stage is the field after the object ID in each `git ls-files -s -v -z` record (`<tag> <mode> <object> <stage>\t<path>`).
+- Everything else in `index_checks` stays as it is, including how `case-collision` already de-duplicates the stages of one unmerged path.
+- Other flagged paths in the same run are still fixed.
+
+## Test
+
+Add an integration test to `tests/doctor.rs`, reusing its helpers: commit `.githooks/h` (mode 100644) on `main`, change it differently on another branch and on `main`, and merge so that it conflicts. Also commit a second hook `.githooks/other` (100644) that does not conflict. Then run `gir doctor --fix` and assert that:
+1. `git ls-files -s -- .githooks/h` is byte-for-byte the same as before `--fix` (still the three stages);
+2. the `gir doctor` report does not name `.githooks/h` in an exec-bit line;
+3. `.githooks/other` is now 100755.
+
+Use only file names Windows can hold and no shell commands besides `git`.
+
+## Done means
+
+- `cargo build --offline`, `cargo test --offline` and `cargo clippy --offline --all-targets -- -D warnings` all pass. Run them and look at the results yourself.
+- Your reply lists every file you changed in this run and, for `cargo test`, the `test result:` line of the `tests/doctor.rs` run (not the doc-tests line). Do not claim anything you did not run.

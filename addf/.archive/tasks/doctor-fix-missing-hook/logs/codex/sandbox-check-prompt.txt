@@ -1,0 +1,2 @@
+Run exactly this shell command in the current directory and nothing else: cargo build --offline 2>&1 | tail -n 3 ; echo BUILD_EXIT=${PIPESTATUS[0]}
+Then reply with only the line that starts with BUILD_EXIT and the three lines before it. Do not edit any file.

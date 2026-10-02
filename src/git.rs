@@ -1,14 +1,48 @@
+use std::ffi::{OsStr, OsString};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// Runs `git` in the current directory and returns trimmed stdout, or trimmed stderr on failure.
 pub fn run(args: &[&str]) -> Result<String, String> {
-    let out = Command::new("git")
-        .args(args)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|e| format!("could not run git: {e}"))?;
+    output(Command::new("git").args(args))
+}
+
+/// Runs `git` and returns its stdout exactly as written, for output that holds file contents
+/// or paths, which need not be UTF-8 and may end in whitespace.
+pub fn run_raw<S: AsRef<OsStr>>(args: &[S]) -> Result<Vec<u8>, String> {
+    let out = Command::new("git").args(args).stdin(Stdio::null()).output().map_err(|e| format!("could not run git: {e}"))?;
+    if out.status.success() { Ok(out.stdout) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+}
+
+/// A path from git's output as an argument for git: its bytes as they are on Unix; through
+/// UTF-8 elsewhere, which is how git writes paths on Windows.
+#[cfg(unix)]
+pub fn os_path(bytes: &[u8]) -> OsString {
+    use std::os::unix::ffi::OsStrExt;
+    OsStr::from_bytes(bytes).to_os_string()
+}
+
+#[cfg(not(unix))]
+pub fn os_path(bytes: &[u8]) -> OsString {
+    OsString::from(String::from_utf8_lossy(bytes).into_owned())
+}
+
+pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
+    run_with_stdin_bytes(args, input.as_bytes())
+}
+
+pub fn run_with_stdin_bytes(args: &[&str], input: &[u8]) -> Result<String, String> {
+    output_with_stdin(Command::new("git").args(args), input)
+}
+
+/// Runs git with inherited stdio so the user sees git's own output.
+pub fn passthrough(args: &[&str]) -> Result<(), String> {
+    status(Command::new("git").args(args), args)
+}
+
+fn output(cmd: &mut Command) -> Result<String, String> {
+    let out = cmd.stdin(Stdio::null()).output().map_err(|e| format!("could not run git: {e}"))?;
     if out.status.success() {
         Ok(String::from_utf8_lossy(&out.stdout).trim_end().to_string())
     } else {
@@ -16,15 +50,14 @@ pub fn run(args: &[&str]) -> Result<String, String> {
     }
 }
 
-pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
-    let mut child = Command::new("git")
-        .args(args)
+fn output_with_stdin(cmd: &mut Command, input: &[u8]) -> Result<String, String> {
+    let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|e| format!("could not run git: {e}"))?;
-    child.stdin.take().unwrap().write_all(input.as_bytes()).map_err(|e| e.to_string())?;
+    child.stdin.take().unwrap().write_all(input).map_err(|e| e.to_string())?;
     let out = child.wait_with_output().map_err(|e| e.to_string())?;
     if out.status.success() {
         Ok(String::from_utf8_lossy(&out.stdout).trim_end().to_string())
@@ -33,10 +66,54 @@ pub fn run_with_stdin(args: &[&str], input: &str) -> Result<String, String> {
     }
 }
 
-/// Runs git with inherited stdio so the user sees git's own output.
-pub fn passthrough(args: &[&str]) -> Result<(), String> {
-    let status = Command::new("git").args(args).status().map_err(|e| format!("could not run git: {e}"))?;
+fn status(cmd: &mut Command, args: &[&str]) -> Result<(), String> {
+    let status = cmd.status().map_err(|e| format!("could not run git: {e}"))?;
     if status.success() { Ok(()) } else { Err(format!("git {} failed", args.join(" "))) }
+}
+
+/// An index file of gir's own in the git directory, so commits can be built without
+/// touching the staged changes. The file is removed when this is dropped.
+pub struct TempIndex(PathBuf);
+
+impl TempIndex {
+    pub fn new(name: &str) -> Result<TempIndex, String> {
+        let dir = run(&["rev-parse", "--absolute-git-dir"])?;
+        Ok(TempIndex(Path::new(&dir).join(format!("{name}-{}", std::process::id()))))
+    }
+
+    fn git(&self, args: &[&str]) -> Command {
+        let mut cmd = Command::new("git");
+        cmd.args(args).env("GIT_INDEX_FILE", &self.0);
+        cmd
+    }
+
+    pub fn run(&self, args: &[&str]) -> Result<String, String> {
+        output(&mut self.git(args))
+    }
+
+    pub fn run_with_stdin(&self, args: &[&str], input: &[u8]) -> Result<String, String> {
+        output_with_stdin(&mut self.git(args), input)
+    }
+
+    pub fn passthrough(&self, args: &[&str]) -> Result<(), String> {
+        status(&mut self.git(args), args)
+    }
+
+    pub fn run_raw<S: AsRef<OsStr>>(&self, args: &[S]) -> Result<Vec<u8>, String> {
+        let out = Command::new("git")
+            .args(args)
+            .env("GIT_INDEX_FILE", &self.0)
+            .stdin(Stdio::null())
+            .output()
+            .map_err(|e| format!("could not run git: {e}"))?;
+        if out.status.success() { Ok(out.stdout) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+    }
+}
+
+impl Drop for TempIndex {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
 }
 
 pub fn get_config(key: &str) -> Option<String> {

@@ -1,0 +1,104 @@
+new build: 6e276d7, git version 2.56.0
+
+## a2.1 delete '-- header', edit a later line; gir fixup; rebase --autosquash
+  $ gir fixup -> exit 0: 'gir: created fixup! for 84ee8171c5 feat: lua\n  fold: git rebase --autosquash 7d9c92cc3d'
+  PASS gir fixup succeeds
+  $ git rebase -i --autosquash main -> exit 0: ''
+  PASS rebase --autosquash succeeds
+  PASS history is feat: lua then feat: other
+  PASS feat: lua holds the edited file
+
+## a2.2 delete '-- /dev/null' (commit A), edit a line of commit B; gir fixup without --split
+  $ gir fixup -> exit 2: 'gir: staged changes belong to several commits:\n  5fc3114608 feat: A  <- x.lua:1\n  e15d1353c5 feat: B  <- x.lua:5\n  split: git restore --staged . && git add -p, then one gir fixup per commit\n  or: gir fixup --split creates one fixup! per commit'
+  PASS gir refuses: the changes belong to two commits
+  PASS no commit was created
+
+## a2.3 the same case with --split; rebase --autosquash
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 5fc3114608 feat: A\ngir: created fixup! for e15d1353c5 feat: B\n  fold: git rebase --autosquash 7d9c92cc3d'
+  PASS gir fixup --split succeeds
+  $ git rebase -i --autosquash main -> exit 0: ''
+  PASS rebase --autosquash succeeds
+  PASS history is feat: A then feat: B
+  PASS feat: A lost only its '-- /dev/null' line
+  PASS feat: B holds the edit
+
+## a3.1 sparse checkout: split, rebase, then git add -A and git commit -a
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds
+  PASS status is clean after the split
+  $ git rebase -i --autosquash main -> exit 0: ''
+  PASS rebase --autosquash succeeds
+  PASS out/c.txt is still in HEAD
+  PASS out/c.txt is still skip-worktree
+  PASS history is feat: a, feat: b, feat: c
+
+## a3.2 skip-worktree file with a private edit: split, rebase, then git add -A and git commit -a
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds
+  PASS status is clean after the split
+  $ git rebase -i --autosquash main -> exit 1: 'error: Your local changes to the following files would be overwritten by checkout:\n\tcfg.txt\nPlease commit your changes or stash them before you switch branches.\nAborting\nerror: could not detach HEAD'
+  FAIL rebase --autosquash succeeds
+  PASS the private edit is not committed
+  PASS the private edit is still on disk
+  PASS cfg.txt is still skip-worktree
+
+## a3.3 intent-to-add file: split, then git add -A and git commit
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds
+  PASS ita.txt is still intent-to-add
+  PASS ita.txt is not in HEAD
+  note: git rebase refuses while an intent-to-add entry exists (unstaged change), on any build; the rebase is not part of this case
+
+## a4.1 linked worktree with a skip-worktree file
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds in the linked worktree
+  PASS status and flags kept (apart from the committed files)
+  PASS no temporary index left in either git directory
+  PASS main worktree's index untouched (topic still clean)
+
+## a4.2 sparse checkout, cone mode, sparse index
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 7df0ee51b4 feat: b\ngir: created fixup! for f5c8d3fc0d feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds
+  PASS status is clean after the split
+  PASS the index is still sparse with the same entries
+  $ git rebase -i --autosquash main -> exit 0: ''
+  PASS rebase --autosquash succeeds
+  PASS out/c.txt is still in HEAD
+
+## a4.3 gir run from a subdirectory, skip-worktree file at the top
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 51305649a3 feat: b\ngir: created fixup! for c3ac3dae13 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir fixup --split succeeds from sub/
+  PASS status clean and flags kept
+
+## a4.4 gir amend --split with a skip-worktree file
+  $ gir amend --split -> exit 0: 'gir: created amend! for 530e67797b feat: b\ngir: created amend! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir amend --split succeeds
+  PASS two amend! commits
+  PASS status clean and flags kept
+  $ git rebase -i --autosquash main -> exit 1: 'error: Your local changes to the following files would be overwritten by checkout:\n\tcfg.txt\nPlease commit your changes or stash them before you switch branches.\nAborting\nerror: could not detach HEAD'
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: a, feat: b, feat: cfg (['amend! feat: a', 'amend! feat: b', 'feat: cfg', 'feat: b', 'feat: a'])
+
+## a4.5 gir squash --split with a skip-worktree file
+  $ gir squash --split -> exit 0: 'gir: created squash! for 530e67797b feat: b\ngir: created squash! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS gir squash --split succeeds
+  PASS two squash! commits
+  PASS status clean and flags kept
+  $ git rebase -i --autosquash main -> exit 1: 'error: Your local changes to the following files would be overwritten by checkout:\n\tcfg.txt\nPlease commit your changes or stash them before you switch branches.\nAborting\nerror: could not detach HEAD'
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: a, feat: b, feat: cfg (['squash! feat: a', 'squash! feat: b', 'feat: cfg', 'feat: b', 'feat: a'])
+
+## a4.6 the interactive picker's s, with a skip-worktree file
+  $ gir fixup -> exit 0: 'gir: staged changes belong to several commits:\n  1) 530e67797b feat: b  <- b.txt:1\n  2) a69e93aff0 feat: a  <- a.txt:1\n  s) split: one fixup! per commit\npick [1-2, s, q]: gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS the picker's s splits
+  PASS status clean and flags kept
+
+## a4.7 no temporary index left after a successful and a failed split
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 530e67797b feat: b\ngir: created fixup! for a69e93aff0 feat: a\n  fold: git rebase --autosquash f613eb635b'
+  PASS successful split
+  PASS no gir-split-index-* file after success
+  $ gir fixup --split -> exit 2: 'gir: git commit --quiet --fixup=e76f54c6d62d004a6a5e77501cb5f4da901f9b19 failed; restored HEAD and the index'
+  PASS hook-refused split fails and restores
+  PASS no gir-split-index-* file after failure
+
+48 PASS, 5 FAIL

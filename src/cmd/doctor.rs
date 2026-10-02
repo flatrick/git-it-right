@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use super::templates;
@@ -16,7 +16,13 @@ enum Fix {
     LocalConfig(&'static str, &'static str),
     WriteFile(&'static str, &'static str),
     AppendIgnore(Vec<&'static str>),
-    Chmod(Vec<String>),
+    Chmod(Vec<ChmodPath>),
+}
+
+struct ChmodPath {
+    path: Vec<u8>,
+    object: Vec<u8>,
+    skip_worktree: bool,
 }
 
 struct Check {
@@ -109,6 +115,13 @@ fn config_checks(root: &Path, out: &mut Vec<Check>) {
     }
 }
 
+fn has_text_auto_rule(text: &str) -> bool {
+    text.lines().any(|l| {
+        let mut words = l.split_whitespace();
+        words.next() == Some("*") && words.any(|w| w == "text=auto")
+    })
+}
+
 fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     match std::fs::read(root.join(".gitattributes")).map(|b| String::from_utf8_lossy(&b).into_owned()) {
         Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
@@ -119,7 +132,7 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
             let extra = crlf.map(|v| format!(" and core.autocrlf={v}, so line endings depend on each clone")).unwrap_or_default();
             out.push(check(Level::Warn, ".gitattributes", format!("missing{extra}"), Some(Fix::WriteFile(".gitattributes", templates::GITATTRIBUTES))));
         }
-        Ok(text) if !text.lines().any(|l| l.trim_start().starts_with("* text=auto")) => {
+        Ok(text) if !has_text_auto_rule(&text) => {
             out.push(check(Level::Info, ".gitattributes", "no `* text=auto` line; line endings are not normalised", None));
         }
         Ok(_) => out.push(check(Level::Ok, ".gitattributes", "", None)),
@@ -133,12 +146,13 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
         out.push(check(Level::Warn, config::FILE, e, None));
     }
 
-    let files = git::run(&["ls-files", "--cached", "--others", "--exclude-standard"]).unwrap_or_default();
+    let files = git::run_raw(&["ls-files", "--cached", "--others", "--exclude-standard", "-z"]).unwrap_or_default();
+    let files: Vec<&[u8]> = files.split(|&b| b == 0).collect();
     let mut rules: Vec<(&str, &str)> = templates::IGNORE_RULES
         .iter()
         .filter(|(marker, _, _)| {
             *marker == "*"
-                || (marker.starts_with('.') && files.lines().any(|f| f.ends_with(marker)))
+                || (marker.starts_with('.') && files.iter().any(|f| f.ends_with(marker.as_bytes())))
                 || root.join(marker).exists()
         })
         .map(|(_, pattern, probe)| (*pattern, *probe))
@@ -151,10 +165,10 @@ fn file_checks(root: &Path, out: &mut Vec<Check>) -> Result<(), String> {
     }
     let mut seen = std::collections::HashSet::new();
     rules.retain(|r| seen.insert(*r));
-    let tracked = git::run(&["ls-files"]).unwrap_or_default();
+    let tracked = git::run_raw(&["ls-files", "-z"]).unwrap_or_default();
     let missing: Vec<&str> = rules
         .iter()
-        .filter(|(_, probe)| !tracked.lines().any(|t| t == *probe))
+        .filter(|(_, probe)| !tracked.split(|&b| b == 0).any(|t| t == probe.as_bytes()))
         .filter(|(_, probe)| git::run(&["check-ignore", "-q", "--no-index", probe]).is_err())
         .map(|(pattern, _)| *pattern)
         .collect();
@@ -175,8 +189,11 @@ const RESERVED: &[&str] = &[
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
 ];
 
-pub fn windows_unsafe(path: &str) -> bool {
-    path.split('/').any(|seg| {
+/// Whether Windows cannot hold `path`: bytes that are not UTF-8, a control character, a
+/// reserved device name, a trailing dot or space, or a reserved character.
+pub fn windows_unsafe(path: &[u8]) -> bool {
+    let Ok(path) = std::str::from_utf8(path) else { return true };
+    path.bytes().any(|b| (1..=31).contains(&b)) || path.split('/').any(|seg| {
         let stem = seg.split('.').next().unwrap_or(seg).to_ascii_uppercase();
         RESERVED.contains(&stem.as_str())
             || seg.ends_with('.')
@@ -185,26 +202,78 @@ pub fn windows_unsafe(path: &str) -> bool {
     })
 }
 
+/// A path for a report line: as stored, or C-quoted the way git quotes it when it has a
+/// control character or bytes that are not UTF-8.
+fn display_path(path: &[u8]) -> String {
+    let needs_quoting = |b: &u8| *b < 0x20 || *b == 0x7f;
+    if let Ok(text) = std::str::from_utf8(path)
+        && !path.iter().any(needs_quoting)
+    {
+        return text.to_string();
+    }
+    let mut out = String::from("\"");
+    for chunk in path.utf8_chunks() {
+        for c in chunk.valid().chars() {
+            match c {
+                '"' => out.push_str("\\\""),
+                '\\' => out.push_str("\\\\"),
+                '\u{7}' => out.push_str("\\a"),
+                '\u{8}' => out.push_str("\\b"),
+                '\t' => out.push_str("\\t"),
+                '\n' => out.push_str("\\n"),
+                '\u{b}' => out.push_str("\\v"),
+                '\u{c}' => out.push_str("\\f"),
+                '\r' => out.push_str("\\r"),
+                c if c.is_ascii_control() => out.push_str(&format!("\\{:03o}", u32::from(c))),
+                c => out.push(c),
+            }
+        }
+        for b in chunk.invalid() {
+            out.push_str(&format!("\\{b:03o}"));
+        }
+    }
+    out.push('"');
+    out
+}
+
 fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
-    let staged = git::run(&["-c", "core.quotePath=false", "ls-files", "-s"])?;
-    let mut by_lower: BTreeMap<String, Vec<&str>> = BTreeMap::new();
+    let staged = git::run_raw(&["ls-files", "-s", "-v", "-z"])?;
+    let unmerged: BTreeSet<&[u8]> = staged
+        .split(|&b| b == 0)
+        .filter_map(|record| {
+            let tab = record.iter().position(|&b| b == b'\t')?;
+            let stage = record[..tab].split(|&b| b == b' ').nth(3)?;
+            (stage != b"0").then_some(&record[tab + 1..])
+        })
+        .collect();
+    let mut by_lower: BTreeMap<Vec<u8>, Vec<&[u8]>> = BTreeMap::new();
     let mut not_exec = Vec::new();
     let mut unsafe_names = Vec::new();
     let mut previous = None;
-    for line in staged.lines() {
-        let Some((meta, path)) = line.split_once('\t') else { continue };
+    for record in staged.split(|&b| b == 0) {
+        let Some(tab) = record.iter().position(|&b| b == b'\t') else { continue };
+        let (meta, path) = (&record[..tab], &record[tab + 1..]);
+        let mut fields = meta.split(|&b| b == b' ');
+        let tag = fields.next().unwrap_or_default();
+        let mode = fields.next().unwrap_or_default();
+        let object = fields.next().unwrap_or_default();
         if previous.replace(path) == Some(path) {
             continue;
         }
-        by_lower.entry(path.to_lowercase()).or_default().push(path);
+        let key = std::str::from_utf8(path).map_or_else(|_| path.to_ascii_lowercase(), |p| p.to_lowercase().into_bytes());
+        by_lower.entry(key).or_default().push(path);
         if windows_unsafe(path) {
-            unsafe_names.push(path);
+            unsafe_names.push(display_path(path));
         }
-        if meta.starts_with("100644") && (path.ends_with(".sh") || path.starts_with(".githooks/")) {
-            not_exec.push(path.to_string());
+        if mode == b"100644" && !unmerged.contains(path) && (path.ends_with(b".sh") || path.starts_with(b".githooks/")) {
+            not_exec.push(ChmodPath { path: path.to_vec(), object: object.to_vec(), skip_worktree: tag == b"S" });
         }
     }
-    let collisions: Vec<String> = by_lower.values().filter(|v| v.len() > 1).map(|v| v.join(" = ")).collect();
+    let collisions: Vec<String> = by_lower
+        .values()
+        .filter(|v| v.len() > 1)
+        .map(|v| v.iter().map(|p| display_path(p)).collect::<Vec<_>>().join(" = "))
+        .collect();
     let mut index_ok = true;
     if !collisions.is_empty() {
         index_ok = false;
@@ -216,7 +285,8 @@ fn index_checks(out: &mut Vec<Check>) -> Result<(), String> {
     }
     if !not_exec.is_empty() {
         index_ok = false;
-        out.push(check(Level::Warn, "exec-bit", format!("scripts not executable in git: {}", not_exec.join(" ")), Some(Fix::Chmod(not_exec))));
+        let names: Vec<String> = not_exec.iter().map(|p| display_path(&p.path)).collect();
+        out.push(check(Level::Warn, "exec-bit", format!("scripts not executable in git: {}", names.join(" ")), Some(Fix::Chmod(not_exec))));
     }
     if index_ok {
         out.push(check(Level::Ok, "index", "", None));
@@ -245,11 +315,54 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
             std::fs::write(&path, text).map_err(|e| format!("cannot write .gitignore: {e}"))
         }
         Fix::Chmod(paths) => {
-            let mut args = vec!["update-index", "--chmod=+x", "--"];
-            args.extend(paths.iter().map(String::as_str));
-            git::run(&args).map(drop)
+            let mut input = Vec::new();
+            let mut skipped = Vec::new();
+            for entry in paths {
+                input.extend_from_slice(b"100755 ");
+                input.extend_from_slice(&entry.object);
+                input.push(b'\t');
+                input.extend_from_slice(&entry.path);
+                input.push(0);
+                if entry.skip_worktree {
+                    skipped.extend_from_slice(&entry.path);
+                    skipped.push(0);
+                }
+            }
+            git::run_with_stdin_bytes(&["update-index", "-z", "--index-info"], &input)?;
+            if !skipped.is_empty() {
+                git::run_with_stdin_bytes(&["update-index", "-z", "--skip-worktree", "--stdin"], &skipped)?;
+            }
+            make_executable_on_disk(root, paths)
         }
     }
+}
+
+/// Gives each fixed script that is a regular file in the working tree an execute bit
+/// wherever it has a read bit, so the file matches its new `100755` index entry.
+#[cfg(unix)]
+fn make_executable_on_disk(root: &Path, paths: &[ChmodPath]) -> Result<(), String> {
+    use std::os::unix::ffi::OsStrExt;
+    use std::os::unix::fs::PermissionsExt;
+    for entry in paths {
+        let file = root.join(std::ffi::OsStr::from_bytes(&entry.path));
+        let Ok(meta) = std::fs::symlink_metadata(&file) else { continue };
+        if !meta.file_type().is_file() {
+            continue;
+        }
+        let mode = meta.permissions().mode();
+        let wanted = mode | ((mode & 0o444) >> 2);
+        if wanted != mode {
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(wanted))
+                .map_err(|e| format!("cannot make {} executable: {e}", display_path(&entry.path)))?;
+        }
+    }
+    Ok(())
+}
+
+/// Windows has no executable bit: git keeps the mode in the index only.
+#[cfg(not(unix))]
+fn make_executable_on_disk(_root: &Path, _paths: &[ChmodPath]) -> Result<(), String> {
+    Ok(())
 }
 
 #[cfg(test)]
@@ -259,10 +372,20 @@ mod tests {
     #[test]
     fn windows_reserved_names() {
         for bad in ["con", "docs/aux.txt", "COM1.log", "a/b./c", "x:y", "trailing "] {
-            assert!(windows_unsafe(bad), "{bad}");
+            assert!(windows_unsafe(bad.as_bytes()), "{bad}");
         }
         for good in ["console.rs", "auxiliary/x", "src/nul_check.rs", "a.b.c"] {
-            assert!(!windows_unsafe(good), "{good}");
+            assert!(!windows_unsafe(good.as_bytes()), "{good}");
+        }
+    }
+
+    #[test]
+    fn text_auto_rule_ignores_whitespace_and_attribute_order() {
+        for good in ["* text=auto", "*\ttext=auto", "*   text=auto eol=lf", "* eol=lf text=auto", "  * text=auto", "* text=auto\r", "# notes\n*\t\ttext=auto\n"] {
+            assert!(has_text_auto_rule(good), "{good:?}");
+        }
+        for bad in ["", "* text=autofoo", "# * text=auto", "*.txt text=auto", "* text", "* -text", "*text=auto"] {
+            assert!(!has_text_auto_rule(bad), "{bad:?}");
         }
     }
 }

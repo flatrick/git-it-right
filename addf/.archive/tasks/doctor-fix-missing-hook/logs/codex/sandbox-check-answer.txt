@@ -1,0 +1,4 @@
+   Compiling git-conventional v1.1.0
+   Compiling gir v0.0.3 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/codex-q14)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.71s
+BUILD_EXIT=0

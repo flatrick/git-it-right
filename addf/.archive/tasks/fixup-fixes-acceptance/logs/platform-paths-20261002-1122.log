@@ -1,0 +1,17 @@
+## 1 normalise() with a Windows temp dir (gettempdir patched to C:\Users\me\AppData\Local\Temp)
+'in C:\\Users\\me\\AppData\\Local\\Temp\\tmpab12\\x.lua:3 here' -> 'in <tmp>:3 here'
+'in C:/Users/me/AppData/Local/Temp/tmpab12/x.lua:3 here' -> 'in <tmp>:3 here'
+'sha 5b8d074c83 kept' -> 'sha <sha> kept'
+
+## 2 Python's temp dir follows TMPDIR
+/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp
+
+## 3 review scripts, default temp dir, run twice: identical?
+run 1 and run 2 identical
+
+## 4 review scripts with TMPDIR=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: identical to the default-temp-dir run?
+identical
+
+## 5 acceptance.py with TMPDIR=/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: repositories created there
+48 PASS, 5 FAIL
+gir-accept-* directories in /tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right--worktrees-fixup-modes/d3046155-b186-460a-8ec7-eed3de9bc83b/scratchpad/alt-temp: 14

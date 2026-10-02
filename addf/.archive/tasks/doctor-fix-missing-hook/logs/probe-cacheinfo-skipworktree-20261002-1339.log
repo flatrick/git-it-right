@@ -1,0 +1,3 @@
+before: S 100644 1a2485251c33a70432394c93fb89330ef214bfc9 0	.githooks/h
+after --cacheinfo: H 100755 1a2485251c33a70432394c93fb89330ef214bfc9 0	.githooks/h | status: 'MD .githooks/h\n'
+after --skip-worktree: exit 0  | S 100755 1a2485251c33a70432394c93fb89330ef214bfc9 0	.githooks/h | status: 'M  .githooks/h\n'

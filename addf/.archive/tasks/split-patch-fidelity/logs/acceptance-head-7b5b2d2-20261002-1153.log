@@ -1,0 +1,40 @@
+gir at 7b5b2d2, git version 2.56.0
+
+## c1 CRLF line endings (* -text)
+  $ gir fixup --split -> exit 2: 'gir: error: patch failed: f.txt:1\nerror: f.txt: patch does not apply; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c2 Latin-1 content
+  $ gir fixup --split -> exit 2: 'gir: error: patch failed: f.txt:1\nerror: f.txt: patch does not apply; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c3a trailing whitespace, last staged line ending in spaces
+  $ gir fixup --split -> exit 2: 'gir: the split commits do not add up to the staged changes; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c3b last staged line ending in spaces, no newline at end of file
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for ce9cc053e7 feat: first\ngir: created fixup! for eb5f20e78b feat: second\n  fold: git rebase --autosquash 9927c39ac3'
+  PASS gir fixup --split succeeds
+  PASS HEAD's tree equals the staged tree
+  PASS rebase --autosquash succeeds
+  PASS history is feat: first, feat: second
+  PASS HEAD~1 holds exactly the expected bytes
+  PASS HEAD holds exactly the expected bytes
+
+## c4 apply.whitespace=error with trailing whitespace
+  $ gir fixup --split -> exit 2: 'gir: <stdin>:7: trailing whitespace.\nONE  \nerror: 1 line adds whitespace errors.; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c4 apply.whitespace=fix with trailing whitespace
+  $ gir fixup --split -> exit 2: 'gir: the split commits do not add up to the staged changes; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c4 a textconv driver for the file
+  $ gir fixup --split -> exit 2: 'gir: error: patch failed: f.txt:1\nerror: f.txt: patch does not apply; restored HEAD and the index'
+  FAIL gir fixup --split succeeds
+
+## c7 non-UTF-8 file name (Unix only)
+  $ gir fixup --split -> exit 2: 'gir: cannot tell which commit caf�.txt:1 belongs to; pass one: gir fixup <commit>'
+  FAIL gir fixup --split succeeds
+
+6 PASS, 7 FAIL

@@ -1,4 +1,5 @@
-use gir::cmd::{doctor, fixup, hook, init, lint};
+use gir::cmd::fixup::{self, Mode};
+use gir::cmd::{doctor, hook, init, lint};
 use gir::config::Config;
 use gir::explain;
 use lexopt::prelude::*;
@@ -10,7 +11,10 @@ usage:
   gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
   gir lint [<file>|-] [--fix] [--json]
   gir lint --range <A..B> [--json]
-  gir fixup [<commit>] [--dry-run] create fixup! for the commit the staged lines belong to
+  gir fixup [<commit>] [--dry-run] [--split]  fixup! for the commit the staged lines belong to
+  gir amend [<commit>] [--dry-run] [--split]  amend!: like fixup, and replace its message
+  gir squash [<commit>] [--dry-run] [--split] squash!: like fixup, and combine the messages
+  gir reword [<commit>] [--dry-run]           amend! that replaces only the message
   gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
   gir explain [<topic>]           rule details; `gir explain` lists topics
   gir hook commit-msg <file>      (called by .githooks)
@@ -58,7 +62,8 @@ fn run() -> Result<i32, String> {
     let allowed: &[&str] = match sub.as_str() {
         "init" => &["force", "optional"],
         "lint" => &["fix", "json"],
-        "fixup" => &["dry-run"],
+        "fixup" | "amend" | "squash" => &["dry-run", "split"],
+        "reword" => &["dry-run"],
         "doctor" => &["fix"],
         _ => &[],
     };
@@ -73,8 +78,16 @@ fn run() -> Result<i32, String> {
     match (sub.as_str(), positional.as_slice()) {
         ("init", []) => init::init(flag("force"), flag("optional")),
         ("doctor", []) => doctor::doctor(flag("fix")),
-        ("fixup", []) => fixup::fixup(None, flag("dry-run")),
-        ("fixup", [target]) => fixup::fixup(Some(target.clone()), flag("dry-run")),
+        ("fixup" | "amend" | "reword" | "squash", [] | [_]) => {
+            let mode = match sub.as_str() {
+                "amend" => Mode::Amend,
+                "reword" => Mode::Reword,
+                "squash" => Mode::Squash,
+                _ => Mode::Fixup,
+            };
+            let opts = fixup::Options { dry_run: flag("dry-run"), split: flag("split") };
+            fixup::run(mode, positional.first().cloned(), opts)
+        }
         ("explain", []) => {
             gir::outln!("topics: {}", explain::topics().join(" "));
             Ok(0)

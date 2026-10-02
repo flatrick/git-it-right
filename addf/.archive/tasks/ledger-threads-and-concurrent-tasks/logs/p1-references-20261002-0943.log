@@ -1,0 +1,129 @@
+addf/INDEX.md:20:- [ledger-threads-and-concurrent-tasks](tasks/ledger-threads-and-concurrent-tasks/TASK.md) -
+addf/INDEX.md:21:  ledger threads and several active Tasks. State: `UNDERSTAND`.
+addf/INDEX.md:23:## Ledger
+addf/INDEX.md:25:`NONE`. `LEDGER.md` holds no entries.
+addf/INDEX.md:29:- [Work control](skills/work-control.md) — start or resume a Task, or
+addf/INDEX.md:86:    Ledger entries; Stewardship owns terminal removal, promotion, and
+addf/INDEX.md:92:-   The same applies to `SPEC.md`, `spec/`, and `LEDGER.md`. They are instance
+addf/REFERENCES.md:21:one Task bundle.
+addf/REFERENCES.md:53:the current Task, a resolver may accept the matching path under `tasks/`; after
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:1:# TASK — `ledger threads and several active Tasks`
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:3:## Resume
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:11:**Resume at:** Settle `p1-single-task-assumption`: read every current addf file that mentions the Ledger, the active Task, or `INDEX.md`'s Task list, and record the result under Understand.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:17:-   `ledger.md` - the root Ledger's ten fixup findings, moved here unchanged, and the questions that shaped this Task with the operator's answers.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:33:<a id="c1-ledger-threads"></a>
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:34:#### `c1-ledger-threads`
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:36:-   Claim: Pre-Task exploration lives in append-only thread files under `ledger/`; the root `LEDGER.md` no longer exists, and no current addf file outside `.archive/` still refers to it.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:54:-   Claim: Work control allows at most 3 active Tasks; when more than one is active, resuming asks the operator which one; Tasks that overlap in spec modules or files declare the overlap and their order in Constraints; and the Isolate question is asked once per Task.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:63:-   Claim: `scripts/check-capsule` validates the new layout (thread files under `ledger/`, no root `LEDGER.md`) and its test suite passes.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:66:-   Consequence if false: the checker rejects the new layout or silently stops checking ledger content.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:72:-   Claim: The ten fixup findings in this Task's `ledger.md` exist unchanged in `ledger/fixup-review-20261002.md` as open entries.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:89:-   Work in worktree `.worktrees/fixup-modes` on branch `feat/fixup-modes` (operator's answer in `ledger.md`).
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:90:-   Out of scope: changing the lifecycle States, and rewriting archived Tasks' `ledger.md` files.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:98:-   Claim: Besides `skills/work-control.md`'s "Maintain one Task as the resumable execution cursor", no current addf file assumes a single active Task.
+addf/tasks/ledger-threads-and-concurrent-tasks/TASK.md:106:`ESTABLISHED`: on 2026-10-02 the operator explicitly agreed that the objective, scope and success criteria are right, as written here (`ledger.md`).
+addf/RECOMMENDATIONS.md:107:prose in the Task's own index of the folder (see below) than encoded into
+addf/RECOMMENDATIONS.md:110:**Integration steps:** replace the Task's inline Claim records with a short
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:1:# Ledger — ledger-threads-and-concurrent-tasks
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:5:## Moved from the root `LEDGER.md`
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:7:The root `LEDGER.md` held these entries when the Task started; they are moved here unchanged, as Work control's handoff requires.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:68:- Q: Which two findings should become Tasks, and how should the root Ledger hand off ten findings to two Tasks?
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:69:  A: OPEN for the findings. The operator judged that the root Ledger is a poor home for data about one Task, and that two Tasks at once is a case addf keeps running into, so addf needs an amendment first.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:70:- Q: What is wrong with the root Ledger?
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:72:- Q: Could the two fixes be one Task under the current rules instead?
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:75:  A: Ledger threads: `ledger/<thread>.md`, one append-only file per exploration. A Task copies the entries it takes, and the thread records which Task took each.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:79:  A: All four offered: ask which Task when resuming with more than one active; Tasks that overlap in spec modules or files declare it and their order; the Isolate question is asked per Task; and a cap on active Tasks.
+addf/tasks/ledger-threads-and-concurrent-tasks/ledger.md:85:  A: No new one: worktree `.worktrees/fixup-modes`, branch `feat/fixup-modes`. The earlier ledger commit `e3e3c3b` was made before this question was asked, which the Isolate rule did not allow.
+addf/CORE.md:22:answer it raises to the pre-Task Ledger (`LEDGER.md`, at the framework
+addf/CORE.md:23:root). See Work control's Ledger section for the append-only contract and
+addf/CORE.md:39:- [Work control](skills/work-control.md) — starting or resuming a Task (read
+addf/CORE.md:43:  Task-worthy threshold above, maintaining the pre-Task Ledger, or deciding
+addf/LEDGER.md:1:# Ledger
+addf/LEDGER.md:5:entry; append new ones at the end. See `skills/work-control.md`'s Ledger
+addf/skills/work-control.md:3:description: Use when meaningful repository work starts or resumes, or when its lifecycle state, scope, strategy, or budget changes.
+addf/skills/work-control.md:8:Maintain one Task as the resumable execution cursor and gate lifecycle
+addf/skills/work-control.md:24:crossed — including a Ledger entry or creating a Task — ask the operator
+addf/skills/work-control.md:44:development before any other change. If the root `LEDGER.md` already holds
+addf/skills/work-control.md:47:uncommitted pre-Task exploration stays behind in the old one and the Ledger
+addf/skills/work-control.md:51:Ledger, or in the Task's Constraints once one exists — whichever is current
+addf/skills/work-control.md:54:## Ledger
+addf/skills/work-control.md:59:is Task-worthy, or while shaping what a Task would even be, to `LEDGER.md` at
+addf/skills/work-control.md:66:Before raising a new question, check the current Ledger; do not duplicate one
+addf/skills/work-control.md:69:When a Task is created (Start or resume, below), move the Ledger's
+addf/skills/work-control.md:71:example `ledger.md`), and fold anything still material into Material
+addf/skills/work-control.md:73:the root `LEDGER.md` to its empty state from `templates/LEDGER.md`, so the
+addf/skills/work-control.md:91:face value. Use the Ledger (above) to hold this dialogue's questions and
+addf/skills/work-control.md:97:`PENDING` in the Task's Specification impact section. The current specification
+addf/skills/work-control.md:98:contains completed truth; the active Task carries the proposal.
+addf/skills/work-control.md:118:example when resuming an existing Task whose DEFINE already gated
+addf/skills/work-control.md:121:## Start or resume
+addf/skills/work-control.md:125:without it, resuming depends on the agent guessing to look under `tasks/`.
+addf/skills/work-control.md:129:path to `DEFINE`. Set Resume at to one concrete action, question, or artifact
+addf/skills/work-control.md:133:phrase, and current State — in the same pass. If a pre-Task Ledger exists,
+addf/skills/work-control.md:134:perform its handoff (above) in the same pass, and update the index's Ledger
+addf/skills/work-control.md:137:When resuming:
+addf/skills/work-control.md:139:1. Read only Resume first. State must equal the final State path entry.
+addf/skills/work-control.md:148:A terminal Task does not resume the same traversal. Start a new Task and
+addf/skills/work-control.md:155:Refresh Resume at after each checkpoint and before interruption or handoff.
+addf/skills/work-control.md:177:append it to State path, replace Resume at, reconcile obligations, and bring
+addf/skills/work-control.md:178:the Task's `INDEX.md` entry to the new State. Close settled obligations, split
+addf/skills/work-control.md:218:active cursor only for the handoff to Stewardship. Stewardship selects the Stop
+addf/skills/work-control.md:230:another change to current truth. Work control owns the active cursor;
+addf/skills/work-control.md:238:- Resume at is concrete, or `NONE` only in a terminal State.
+addf/skills/work-control.md:242:- No pre-Task Ledger content was silently discarded: it is either still
+addf/skills/work-control.md:244:  an isolated workspace was created, the Ledger came with it.
+addf/ADOPT.md:85:The same applies to `LEDGER.md`: it holds this repository's own in-progress
+addf/ADOPT.md:87:`LEDGER.md` fresh from `templates/LEDGER.md`, empty, regardless of what the
+addf/ADOPT.md:88:source repository's `LEDGER.md` currently holds.
+addf/ADOPT.md:175:  `LEDGER.md` are created as destination instance data.
+addf/skills/stewardship.md:38:status of every success Claim and any deferred obligation the Task still
+addf/skills/stewardship.md:45:references the archived one; it never resumes the same bundle.
+addf/skills/stewardship.md:48:the Task's verified specification delta and replace Terminal publication with
+addf/skills/stewardship.md:51:State to the selected outcome, append it to State path, set Resume at to `NONE`,
+addf/skills/stewardship.md:131:the Task's outcome. Do not archive a bundle that silently depends on a
+addf/skills/stewardship.md:149:Load [Work control](work-control.md) to resume execution after a Stewardship
+addf/skills/stewardship.md:162:  outcome, Resume at is `NONE`, and no unresolved obligation is hidden.
+addf/skills/evidence-and-verification.md:75:the Task's `## Verify` heading. Both forms name the Claim, method, Evidence
+addf/templates/SELF-IMPROVEMENT.md:17:LEDGER.md entries, knowledge/) — see `rules/self-improvement-log.md`'s
+addf/rules/self-improvement-log.md:22:mechanics, independent of any one Task's lifecycle.
+addf/rules/self-improvement-log.md:30:`LEDGER.md` entries, or `knowledge/` — which is already tracked through the
+addf/rules/self-improvement-log.md:31:Task lifecycle and Ledger.
+addf/templates/TASK-RECORD.md:3:## Resume
+addf/templates/TASK-RECORD.md:11:**Resume at:** <specific next action, question, or artifact reference;
+addf/templates/TASK-RECORD.md:188:Resume at, obligations, this record, and the current-artifact index agree in
+addf/templates/INDEX.md:23:## Ledger
+addf/templates/INDEX.md:25:`NONE`. `<or a note that LEDGER.md currently holds unresolved entries>`
+addf/templates/INDEX.md:70:    Ledger entries; Stewardship owns terminal removal, promotion, and
+addf/templates/INDEX.md:76:-   The same applies to `SPEC.md`, `spec/`, and `LEDGER.md`. They are instance
+addf/templates/LEDGER.md:1:# Ledger
+addf/templates/LEDGER.md:5:entry; append new ones at the end. See `skills/work-control.md`'s Ledger
+addf/scripts/check-capsule:213:        resume = doc.section("Resume")
+addf/scripts/check-capsule:214:        cursor = tuple(v for v in doc.fields if resume is None or resume.start < v.line < resume.end)
+addf/scripts/check-capsule:381:        strict = parts == ("INDEX.md",) or parts == ("LEDGER.md",) or parts == ("SPEC.md",)
+addf/scripts/check-capsule:482:        for name in ("State", "State path", "Resume at"):
+addf/scripts/check-capsule:484:                failures.append(fail(1, "TASK_CURSOR", f"Resume block has no {name} field"))
+addf/scripts/check-capsule:487:        resume = literal(task.value("Resume at").text)
+addf/scripts/check-capsule:494:        if state in TERMINAL and resume != "NONE":
+addf/scripts/check-capsule:495:            failures.append(fail(task.value("Resume at").line, "TASK_CURSOR", f"terminal State `{state}` must have Resume at `NONE`"))
+addf/scripts/check-capsule:496:        if state in ACTIVE and (not resume or resume == "NONE"):
+addf/scripts/check-capsule:497:            failures.append(fail(task.value("Resume at").line, "TASK_CURSOR", f"active State `{state}` needs a concrete Resume at"))
+addf/scripts/check-capsule:500:        if doc.section("Resume") is None:
+addf/scripts/check-capsule:501:            failures.append(fail(1, "TASK_CURSOR", "Task requires a Resume section"))
+addf/scripts/check-capsule:505:        for name in ("State", "State path", "Resume at", "Contract version", "Open obligations"):
+addf/scripts/check-capsule:507:                failures.append(fail(values[name].line, "TASK_CURSOR", f"duplicate Resume field: {name}"))
+addf/scripts/tests/test_check_capsule.py:13:## Resume
+addf/scripts/tests/test_check_capsule.py:17:**Resume at:** Run the checker.
+addf/scripts/tests/test_check_capsule.py:142:        for relative in ("knowledge/claim.md", "LEDGER.md"):
+addf/scripts/tests/test_check_capsule.py:170:        self.write("LEDGER.md", "`<question>`\n")
+addf/scripts/tests/test_check_capsule.py:173:        self.finding("addf/LEDGER.md:1: PLACEHOLDER: unfilled placeholder `<question>`")
+addf/scripts/tests/test_check_capsule.py:299:        legacy = "# Task\n**State:** `COMPLETED`\n**State path:** `DEFINE -> COMPLETED`\n**Resume at:** `NONE`\n<unfilled>\n[broken](missing.md)\n{=html}\n"
+addf/scripts/tests/test_check_capsule.py:303:        self.task(legacy.replace("**Resume at:** `NONE`", "**Resume at:** Continue."), archived=True)
+addf/scripts/tests/test_check_capsule.py:304:        self.finding("addf/.archive/tasks/example/TASK.md:4: TASK_CURSOR: terminal State `COMPLETED` must have Resume at `NONE`")
+addf/scripts/tests/test_check_capsule.py:372:    def test_duplicate_resume_fields_are_not_overwritten(self):
+addf/scripts/tests/test_check_capsule.py:374:        self.finding("addf/tasks/example/TASK.md:5: TASK_CURSOR: duplicate Resume field: State")
+addf/scripts/tests/test_check_capsule.py:389:    def test_v2_requires_resume_section_and_impact_value_contract(self):
+addf/scripts/tests/test_check_capsule.py:390:        self.task(TASK.replace("## Resume\n", ""))
+addf/scripts/tests/test_check_capsule.py:391:        self.finding("addf/tasks/example/TASK.md:1: TASK_CURSOR: Task requires a Resume section")
+addf/scripts/tests/test_check_capsule.py:401:    def test_cursor_malformed_paths_and_missing_resume(self):
+addf/scripts/tests/test_check_capsule.py:406:        self.task(TASK.replace("**Resume at:** Run the checker.", "**Resume at:** `NONE`"))
+addf/scripts/tests/test_check_capsule.py:407:        self.finding("addf/tasks/example/TASK.md:6: TASK_CURSOR: active State `IMPLEMENT` needs a concrete Resume at")

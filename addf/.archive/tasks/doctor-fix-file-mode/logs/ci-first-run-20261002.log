@@ -1,0 +1,21 @@
+GitHub Actions run: https://github.com/flatrick/git-it-right/actions/runs/37015437824
+Event: pull_request
+Head: b8175a8721d6bcab3228e25fccbbad421d04cd10
+
+test (windows-latest): success
+test (ubuntu-latest): success
+test (macos-latest): failure
+capsule (windows-latest): success
+capsule (ubuntu-latest): success
+
+macOS test job 110865036597:
+Run cargo clippy --all-targets -- -D warnings: success
+Run cargo test: failure
+test doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name ... FAILED
+tests/doctor.rs:519:45: called Result::unwrap() on an Err value:
+Os { code: 92, kind: Uncategorized, message: "Illegal byte sequence" }
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+
+The failure is in commit_files_named while writing a non-UTF-8 path to the
+working tree, before gir doctor runs. Another macOS test that inserts
+non-UTF-8 names directly into Git's index passed.

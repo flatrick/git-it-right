@@ -188,9 +188,9 @@ Pick the row that matches what should happen to the earlier commit:
 | You want to | Commit with | After `git rebase --autosquash` |
 |---|---|---|
 | add forgotten changes, keep its message | `gir fixup` or `git commit --fixup=<commit>` | changes folded in, the `fixup!` message disappears |
-| add changes and write a new message | `git commit --fixup=amend:<commit>` | changes folded in, your `amend!` message replaces the old one |
-| only change its message | `git commit --fixup=reword:<commit>` | message replaced, content untouched |
-| add changes and merge both messages | `git commit --squash=<commit>` | changes folded in, git asks you to edit the combined message |
+| add changes and write a new message | `gir amend` or `git commit --fixup=amend:<commit>` | changes folded in, your `amend!` message replaces the old one |
+| only change its message | `gir reword <commit>` or `git commit --fixup=reword:<commit>` | message replaced, content untouched |
+| add changes and merge both messages | `gir squash` or `git commit --squash=<commit>` | changes folded in, git asks you to edit the combined message |
 
 Then fold everything in:
 
@@ -198,9 +198,13 @@ Then fold everything in:
 git rebase --autosquash main
 ```
 
-- `gir fixup` finds the target itself by looking at which commit last changed the staged lines.
+- `gir fixup`, `gir amend` and `gir squash` find the target themselves by looking at which commit last changed the staged lines.
   When gir finds the target itself, it refuses lines that belong to several commits, come from the base branch (`origin/HEAD`, `main`, `master` or the upstream), or are in a new file.
-  `gir fixup <commit>` accepts a target on the current branch after the base.
-- Stage one target at a time (`git add -p`) when a change touches several earlier commits.
+  Each accepts a target on the current branch after the base: `gir amend <commit>`.
+  `gir reword` has no staged lines to trace, so it needs a commit and ignores anything staged.
+- When the staged lines belong to several earlier commits, `--split` creates one commit per target, each with only its own lines.
+  Or stage one target at a time with `git add -p`.
+- In a terminal, gir asks instead of refusing: type a listed number, `s` to split, or press Enter to cancel.
+  GUI clients, CI and scripts have no terminal and get the refusal; `GIR_INTERACTIVE=0` or `1` overrides the check.
 - The `pre-push` hook rejects `fixup!`, `amend!` and `squash!` commits, so they cannot reach the remote by accident.
 - `rebase.autoSquash = true` (set by `gir doctor --fix`) applies the same folding to every `git rebase -i`.

@@ -1,0 +1,105 @@
+old build: d246ab2, git version 2.56.0
+
+## a2.1 delete '-- header', edit a later line; gir fixup; rebase --autosquash
+  $ gir fixup -> exit 2: 'gir: cannot tell which commit header:5 belongs to; pass one: gir fixup <commit>'
+  FAIL gir fixup succeeds
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: Your index contains uncommitted changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  PASS history is feat: lua then feat: other
+  FAIL feat: lua holds the edited file ('-- header\nlocal a = 1\nlocal b = 2\nlocal c = 3\nlocal d = 4\n')
+
+## a2.2 delete '-- /dev/null' (commit A), edit a line of commit B; gir fixup without --split
+  $ gir fixup -> exit 0: 'gir: created fixup! for 7fecb13e81 feat: A\n  fold: git rebase --autosquash f6bd25bdeb'
+  FAIL gir refuses: the changes belong to two commits (gir: created fixup! for 7fecb13e81 feat: A
+  fold: git rebase --autosquash f6bd25bdeb)
+  FAIL no commit was created
+
+## a2.3 the same case with --split; rebase --autosquash
+  $ gir fixup --split -> exit 2: 'gir: nothing staged; `git add` the fix first (more: gir explain fixup)'
+  FAIL gir fixup --split succeeds
+  $ git rebase -i --autosquash main -> exit 1: 'Auto-merging x.lua\nCONFLICT (content): Merge conflict in x.lua\nerror: could not apply 7d1103d... fixup! feat: A\nhint: Resolve all conflicts manually, mark them as resolved with\nhint: "git add/rm <conflicted_files>", then run "git rebase --continue".\nhint: You can instead skip this commit: run "git rebase --skip".\nhint: To abort and get back to the state before "git rebase", run "git rebase --abort".\nhint: Disable this message with "git config set advice.mergeConflict false"\nYou can amend the commit now, with\n\n  git commit --amend \n\nOnce you are satisfied with your changes, run\n\n  git rebase --continue'
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: A then feat: B (['feat: A'])
+  FAIL feat: A lost only its '-- /dev/null' line (None)
+  FAIL feat: B holds the edit ('-- /dev/null\nl1\nl2\nl3\nl4\n')
+
+## a3.1 sparse checkout: split, rebase, then git add -A and git commit -a
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 1f5ffbc67c feat: b\ngir: created fixup! for c80b5b08b1 feat: a\n  fold: git rebase --autosquash f6bd25bdeb'
+  PASS gir fixup --split succeeds
+  FAIL status is clean after the split (' D out/c.txt\n')
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  PASS out/c.txt is still in HEAD
+  FAIL out/c.txt is still skip-worktree (H out/c.txt)
+  FAIL history is feat: a, feat: b, feat: c (['fixup! feat: a', 'fixup! feat: b', 'feat: c', 'feat: b', 'feat: a'])
+
+## a3.2 skip-worktree file with a private edit: split, rebase, then git add -A and git commit -a
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 3e106f8ff4 feat: a\ngir: created fixup! for a634c5db1a feat: b\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS gir fixup --split succeeds
+  FAIL status is clean after the split (' M cfg.txt\n')
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  FAIL the private edit is not committed ('private local edit\n')
+  PASS the private edit is still on disk
+  FAIL cfg.txt is still skip-worktree (H cfg.txt)
+
+## a3.3 intent-to-add file: split, then git add -A and git commit
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 678c06aace feat: b\ngir: created fixup! for af7ad7d46b feat: a\n  fold: git rebase --autosquash 5afa239f98'
+  PASS gir fixup --split succeeds
+  FAIL ita.txt is still intent-to-add ('?? ita.txt\n')
+  PASS ita.txt is not in HEAD
+  note: git rebase refuses while an intent-to-add entry exists (unstaged change), on any build; the rebase is not part of this case
+
+## a4.1 linked worktree with a skip-worktree file
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 3e106f8ff4 feat: a\ngir: created fixup! for a634c5db1a feat: b\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS gir fixup --split succeeds in the linked worktree
+  FAIL status and flags kept (apart from the committed files) ((' M cfg.txt\n', 'H a.txt\nH b.txt\nH base.txt\nH cfg.txt\n'))
+  PASS no temporary index left in either git directory
+  PASS main worktree's index untouched (topic still clean)
+
+## a4.2 sparse checkout, cone mode, sparse index
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 60c245f490 feat: a\ngir: created fixup! for 71ccc44f51 feat: b\n  fold: git rebase --autosquash 5afa239f98'
+  PASS gir fixup --split succeeds
+  FAIL status is clean after the split (' D out/c.txt\n')
+  FAIL the index is still sparse with the same entries ('base.txt\nin/a.txt\nin/b.txt\nout/c.txt\n')
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  PASS out/c.txt is still in HEAD
+
+## a4.3 gir run from a subdirectory, skip-worktree file at the top
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 08f1b5abe5 feat: b\ngir: created fixup! for 8a6bb8ed89 feat: a\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS gir fixup --split succeeds from sub/
+  FAIL status clean and flags kept ((' M cfg.txt\n', 'H base.txt\nH cfg.txt\nH sub/a.txt\nH sub/b.txt\n'))
+
+## a4.4 gir amend --split with a skip-worktree file
+  $ gir amend --split -> exit 0: 'gir: created amend! for 3e106f8ff4 feat: a\ngir: created amend! for a634c5db1a feat: b\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS gir amend --split succeeds
+  PASS two amend! commits
+  FAIL status clean and flags kept ((' M cfg.txt\n', 'H a.txt\nH b.txt\nH base.txt\nH cfg.txt\n'))
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: a, feat: b (['amend! feat: b', 'amend! feat: a', 'feat: b', 'feat: a'])
+
+## a4.5 gir squash --split with a skip-worktree file
+  $ gir squash --split -> exit 0: 'gir: created squash! for 3e106f8ff4 feat: a\ngir: created squash! for a634c5db1a feat: b\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS gir squash --split succeeds
+  PASS two squash! commits
+  FAIL status clean and flags kept ((' M cfg.txt\n', 'H a.txt\nH b.txt\nH base.txt\nH cfg.txt\n'))
+  $ git rebase -i --autosquash main -> exit 1: 'error: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.'
+  FAIL rebase --autosquash succeeds
+  FAIL history is feat: a, feat: b (['squash! feat: b', 'squash! feat: a', 'feat: b', 'feat: a'])
+
+## a4.6 the interactive picker's s, with a skip-worktree file
+  $ gir fixup -> exit 0: 'gir: staged changes belong to several commits:\n  1) 3e106f8ff4 feat: a  <- a.txt:1\n  2) a634c5db1a feat: b  <- b.txt:1\n  s) split: one fixup! per commit\npick [1-2, s, q]: gir: created fixup! for 3e106f8ff4 feat: a\ngir: created fixup! for a634c5db1a feat: b\n  fold: git rebase --autosquash 90e883cd6e'
+  PASS the picker's s splits
+  FAIL status clean and flags kept ((' M cfg.txt\n', 'H a.txt\nH b.txt\nH base.txt\nH cfg.txt\n'))
+
+## a4.7 no temporary index left after a successful and a failed split
+  $ gir fixup --split -> exit 0: 'gir: created fixup! for 678c06aace feat: b\ngir: created fixup! for af7ad7d46b feat: a\n  fold: git rebase --autosquash 5afa239f98'
+  PASS successful split
+  PASS no gir-split-index-* file after success
+  $ gir fixup --split -> exit 2: 'gir: git commit --quiet --fixup=678c06aacee3d83f1fbb44e9a4e29a0aa8933d90 failed; restored HEAD and the index'
+  PASS hook-refused split fails and restores
+  PASS no gir-split-index-* file after failure
+
+22 PASS, 31 FAIL
