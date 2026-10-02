@@ -147,7 +147,11 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 - Set fork PR contributor approval to `all_external_contributors`. A separate readback showed that value; Actions remained disabled.
 - Committed `.github/workflows/ci.yml` at `19b3cf6`: explicit read-only token permissions, checkout without persisted credentials, per-ref run cancellation, and 30-minute test and 10-minute capsule job limits.
 - PyYAML parsed the workflow, and a focused check found the expected permissions, cancellation, job limits, and checkout settings. `actionlint` is not installed; the hosted run will check GitHub's workflow interpretation.
-- The branch still needs to be pushed before the hosted verification and enable step.
+- Pushed `feat/fixup-modes` at `e2dfdfc` before enabling Actions, so GitHub has the revised workflow for PR #5.
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: branch protection and approval policy are live, the revised workflow is committed and pushed, and all can be evaluated while Actions remains disabled.
 
 ## Verify
 
