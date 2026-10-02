@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Get the operator's review of the four Implement deviations and the `fixup` narrowing of c3; then gate VERIFY.
+**Resume at:** Write Learn and Retention and promotion; then the terminal checkpoint with the specification delta.
 
-**Open obligations:** Operator review of the Implement deviations and the c3 narrowing (blocks `VERIFY`).
+**Open obligations:** Publish the specification delta (blocks `COMPLETED`).
 
 ## Owned artifacts
 
@@ -293,6 +293,10 @@ Checkpoints:
 - Evidence considered: all test binaries pass (`logs/test-full-20261002-1936.log` on Linux; hook median 6 ms against 750 ms, `logs/test-perf-20261002-1936.log`); clippy is clean (`logs/clippy-20261002-1935.log`); CI passes `test` on Ubuntu, macOS and Windows and `capsule` on Ubuntu and Windows. The previous run, at `b67d564`, passed `test` on all three and failed `capsule` on an index entry the checker could not read (`logs/ci-capsule-failed-37039199722-20261002.log`), fixed in `4f5cf6a` (`logs/capsule-20261002-2010.log`).
 - Conclusion: `VERIFIED`.
 - Limitations: tests run on Linux locally and on the three CI platforms; GUI clients were not exercised.
+
+### VERIFY gate
+
+`ESTABLISHED`: c1 to c6 are `VERIFIED` through the Verifications above, and the operator accepted the Implement deviations and the c3 narrowing (`ledger.md` A18).
 
 ## Learn
 
