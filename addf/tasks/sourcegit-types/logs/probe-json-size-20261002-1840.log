@@ -1,0 +1,15 @@
+## plain: cargo build exit=0
+plain v0.0.0 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right/6eac1a45-4d30-4b9a-a95b-baa6a3be0931/scratchpad/json-size/plain)
+
+plain size: 318600 bytes
+## withjson: cargo build exit=0
+withjson v0.0.0 (/tmp/claude-1000/-home-flatrick-src-github-flatrick-git-it-right/6eac1a45-4d30-4b9a-a95b-baa6a3be0931/scratchpad/json-size/withjson)
+serde_json v1.0.151
+itoa v1.0.18
+memchr v2.8.3
+serde_core v1.0.229
+zmij v1.0.23
+
+withjson size: 356824 bytes
+delta: 38224 bytes
+trailing comma error: trailing comma at line 2 column 19 line 2 column 19

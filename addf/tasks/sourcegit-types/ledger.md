@@ -44,3 +44,8 @@ See `skills/work-control.md`'s Ledger section for the full contract, including h
 - A14: Nonempty, only ASCII letters, digits and `-`.
 - Q15: Do the Objective and Success criteria in `TASK.md` describe the desired outcome?
 - A15: Yes, the operator agreed and DEFINE may close.
+- Q16: Which JSON parser does gir use?
+- A16: `serde_json`, parsed to `serde_json::Value` and validated by hand, without `serde_derive`.
+  Measured before asking: four transitive crates and about 38 KB on a release build, with line and column in syntax errors.
+- Q17: What does a relative `gir.typesFile` set with `git -c` resolve against?
+- A17: The repository root, as a `.girconfig` value does.

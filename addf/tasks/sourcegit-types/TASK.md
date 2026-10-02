@@ -18,6 +18,9 @@
 -   `probe_origin.py` - Probe: what `git config --show-origin` reports for `gir.typesFile` set globally, through an include, locally, with `-c`, empty, and from a subdirectory and a linked worktree.
 -   `logs/probe-origin-20261002-1825.log` - Evidence: `probe_origin.py`, first version.
 -   `logs/probe-origin-20261002-1830.log` - Evidence: `probe_origin.py` with the subdirectory and worktree cases.
+-   `logs/probe-origin-20261002-1850.log` - Evidence: `probe_origin.py` with the `--type=path` cases.
+-   `probe_json_size.py` - Probe: release-binary size and dependencies `serde_json` adds to a minimal crate.
+-   `logs/probe-json-size-20261002-1840.log` - Evidence: `probe_json_size.py` output.
 
 ## Specification impact
 
@@ -54,7 +57,7 @@ A repository, or a user for all their repositories, can point gir at the JSON fi
 <a id="c3-invalid-refuses"></a>
 #### `c3-invalid-refuses`
 
--   Claim: A configured types file that is missing, unreadable, not valid JSON, not an array, has an entry missing `Type`, `Name` or `Description` or with a non-string value for one, an empty or malformed `Type`, or a duplicate `Type`, makes `gir lint`, `gir hook`, `gir fixup` and `gir init` exit `2` before doing anything, with a message naming the file's path, where the setting came from, and the reason (with line and column for a JSON syntax error); `gir explain` instead falls back to the defaults and `gir doctor` prints the error as a `warn` line.
+-   Claim: A configured types file that is missing, unreadable, not valid JSON, not an array, has an entry missing `Type`, `Name` or `Description` or with a non-string value for one, an empty or malformed `Type`, or a duplicate `Type`, makes `gir lint`, `gir hook` and `gir init` exit `2` before doing anything, with a message naming the file's path, where the setting came from, and the reason (with line and column for a JSON syntax error); `gir explain` instead falls back to the defaults and `gir doctor` prints the error as a `warn` line.
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: gir acts on a types list the user did not intend, or the user cannot find what to fix.
@@ -142,8 +145,8 @@ SourceGit keeps the file's path in its own per-repository settings (`Conventiona
 
 ### Open questions
 
--   Which JSON parser: a dependency (`serde_json`) or hand-written. Settle in `DECIDE`.
--   What a relative value set with `git -c` resolves against, since it has no file. Settle in `DECIDE`.
+-   Which JSON parser: a dependency (`serde_json`) or hand-written. Resolved in Investigate.
+-   What a relative value set with `git -c` resolves against, since it has no file. Resolved in Investigate.
 
 ### Deferred verification
 
@@ -155,7 +158,16 @@ SourceGit keeps the file's path in its own per-repository settings (`Conventiona
 
 ## Investigate
 
-`NONE` yet.
+-   JSON parser: resolved. `serde_json` adds `itoa`, `memchr`, `serde_core` and `zmij`, and 38,224 bytes to a stripped LTO release build of a minimal crate; its errors carry line and column (`logs/probe-json-size-20261002-1840.log`). The operator chose it, without `serde_derive` (ledger A16).
+-   `git -c` values: resolved. A relative one resolves against the repository root (ledger A17).
+-   `--type=path`: resolved. It expands `~/` for values from git config and from `git config --file`, and returns an empty value as empty (`logs/probe-origin-20261002-1850.log`).
+-   `gir fixup` does not load `Config` today (`src/main.rs`, `src/cmd/fixup.rs`), so an invalid configuration never stopped it. `c3-invalid-refuses` listed it by mistake; it is narrowed to `lint`, `hook` and `init`, matching where `.girconfig` errors already refuse.
+-   Aliases: `fix_header` in `src/cc/mod.rs` applies an alias whatever its target, then reports the target as not allowed. Ledger A10 requires the alias to stop applying instead.
+-   Hook latency: one more `git config` call per hook run; `tests/perf.rs` budgets 750 ms median, so the extra spawn is checked there, not assumed.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: every open question has a disposition above; nothing decision-relevant remains unprobed.
 
 ## Decide
 

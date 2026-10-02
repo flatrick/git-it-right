@@ -74,6 +74,13 @@ def main():
         git("worktree", "add", "-q", str(wt), cwd=repo, env=env)
         git(*get, cwd=wt, env=env)
         git("rev-parse", "--git-common-dir", cwd=wt, env=env)
+        print("## --type=path on an empty value and on --file")
+        git("config", "--local", "gir.typesFile", "", cwd=repo, env=env)
+        git("config", "--show-origin", "-z", "--type=path", "--get", "gir.typesFile", cwd=repo, env=env)
+        (repo / ".girconfig").write_text("[gir]\n\ttypesFile = ~/t.json\n")
+        git("config", "--file", str(repo / ".girconfig"), "-z", "--type=path", "--get", "gir.typesFile", cwd=repo, env=env)
+        (repo / ".girconfig").write_text("[gir]\n\ttypesFile =\n")
+        git("config", "--file", str(repo / ".girconfig"), "-z", "--type=path", "--get", "gir.typesFile", cwd=repo, env=env)
     return 0
 
 
