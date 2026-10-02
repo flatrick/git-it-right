@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Replace the macOS-invalid working-tree fixture in `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name` with `add_index_entries`, then run the focused and full local checks.
+**Resume at:** Push the fixture correction to PR #5 and inspect the hosted macOS, Windows, and Ubuntu jobs.
 
 **Open obligations:** Correct the macOS non-UTF-8 test fixture and obtain a green hosted run (blocks `VERIFY`); `c5-spec` is published in the terminal checkpoint.
 
