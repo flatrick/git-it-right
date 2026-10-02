@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record Learn, Retention and promotion and Archive readiness, then complete.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`
 
@@ -26,7 +26,7 @@
 
 - Current contract: `framework:spec/fixup.md#req-fixup-staged-line-target`, `framework:spec/fixup.md#req-fixup-split`
 - Proposed delta: `NONE`. The requirements already apply to every staged line; this Task makes the implementation meet them for these file names.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -236,8 +236,9 @@ References to source files, commits and `spec/fixup.md` are supplemental.
 
 ### Summary
 
-`PENDING`
+`gir fixup` and `gir fixup --split` now trace files whose names contain a space, a double quote, a backslash or a tab (`4f0fd88`): header paths are decoded, and the staged-file cross-check reads `--name-status -z`.
+No specification change: the existing requirements already applied to every staged line.
 
 ### Gate basis
 
-`PENDING`
+All four success Claims are `VERIFIED` through the Verifications above, on Linux with git 2.56.0. No Claim is carried forward.
