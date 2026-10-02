@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record material learning, promotion and archive disposition, then complete this Task and return to the doctor Task's macOS failure.
+**Resume at:** `NONE`
 
-**Open obligations:** Complete LEARN and the terminal checkpoint. The macOS doctor test failure belongs to `doctor-fix-file-mode`.
+**Open obligations:** `NONE`; the macOS doctor test failure belongs to `doctor-fix-file-mode`.
 
 ## Owned artifacts
 
@@ -20,7 +20,7 @@
 
 - Current contract: `framework:SPEC.md`; the product specification has no repository administration or CI contract.
 - Proposed delta: `NONE`; this Task changes repository settings and the CI workflow, not `gir` behavior.
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE`
 
 ## Define
 
@@ -228,7 +228,13 @@ The bundle contains its DEFINE dialogue, decision, setting values, workflow blob
 
 ## Terminal record
 
-Pending.
+### Summary
+
+`main` rejects force pushes and deletion, including for admins; GitHub requires approval for all external fork PR workflow runs. The bounded `ci` workflow is enabled and ran on PR #5. Its Windows and Ubuntu jobs passed. Its macOS test failure is assigned to the existing doctor Task.
+
+### Gate basis
+
+All four success Claims are `VERIFIED` through their Verification entries. The live settings were read back after enabling Actions, and the hosted PR run confirms the workflow executes. No specification delta or unresolved success-critical obligation remains.
 
 ## Stop record
 
