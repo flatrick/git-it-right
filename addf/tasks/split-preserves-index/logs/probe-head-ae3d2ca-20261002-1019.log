@@ -1,0 +1,58 @@
+gir at ae3d2ca, git version 2.56.0
+## sparse checkout, success: gir fixup --split exit 0
+gir: created fixup! for c9768e0442 feat: b
+gir: created fixup! for dd7c3244e4 feat: a
+  fold: git rebase --autosquash b160be1ea9
+before status: ['M  a', 'M  b']
+after status:  [' D out/c']
+before flags:  ['H a', 'H b', 'H base.txt', 'S out/c']
+after flags:   ['H a', 'H b', 'H base.txt', 'H out/c']
+HEAD moved: True; verdict: CHANGED
+
+## sparse checkout, failure: gir fixup --split exit 2
+probe: hook refuses feat: b
+gir: git commit --quiet --fixup=c9768e04428a4794cffaa570bc6ed73a981db261 failed; restored HEAD and the index
+before status: ['M  a', 'M  b']
+after status:  ['M  a', 'M  b', ' D out/c']
+before flags:  ['H a', 'H b', 'H base.txt', 'S out/c']
+after flags:   ['H a', 'H b', 'H base.txt', 'H out/c']
+HEAD moved: False; verdict: CHANGED
+
+## skip-worktree with a local edit, success: gir fixup --split exit 0
+gir: created fixup! for c9768e0442 feat: b
+gir: created fixup! for dd7c3244e4 feat: a
+  fold: git rebase --autosquash b160be1ea9
+before status: ['M  a', 'M  b']
+after status:  [' M cfg']
+before flags:  ['H a', 'H b', 'H base.txt', 'S cfg']
+after flags:   ['H a', 'H b', 'H base.txt', 'H cfg']
+HEAD moved: True; verdict: CHANGED
+
+## skip-worktree with a local edit, failure: gir fixup --split exit 2
+probe: hook refuses feat: b
+gir: git commit --quiet --fixup=c9768e04428a4794cffaa570bc6ed73a981db261 failed; restored HEAD and the index
+before status: ['M  a', 'M  b']
+after status:  ['M  a', 'M  b', ' M cfg']
+before flags:  ['H a', 'H b', 'H base.txt', 'S cfg']
+after flags:   ['H a', 'H b', 'H base.txt', 'H cfg']
+HEAD moved: False; verdict: CHANGED
+
+## git add -N, success: gir fixup --split exit 0
+gir: created fixup! for c9768e0442 feat: b
+gir: created fixup! for dd7c3244e4 feat: a
+  fold: git rebase --autosquash b160be1ea9
+before status: ['M  a', 'M  b', ' A ita']
+after status:  ['?? ita']
+before flags:  ['H a', 'H b', 'H base.txt', 'H ita']
+after flags:   ['H a', 'H b', 'H base.txt']
+HEAD moved: True; verdict: CHANGED
+
+## git add -N, failure: gir fixup --split exit 2
+probe: hook refuses feat: b
+gir: git commit --quiet --fixup=c9768e04428a4794cffaa570bc6ed73a981db261 failed; restored HEAD and the index
+before status: ['M  a', 'M  b', ' A ita']
+after status:  ['M  a', 'M  b', '?? ita']
+before flags:  ['H a', 'H b', 'H base.txt', 'H ita']
+after flags:   ['H a', 'H b', 'H base.txt']
+HEAD moved: False; verdict: CHANGED
+

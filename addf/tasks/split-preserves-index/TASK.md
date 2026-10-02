@@ -15,6 +15,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `probe_split_index.py` - Probe: a sparse checkout, a `skip-worktree` file with a local edit, and a `git add -N` file, each through a successful `--split` and one a `commit-msg` hook makes fail.
+-   `logs/probe-head-ae3d2ca-20261002-1019.log` - Evidence: the probe at `ae3d2ca`, before any change.
 
 ## Specification impact
 
@@ -69,10 +71,10 @@
 #### `p1-split-drops-flags`
 
 -   Claim: At this Task's starting revision, after a successful `gir fixup --split` in a sparse checkout, `git status` shows the files outside the sparse set as deleted.
--   State: `UNVERIFIED`
--   Scope: Linux, this branch at the Task's first commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, `ae3d2ca`.
 -   Consequence if false: the review's reproduction does not hold here, and the defect needs re-establishing.
--   Basis: pending check.
+-   Basis: [Verification](#verification-p1-split-drops-flags).
 
 ### DEFINE gate
 
@@ -82,19 +84,26 @@
 
 ### Relevant context
 
-`PENDING`
+-   `split` in `src/cmd/fixup/split.rs` records `orig` (`HEAD`) and `goal` (`git write-tree` of the staged index), then `commit_each` runs, per target, `git read-tree <orig>`, `git apply --cached --unidiff-zero` of that target's and earlier targets' hunks, and `commit` (`git commit --fixup=...` through `git::passthrough`, inheriting stdio and environment). On failure it runs `git reset --soft <orig>` and `git read-tree <goal>`.
+-   Every `read-tree` rebuilds the real index from a tree, which drops `skip-worktree` bits, intent-to-add entries and cached stat data for every path, not only the ones the split commits.
+-   The probe at `ae3d2ca` shows all six cases changed: a sparse file shows ` D`, a `skip-worktree` file with a local edit shows ` M`, an intent-to-add file becomes `??`, and `git ls-files -v` loses the `S` flags, after a success and after a restored failure alike.
+-   `git::run`, `run_with_stdin` and `passthrough` in `src/git.rs` take no environment, so a temporary index needs a way to pass `GIT_INDEX_FILE`.
 
 ### Assumptions
 
--   `NONE` yet.
+-   `write-tree` leaves intent-to-add entries out of `goal`; source: git's documented behavior, consistent with the probe (the split commits do not contain `ita`); not separately verified.
 
 ### Open questions
 
--   `NONE` yet.
+-   Do `git read-tree`, `git apply --cached` and `git commit` with `GIT_INDEX_FILE` set to a temporary file leave the real index byte-for-byte unchanged, also in a sparse checkout and when a `commit-msg` hook runs? Settled in `INVESTIGATE`.
 
 ### Deferred verification
 
--   `NONE` yet.
+-   `NONE`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the defect reproduces at `HEAD`, the cause is the `read-tree` of the real index, and the one uncertainty that decides the design is named above.
 
 ## Investigate
 
@@ -110,7 +119,14 @@
 
 ## Verify
 
-`PENDING`
+<a id="verification-p1-split-drops-flags"></a>
+### Verification: `p1-split-drops-flags`
+
+- Claim: [p1-split-drops-flags](#p1-split-drops-flags)
+- Method: built `target/debug/gir` at `ae3d2ca` and ran `probe_split_index.py`.
+- Evidence considered: `logs/probe-head-ae3d2ca-20261002-1019.log`, "sparse checkout, success": status after the split is ` D out/c`, and `git ls-files -v` changes `S out/c` to `H out/c`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
 
 ## Learn
 
