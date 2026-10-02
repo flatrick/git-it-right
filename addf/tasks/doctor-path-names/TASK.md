@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Ask the operator the two open questions under Understand, then record the design under Decide.
+**Resume at:** Write the integration tests in `tests/doctor.rs`, see them fail, then read names as bytes in `doctor.rs`.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
