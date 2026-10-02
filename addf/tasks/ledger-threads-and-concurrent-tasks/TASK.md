@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Ask the operator whether to narrow `c1-ledger-threads` to "no current addf file tells anyone to read or write the root `LEDGER.md`"; the evidence is in `logs/c1-references-20261002-1000.log`.
+**Resume at:** Transition to `LEARN`; every success criterion is `VERIFIED`.
 
-**Open obligations:** `c1-ledger-threads` is `UNVERIFIED` as worded and blocks leaving `VERIFY`; the operator decides whether to narrow it.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -39,11 +39,11 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 <a id="c1-ledger-threads"></a>
 #### `c1-ledger-threads`
 
--   Claim: Pre-Task exploration lives in append-only thread files under `ledger/`; the root `LEDGER.md` no longer exists, and no current addf file outside `.archive/` still refers to it.
--   State: `UNVERIFIED`
+-   Claim: Pre-Task exploration lives in append-only thread files under `ledger/`; the root `LEDGER.md` no longer exists, and no current addf file outside `.archive/` tells anyone to read or write it. Mentions that name it as retired, or that are history, are allowed (narrowed by the operator in `VERIFY`; `ledger.md`).
+-   State: `VERIFIED`
 -   Scope: the framework root on this branch.
 -   Consequence if false: two places hold exploration, and an agent following a stale reference writes to the old one.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-ledger-threads).
 
 <a id="c2-thread-handoff"></a>
 #### `c2-thread-handoff`
@@ -190,6 +190,15 @@ Residual uncertainty: none known. Verification strategy: each success criterion 
 - Evidence considered: the search output (129 lines, kept locally in `.scratch/understand-refs-20261002-0943.log`, not committed); the four `skills/work-control.md` passages listed under Relevant context; `check_index` in `scripts/check-capsule` iterating over every active Task.
 - Conclusion: `VERIFIED`: apart from `skills/work-control.md`, no current file assumes one active Task; within it, the opening line is the rule, and the other three passages are wording or the Isolate scope.
 - Limitations: a keyword search can miss a paraphrase. `skills/work-control.md` was read in full; `skills/stewardship.md` and `skills/evidence-and-verification.md` only around their hits.
+
+<a id="verification-c1-ledger-threads"></a>
+### Verification: `c1-ledger-threads`
+
+- Claim: [c1-ledger-threads](#c1-ledger-threads)
+- Method: checked that the root `LEDGER.md` is absent and `ledger/` holds a thread; listed every current mention of `LEDGER.md` outside `.archive/` and read each in context.
+- Evidence considered: `logs/c1-references-20261002-1000.log`. The mentions are this Task's own records (history), `scripts/check-capsule` and its test (which refuse the file), `ADOPT.md` (moving an old root Ledger into a thread), and the new `SELF-IMPROVEMENT/` entry (history). None tells a reader to read or write the file.
+- Conclusion: `VERIFIED` for the narrowed Claim. The original wording, that no current file refers to the file at all, was false; the operator narrowed it after seeing that.
+- Limitations: none beyond the search's; every mention was read.
 
 <a id="verification-c2-thread-handoff"></a>
 ### Verification: `c2-thread-handoff`

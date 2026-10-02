@@ -95,3 +95,5 @@ For each one, whether to fix it on this branch is still OPEN.
   A: The order of spec publication: the earlier Task publishes and finishes first, and the later one re-reads the current spec before its own `VERIFY`. Work may run in parallel.
 - Q: Where are the ten fixup findings now?
   A: In the thread `ledger/fixup-review-20261002.md`, copied unchanged with their introducing paragraph (`c5-findings-thread`).
+- Q: `c1-ledger-threads` says no current addf file refers to the root `LEDGER.md`, but 24 mentions remain, none telling anyone to use it. How should it be settled?
+  A: Narrow it to: no current addf file tells anyone to read or write the root `LEDGER.md`; mentions naming it as retired, or that are history, are allowed.
