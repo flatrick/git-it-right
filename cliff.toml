@@ -22,6 +22,8 @@ commit_parsers = [
   { message = "^(fixup|squash|amend)!", skip = true },
   # This repository's own edit: addf commits are process records, not product changes.
   { message = "^[a-z]+\\(addf\\)", skip = true },
+  # A merge commit titled after its pull request, "subject (#N)", repeats the commits it merges.
+  { message = "^[^\\n]* \\(#[0-9]+\\)(\\n|$)", skip = true },
   { message = "^feat(\\(|!|:)", group = "Features" },
   { message = "^fix(\\(|!|:)", group = "Bug Fixes" },
   { message = "^docs(\\(|!|:)", group = "Documentation" },
