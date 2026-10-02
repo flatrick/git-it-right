@@ -215,19 +215,37 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c4-spec` with it
 
 ### Technical
 
-`PENDING`
+-   Text output from `git ls-files` hides the real names: with `core.quotePath` unset non-ASCII names are quoted, and with it set names with special characters still are. Checks that judge names need `-z`. Some checks gave the right verdict only because of the quoting, so reading real names also needed the rule they had relied on by accident (control characters).
+-   `git update-index -z --index-info` adds index entries with any byte names and no files, which keeps tests for names Windows cannot hold portable, as long as nothing needs the working tree.
 
 ### Process
 
-`PENDING`
+No material process learning; probing every suspicion before designing changed the plan in two places (the `--fix` abort, and control characters becoming a spec question).
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learnings are enforced by the integration tests; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-suspicions-settled`, `c2-real-names`, `c3-tests`, `c4-spec`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is specified in `spec/doctor.md` and guarded by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-suspicions-from-reading`
+
+-   Claim: [p1-suspicions-from-reading](#p1-suspicions-from-reading)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it is about how this Task started.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`; the Windows assumptions are deferred to the operator's Windows testing.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, its probe and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/doctor.md` are supplemental.
 
 ## Terminal record
 
