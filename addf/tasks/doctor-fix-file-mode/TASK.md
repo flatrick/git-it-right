@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Reproduce `c1-reproduced` and `p1-git-ignores-non-executable-hook` on the current build, checking each part rather than assuming it.
+**Resume at:** Record whether any decision-relevant uncertainty needs a probe before DECIDE.
 
 **Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
 
