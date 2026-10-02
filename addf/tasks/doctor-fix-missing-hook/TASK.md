@@ -230,19 +230,38 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`, `c4-spec` with it
 
 ### Technical
 
-`PENDING`
+-   `git update-index --chmod=+x` reads the working-tree file: it fails for a missing file and stages whatever the file holds, including unstaged edits and conflict markers. Writing the existing object with the new mode (`--index-info`) changes only the mode, but clears `skip-worktree`, which then has to be restored, and it collapses conflict stages, so unmerged paths must be left alone.
+-   Thread entry Q14 inferred a sparse-checkout case that did not reproduce; running the probe before designing caught it.
 
 ### Process
 
-`PENDING`
+-   Delegating the implementation to Codex worked as a worker under supervision: a required design, a throwaway clone, a sandbox check first, and a full review and re-verification here. Review of the delivered diff, not Codex's report, found the design's unmerged-path gap. Codex's report also cited the doc-tests `0 passed` line as its test result, which would have been misleading as evidence.
+-   No framework change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learnings are enforced by the integration tests; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-reproduced`, `c2-fixed`, `c3-tests`, `c4-spec`, `c5-verified-here`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is specified in `spec/doctor.md` and guarded by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-cacheinfo-works`
+
+-   Claim: [p1-cacheinfo-works](#p1-cacheinfo-works)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the design used `--index-info` instead, and the observation is recorded under Learn.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, `acceptance.py`, Codex's prompts, diffs and answers under `logs/codex/`, and every log it cites under `logs/`; internal links are relative.
+Codex's raw event streams in `.scratch/codex-q14/` are supplemental and not required to reconstruct the outcome.
 
 ## Terminal record
 
