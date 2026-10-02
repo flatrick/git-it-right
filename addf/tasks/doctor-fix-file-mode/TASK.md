@@ -202,6 +202,12 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 
 `ESTABLISHED`: the focused test-fixture change is committed as `3e69631`, and the Windows rerun can distinguish a remaining Git insertion failure from a doctor report failure.
 
+### IMPLEMENT gate after macOS fixture reassessment
+
+`58bea3b` replaces the non-UTF-8 working-tree filename in `doctor_fix_sets_exec_bit_on_a_non_utf8_hook_name` with an index-only entry. The test still checks that `gir doctor --fix` changes its index mode to `100755`. The focused test, `cargo test --no-fail-fast`, and `cargo clippy --all-targets -- -D warnings` pass on Linux. The capsule checker, including the archive, passes after correcting the archived safeguard Task's terminal obligation marker at `8fbddcd`.
+
+`ESTABLISHED`: the intended fixture correction exists and passes local checks. Hosted macOS CI is needed to verify it on the failing system.
+
 ## Verify
 
 <a id="verification-p1-git-ignores-non-executable-hook"></a>
