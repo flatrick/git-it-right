@@ -79,10 +79,10 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 #### `public-unprotected`
 
 - Claim: `flatrick/git-it-right` is public, Actions is disabled, and `main` currently has no branch protection.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: GitHub settings observed on 2026-10-02.
 - Consequence if false: the safeguard plan may target the wrong state.
-- Basis: Preliminary API inspection; formal verification belongs in `UNDERSTAND`.
+- Basis: [Verification](#verification-public-unprotected).
 
 ### DEFINE gate
 
@@ -90,7 +90,31 @@ Protect `main` against force pushes and deletion, prevent unapproved external PR
 
 ## Understand
 
-Pending DEFINE gate.
+### Relevant context
+
+- GitHub reports a public repository with `main` as the default branch. `main` is unprotected and there are no repository rulesets.
+- Repository Actions are disabled, and workflow `ci` is also `disabled_manually`. The default workflow token permission is `read`; there are no self-hosted runners.
+- Fork PR approval is currently `first_time_contributors`. The operator chose `all_external_contributors`.
+- `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests. Its jobs use standard GitHub-hosted Ubuntu, Windows, and macOS runners. It uploads no artifacts or caches, but has no explicit token permissions, job time limits, or concurrency cancellation.
+- The workflow uses `pull_request`, not `pull_request_target`. It checks out and tests PR code. Approval is therefore the main control against an external contributor repeatedly starting unreviewed runs.
+- GitHub documents that standard hosted runner use in public repositories is free. Larger runners and storage have different billing rules, so the workflow should remain on standard runners and avoid artifact storage.
+
+### Assumptions
+
+- GitHub's `all_external_contributors` policy prevents unapproved external fork PR workflow runs, as documented; the live policy must be read back after setting it.
+
+### Open questions
+
+- Whether the current credentials can set branch protection and the fork PR approval policy.
+- Whether the existing `ci` workflow can be enabled after repository Actions are enabled, and then observed running on this branch.
+
+### Deferred verification
+
+- An unapproved fork PR will not be created merely to exercise the approval gate. Verify the live policy via GitHub's API and its documented meaning; a future real fork PR can confirm the user interface.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: live settings, the workflow trigger path, and the controls available for the requested outcome are identified. Credential support and the enable sequence are narrow uncertainties for `INVESTIGATE`.
 
 ## Investigate
 
@@ -106,7 +130,14 @@ Pending.
 
 ## Verify
 
-Pending.
+<a id="verification-public-unprotected"></a>
+### Verification: `public-unprotected`
+
+- Claim: [public-unprotected](#public-unprotected).
+- Method: Read the repository, Actions, branch, rulesets, and workflow settings through GitHub's API on 2026-10-02.
+- Evidence considered: `gh api repos/flatrick/git-it-right` returned `private:false`, `visibility:public`, `default_branch:main`; the Actions permissions endpoint returned `enabled:false`; the `main` endpoint returned `protected:false`; the rulesets endpoint returned `[]`; the workflow endpoint returned `state:disabled_manually`.
+- Conclusion: `VERIFIED` for the observed state.
+- Limitations: GitHub settings can change after observation; final settings require fresh readback.
 
 ## Learn
 
