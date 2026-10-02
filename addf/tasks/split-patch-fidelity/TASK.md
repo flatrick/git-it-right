@@ -10,7 +10,7 @@
 
 **Resume at:** Verify each success Claim against the committed logs.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`; `p1-split-loses-bytes` blocks `UNDERSTAND`.
+**Open obligations:** The Windows branch of `os_path` is unverified until the operator's Windows testing (Deferred verification); it does not block completion, since no success Claim covers Windows.
 
 ## Owned artifacts
 
@@ -41,64 +41,64 @@
 #### `c1-crlf`
 
 -   Claim: A file with CRLF line endings (`* -text`) splits into the right commits, and the folded commits keep its CRLF bytes.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: Windows-style files cannot be split.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c1-crlf).
 
 <a id="c2-non-utf8-content"></a>
 #### `c2-non-utf8-content`
 
 -   Claim: A file whose content is not UTF-8 (Latin-1) splits into the right commits with its bytes unchanged.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: files in legacy encodings cannot be split, or are corrupted.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-non-utf8-content).
 
 <a id="c3-whitespace"></a>
 #### `c3-whitespace`
 
 -   Claim: A staged last line ending in spaces, and lines with trailing whitespace, split into the right commits with their bytes unchanged.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the split refuses or changes whitespace.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-whitespace).
 
 <a id="c4-settings"></a>
 #### `c4-settings`
 
 -   Claim: With `apply.whitespace=error`, with `apply.whitespace=fix`, and with a `textconv` driver configured for the file, `--split` succeeds and commits the staged bytes unchanged.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: a user setting blocks or silently alters the split.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-settings).
 
 <a id="c5-end-to-end"></a>
 #### `c5-end-to-end`
 
 -   Claim: For `c1-crlf` to `c4-settings` and `c7-non-utf8-name`, `--split` followed by `git rebase --autosquash` leaves exactly the staged bytes in the right commits, and the build at this Task's start fails those checks.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the fix looks right but the folded history differs from what was staged.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c5-end-to-end).
 
 <a id="c6-regression-tests"></a>
 #### `c6-regression-tests`
 
 -   Claim: Integration tests cover `c1-crlf` to `c4-settings` and `c7-non-utf8-name` and fail on the code at this Task's start; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c6-regression-tests).
 
 <a id="c7-non-utf8-name"></a>
 #### `c7-non-utf8-name`
 
 -   Claim: A file whose name is not valid UTF-8 is traced by `gir fixup` and split by `gir fixup --split` into the right commits.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Unix only, since Windows file names cannot hold such bytes; Linux, git 2.56.0, this branch.
 -   Consequence if false: such files cannot be fixed up or split.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c7-non-utf8-name).
 
 ### Constraints
 
@@ -187,6 +187,71 @@ No further probe is needed: `acceptance.py` already reproduces every case, and t
 - Evidence considered: `logs/acceptance-head-7b5b2d2-20261002-1153.log`: CRLF and Latin-1 fail with `patch does not apply`, a last line ending in spaces with `do not add up`, `apply.whitespace=error` with `1 line adds whitespace errors`.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-c1-crlf"></a>
+### Verification: `c1-crlf`
+
+- Claim: [c1-crlf](#c1-crlf)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: `acceptance.py` case c1 passes on the fixed build (`logs/acceptance-fixed-20261002-1156.log`), where it failed with `patch does not apply` at the start (`logs/acceptance-head-7b5b2d2-20261002-1153.log`); `split_keeps_crlf_line_endings` passes (`logs/test-final-20261002-1156.log`) and failed on the unfixed source (`logs/tests-on-start-a6ae550-20261002-1156.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c2-non-utf8-content"></a>
+### Verification: `c2-non-utf8-content`
+
+- Claim: [c2-non-utf8-content](#c2-non-utf8-content)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: `acceptance.py` case c2 passes (logs/acceptance-fixed-20261002-1156.log; before: `patch does not apply`); `split_keeps_non_utf8_content` passes (`logs/test-final-20261002-1156.log`) and failed before (`logs/tests-on-start-a6ae550-20261002-1156.log`); review script `edge3.py` case 21 now splits (`logs/regression-sweep-20261002-1157.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c3-whitespace"></a>
+### Verification: `c3-whitespace`
+
+- Claim: [c3-whitespace](#c3-whitespace)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: `acceptance.py` cases c3a and c3b pass (logs/acceptance-fixed-20261002-1156.log; c3a failed before with `do not add up`); `split_keeps_trailing_whitespace` passes (`logs/test-final-20261002-1156.log`) and failed before (`logs/tests-on-start-a6ae550-20261002-1156.log`); review script `edge3.py` case 20 now splits (`logs/regression-sweep-20261002-1157.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c4-settings"></a>
+### Verification: `c4-settings`
+
+- Claim: [c4-settings](#c4-settings)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: `acceptance.py` cases for `apply.whitespace=error`, `=fix` and the textconv driver pass (logs/acceptance-fixed-20261002-1156.log; all three failed before); `split_ignores_apply_whitespace_and_textconv_settings` passes (`logs/test-final-20261002-1156.log`) and failed before (`logs/tests-on-start-a6ae550-20261002-1156.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c5-end-to-end"></a>
+### Verification: `c5-end-to-end`
+
+- Claim: [c5-end-to-end](#c5-end-to-end)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: Every `acceptance.py` case and every new integration test runs `--split`, then `git rebase -i --autosquash main`, and compares both commits' bytes; all pass on the fixed build (logs/acceptance-fixed-20261002-1156.log: 48 PASS, 0 FAIL; logs/test-final-20261002-1156.log) and fail at the start (logs/acceptance-head-7b5b2d2-20261002-1153.log: 7 of 8 cases fail; logs/tests-on-start-a6ae550-20261002-1156.log).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0.
+
+<a id="verification-c6-regression-tests"></a>
+### Verification: `c6-regression-tests`
+
+- Claim: [c6-regression-tests](#c6-regression-tests)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: The five integration tests fail on the unfixed source (`logs/tests-on-start-a6ae550-20261002-1156.log`) and pass on `0dac9db` (`logs/test-final-20261002-1156.log: 216 passed, 0 failed`); clippy reports no warnings (`logs/clippy-20261002-1156.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only here.
+
+<a id="verification-c7-non-utf8-name"></a>
+### Verification: `c7-non-utf8-name`
+
+- Claim: [c7-non-utf8-name](#c7-non-utf8-name)
+- Method: `acceptance.py` and the integration tests, on the build at `0dac9db` and at the start.
+- Evidence considered: `acceptance.py` case c7 passes (logs/acceptance-fixed-20261002-1156.log; before: `cannot tell which commit caf\ufffd.txt:1 belongs to`); `split_traces_non_utf8_file_names` passes (`logs/test-final-20261002-1156.log`) and failed before (`logs/tests-on-start-a6ae550-20261002-1156.log`); plain `gir fixup --dry-run` selects the commit (`logs/regression-sweep-20261002-1157.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: Unix only by nature; the non-Unix `os_path` branch is exercised only by CI on Windows, not observed here.
+
+VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`. The Windows path conversion stays a deferred verification for the operator's Windows testing.
 
 ## Learn
 
