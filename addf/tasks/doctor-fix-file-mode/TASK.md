@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Write the Verifications for c2..c6 from the logs under logs/.
+**Resume at:** Operator: settle `c3-os-agnostic` (Windows CI after a push, or a narrower Scope); then set the VERIFY gate and continue to LEARN (see Verify, Stopped here).
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
+**Open obligations:** `c3-os-agnostic` needs the Windows CI run its Scope names, which needs a push (blocks `VERIFY`'s gate); `c5-spec` is published in the terminal checkpoint.
 
 ## Owned artifacts
 
@@ -24,6 +24,9 @@
 -   `logs/clippy-20261002-1402.log` - Evidence: `cargo clippy --all-targets -- -D warnings` on that tree.
 -   `logs/acceptance-old-20261002-1403.log` - Evidence: `acceptance.py` on the build of `98feea1`.
 -   `logs/acceptance-fixed-20261002-1403.log` - Evidence: `acceptance.py` on the build of the tree committed as `7ff434a`.
+-   `criteria.py` - Probe: compares this file's Specification impact, Success criteria and premise with an earlier commit, ignoring State and Basis lines.
+-   `logs/inspection-windows-branch-20261002-1404.log` - Evidence: the code change at `7ff434a`, every `cfg(unix)`/`cfg(not(unix))` in the touched files, and the installed Rust targets.
+-   `logs/criteria-unchanged-20261002-1405.log` - Evidence: the Success criteria, Specification impact and premise at `98feea1` against this checkpoint, ignoring State and Basis lines.
 
 ## Specification impact
 
@@ -52,10 +55,10 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 #### `c2-fixed`
 
 -   Claim: After the change, on Unix: each fixed script that exists on disk is executable; `git status` shows no mode change for it; `git add` keeps `100755`; the hook runs. Files missing from the working tree (deleted, or outside a sparse checkout's cone) stay absent; file content and unstaged edits are untouched.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: fixed hooks still do not run, or `git add` undoes the fix.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-fixed).
 
 <a id="c3-os-agnostic"></a>
 #### `c3-os-agnostic`
@@ -64,16 +67,16 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 -   State: `UNVERIFIED`
 -   Scope: this branch; the Windows branch by inspection and CI.
 -   Consequence if false: the change breaks or misbehaves on Windows.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-os-agnostic): both branches exist and the Windows one is a no-op by inspection; the Windows CI part of the Scope needs a push and is not observed.
 
 <a id="c4-tests"></a>
 #### `c4-tests`
 
 -   Claim: Regression tests fail on the code at this Task's start and pass after; `cargo test` and `cargo clippy --all-targets -- -D warnings` pass on the final revision.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, final revision of this branch.
 -   Consequence if false: the fix regresses unnoticed.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-tests).
 
 <a id="c5-spec"></a>
 #### `c5-spec`
@@ -82,16 +85,16 @@ After `gir doctor --fix`, each fixed script is executable on disk as well as in 
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the specification does not describe `--fix`.
--   Basis: pending check.
+-   Basis: the delta is settled in Decide; publication belongs to the terminal checkpoint, which this sub-agent did not reach (see Verify).
 
 <a id="c6-stops-for-decisions"></a>
 #### `c6-stops-for-decisions`
 
 -   Claim: The sub-agent stops and reports instead of deciding anything that changes these criteria or the specification beyond `c5-spec`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this Task.
 -   Consequence if false: a delegated decision is made without the operator.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c6-stops-for-decisions).
 
 ### Constraints
 
@@ -202,6 +205,48 @@ The check now compares the whole porcelain line with `M  <path>`; the rerun on t
 - Evidence considered: `logs/acceptance-start-98feea1-20261002-1359.log` and, with the corrected status check, `logs/acceptance-start-98feea1-20261002-1401.log`, section "plain repository": each of the three fixed scripts is `100755` in the index and `0o644` on disk, `git status --porcelain` shows `MM` for each, `git add` leaves `tools/run.sh` and `.githooks/pre-commit` at `100644`, and the following `git commit` prints the ignored-hook hint for both hooks and writes no marker.
 - Conclusion: `VERIFIED`.
 - Limitations: Linux, git 2.56.0.
+
+<a id="verification-c2-fixed"></a>
+### Verification: `c2-fixed`
+
+- Claim: [c2-fixed](#c2-fixed)
+- Method: `acceptance.py` on the build of `7ff434a` and, in the same minute, on the build of `98feea1`; the new integration tests.
+- Evidence considered: `logs/acceptance-fixed-20261002-1403.log`: 46 PASS, 0 FAIL. In the plain repository each fixed script is `100755` in the index and executable on disk, `git status --porcelain` shows only `M  <path>` (the staged mode change, nothing unstaged), content is unchanged, `README.md` stays `100644` and non-executable, `git add` keeps `100755`, and the next commit runs the fixed `pre-commit` hook with no ignored-hook hint. A deleted hook stays absent; hooks outside a sparse cone stay absent and `skip-worktree`; an unstaged edit stays byte for byte on disk and unstaged, with no mode change in `git diff` and the committed content still staged; a symlink in place of a script is left a symlink and its target stays `0644`. `logs/acceptance-old-20261002-1403.log`: the start build fails 13 of the same 46 checks, all on-disk, status, `git add`, hook or mode-diff checks. `logs/test-final-20261002-1402.log`: the four Unix tests and the cross-platform test for this behavior pass.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux, git 2.56.0, umask `0022`; one user, so a file the user cannot `chmod` was not exercised.
+
+<a id="verification-c3-os-agnostic"></a>
+### Verification: `c3-os-agnostic`
+
+- Claim: [c3-os-agnostic](#c3-os-agnostic)
+- Method: inspection of the change; a search for the installed targets that could compile the Windows branch here.
+- Evidence considered: `logs/inspection-windows-branch-20261002-1404.log`: `make_executable_on_disk` has a `#[cfg(unix)]` body and a `#[cfg(not(unix))]` body that only returns `Ok(())`, so on Windows `--fix` runs the same index update as before and nothing more; the one test that runs on Windows, `doctor_fix_leaves_no_unstaged_change_for_fixed_scripts`, exercises that branch there; every Unix-only test carries a one-line reason. Only `x86_64-unknown-linux-gnu` is installed, so the Windows branch was not compiled here, and CI runs only after a push, which this sub-agent may not do.
+- Conclusion: `UNVERIFIED`. The inspection part of the Scope supports the Claim; the CI part is not observed.
+- Limitations: inferred, not observed: that the Windows branch compiles without warnings under clippy and that the cross-platform test passes on Windows (it relies on git setting `core.filemode=false` there).
+
+<a id="verification-c4-tests"></a>
+### Verification: `c4-tests`
+
+- Claim: [c4-tests](#c4-tests)
+- Method: the new tests against the source at `98feea1`; `cargo test --no-fail-fast` and clippy on the tree committed as `7ff434a`.
+- Evidence considered: `logs/tests-on-start-98feea1-20261002-1402.log`: 40 passed, 4 failed; the failures are the four tests of the new behavior (no unstaged change, executable on disk, hook runs, edited script), and the symlink guard passes there, as planned in Decide. `logs/test-final-20261002-1402.log`: every test binary reports `ok`, 240 passed, 0 failed in total, the 44 in `tests/doctor.rs` among them. `logs/clippy-20261002-1402.log`: no warnings. Later commits in this Task change only `addf/`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux only.
+
+<a id="verification-c6-stops-for-decisions"></a>
+### Verification: `c6-stops-for-decisions`
+
+- Claim: [c6-stops-for-decisions](#c6-stops-for-decisions)
+- Method: comparison of the Success criteria, Specification impact and premise between `98feea1` and this checkpoint, ignoring State and Basis lines; the record of where work stopped.
+- Evidence considered: `logs/criteria-unchanged-20261002-1405.log`: no Claim, Scope or Consequence line changed; the Specification impact is unchanged. The spec wording chosen in Decide only adds the on-disk part to `exec-bit`. When `c3-os-agnostic` turned out to need a push to observe, the sub-agent stopped here instead of re-scoping the Claim or completing without it.
+- Conclusion: `VERIFIED` for the sub-agent's part of this Task, which ends at this checkpoint.
+- Limitations: covers only the work up to this checkpoint.
+
+### Stopped here
+
+The sub-agent stopped in `VERIFY` at this checkpoint: `c3-os-agnostic`'s Scope names Windows CI, which runs only after a push, and pushing is outside its authority.
+`VERIFY`'s gate is `NOT_SATISFIED` until the operator settles `c3-os-agnostic`, for example by pushing and reading the Windows CI result, or by narrowing its Scope.
+After that, LEARN and the terminal checkpoint remain, including publishing the delta under Specification impact as worded in Decide.
 
 ## Learn
 

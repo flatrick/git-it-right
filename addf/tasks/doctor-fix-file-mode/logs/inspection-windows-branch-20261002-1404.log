@@ -1,0 +1,82 @@
+$ git show 7ff434a -- src/cmd/doctor.rs
+commit 7ff434ab243e1a880ba86a664fb2de34a241f283
+Author: flatrick <5464311+flatrick@users.noreply.github.com>
+Date:   Fri Oct 2 14:03:20 2026 +0200
+
+    fix(doctor): make exec-bit fixes executable on disk too
+    
+    `gir doctor --fix` set fixed scripts to 100755 in the index only, so on
+    Unix the files stayed 0644: git status showed them modified, git add
+    staged 100644 again, and git ignored the fixed hooks. On Unix, --fix
+    now adds an execute bit wherever a read bit is set on each fixed script
+    that is a regular file in the working tree. Missing files and symlinks
+    are skipped; Windows has no executable bit and is unchanged.
+    
+    Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01Tba1oZNLFsaD6Dp4SnQyu7
+
+diff --git a/src/cmd/doctor.rs b/src/cmd/doctor.rs
+index 6f81b77..5a4fd97 100644
+--- a/src/cmd/doctor.rs
++++ b/src/cmd/doctor.rs
+@@ -325,11 +325,39 @@ fn apply(root: &Path, fix: &Fix) -> Result<(), String> {
+             if !skipped.is_empty() {
+                 git::run_with_stdin_bytes(&["update-index", "-z", "--skip-worktree", "--stdin"], &skipped)?;
+             }
+-            Ok(())
++            make_executable_on_disk(root, paths)
+         }
+     }
+ }
+ 
++/// Gives each fixed script that is a regular file in the working tree an execute bit
++/// wherever it has a read bit, so the file matches its new `100755` index entry.
++#[cfg(unix)]
++fn make_executable_on_disk(root: &Path, paths: &[ChmodPath]) -> Result<(), String> {
++    use std::os::unix::ffi::OsStrExt;
++    use std::os::unix::fs::PermissionsExt;
++    for entry in paths {
++        let file = root.join(std::ffi::OsStr::from_bytes(&entry.path));
++        let Ok(meta) = std::fs::symlink_metadata(&file) else { continue };
++        if !meta.file_type().is_file() {
++            continue;
++        }
++        let mode = meta.permissions().mode();
++        let wanted = mode | ((mode & 0o444) >> 2);
++        if wanted != mode {
++            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(wanted))
++                .map_err(|e| format!("cannot make {} executable: {e}", display_path(&entry.path)))?;
++        }
++    }
++    Ok(())
++}
++
++/// Windows has no executable bit: git keeps the mode in the index only.
++#[cfg(not(unix))]
++fn make_executable_on_disk(_root: &Path, _paths: &[ChmodPath]) -> Result<(), String> {
++    Ok(())
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+
+$ rg -n "cfg\((not\()?unix" src/cmd/doctor.rs tests/doctor.rs (at 7ff434a)
+tests/doctor.rs:369:#[cfg(unix)]
+tests/doctor.rs:381:#[cfg(unix)]
+tests/doctor.rs:389:#[cfg(unix)]
+tests/doctor.rs:406:#[cfg(unix)]
+tests/doctor.rs:509:        #[cfg(unix)]
+tests/doctor.rs:514:        #[cfg(not(unix))]
+tests/doctor.rs:610:#[cfg(unix)]
+tests/doctor.rs:669:#[cfg(unix)]
+tests/doctor.rs:696:#[cfg(unix)]
+tests/doctor.rs:703:#[cfg(unix)]
+tests/doctor.rs:723:#[cfg(unix)]
+tests/doctor.rs:740:#[cfg(unix)]
+tests/doctor.rs:757:#[cfg(unix)]
+src/cmd/doctor.rs:335:#[cfg(unix)]
+src/cmd/doctor.rs:356:#[cfg(not(unix))]
+
+$ rustup target list --installed
+x86_64-unknown-linux-gnu
