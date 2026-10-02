@@ -17,12 +17,12 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`. No Task is currently active.
+- [ledger-threads-and-concurrent-tasks](tasks/ledger-threads-and-concurrent-tasks/TASK.md) -
+  ledger threads and several active Tasks. State: `DEFINE`.
 
 ## Ledger
 
-- [Ledger](LEDGER.md) - ten edge cases in `gir fixup` and `--split` from a
-  code review of `feat/fixup-modes`; whether to fix each is open.
+`NONE`. `LEDGER.md` holds no entries.
 
 ## Skills
 
