@@ -15,6 +15,7 @@ from urllib.parse import unquote
 
 ACTIVE = ("DEFINE", "UNDERSTAND", "INVESTIGATE", "DECIDE", "IMPLEMENT", "VERIFY", "LEARN")
 TERMINAL = ("COMPLETED", "BLOCKED", "IMPOSSIBLE", "DEFERRED", "ABANDONED", "FAILED")
+MAX_ACTIVE_TASKS = 3
 CLAIM_STATES = ("UNVERIFIED", "VERIFIED", "REFUTED", "DISPUTED")
 ANCHOR_NAME = r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*"
 ANCHOR = re.compile(r'<a id="(' + ANCHOR_NAME + r')"></a>')
@@ -378,8 +379,8 @@ def check_placeholders(context: Context) -> tuple[Failure, ...]:
         parts = doc.path.relative_to(context.config.root).parts
         if parts[0] == "templates":
             continue
-        strict = parts == ("INDEX.md",) or parts == ("LEDGER.md",) or parts == ("SPEC.md",)
-        if not strict and parts[0] not in ("tasks", "rules", "skills", "knowledge", "commands", "evidence", "spec", ".archive", "SELF-IMPROVEMENT", "open-claims"):
+        strict = parts == ("INDEX.md",) or parts == ("SPEC.md",)
+        if not strict and parts[0] not in ("tasks", "ledger", "rules", "skills", "knowledge", "commands", "evidence", "spec", ".archive", "SELF-IMPROVEMENT", "open-claims"):
             continue
         lines = doc.lines if strict else doc.prose
         body = "\n".join(ANCHOR.sub("", line) for line in lines)
@@ -740,6 +741,39 @@ def check_index(context: Context) -> tuple[Failure, ...]:
     for task in context.tasks:
         if not task.archived and task.state in ACTIVE and task.document.path not in listed:
             failures.append(config.failure(path, section.start, "INDEX_TASK", f"active Task is not listed: {task.document.path.relative_to(config.root).as_posix()}"))
+    active = sum(1 for task in context.tasks if not task.archived and task.state in ACTIVE)
+    if active > MAX_ACTIVE_TASKS:
+        failures.append(config.failure(path, section.start, "TASK_LIMIT", f"{active} active Tasks; at most {MAX_ACTIVE_TASKS} may be active"))
+    return tuple(failures)
+
+
+def check_ledger(context: Context) -> tuple[Failure, ...]:
+    config = context.config
+    failures = []
+    retired = config.root / "LEDGER.md"
+    if retired.exists():
+        failures.append(config.failure(retired, 1, "LEDGER_ROOT", "the root Ledger is retired; keep pre-Task exploration in a thread under ledger/"))
+    threads = {doc.path for doc in context.documents if doc.path.parent == config.root / "ledger"}
+    path = config.root / "INDEX.md"
+    doc = context.document(path)
+    if doc is None:
+        return tuple(failures)
+    section = doc.section("Ledger")
+    listed = set()
+    if section is not None:
+        for n in range(section.start, section.end - 1):
+            match = LINK.search(doc.lines[n])
+            if not match:
+                continue
+            ref = Reference(path, n + 1, match[1] or match[2])
+            resolved, _ = resolve(context, ref)
+            if resolved is None or resolved.path not in threads:
+                failures.append(config.failure(path, n + 1, "INDEX_LEDGER", f"lists a thread that is not under ledger/: {ref.target}"))
+            elif resolved.path in listed:
+                failures.append(config.failure(path, n + 1, "INDEX_LEDGER", f"duplicate thread entry: {ref.target}"))
+            listed.add(resolved.path if resolved else None)
+    for thread in sorted(threads - listed):
+        failures.append(config.failure(path, section.start if section else 1, "INDEX_LEDGER", f"open thread is not listed: {thread.relative_to(config.root).as_posix()}"))
     return tuple(failures)
 
 
@@ -752,6 +786,7 @@ CHECKS = (
     check_tasks,
     check_claims,
     check_index,
+    check_ledger,
 )
 
 
