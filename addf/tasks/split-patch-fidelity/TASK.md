@@ -152,7 +152,17 @@ No further probe is needed: `acceptance.py` already reproduces every case, and t
 
 ## Decide
 
-`PENDING`
+-   **Raw output.** `git::run_raw` returns git's stdout as bytes, neither decoded nor trimmed, and accepts any `AsRef<OsStr>` arguments. `trace` reads the staged diff and `--name-status -z` through it, and passes `--no-textconv` to `git diff`.
+-   **Bytes in hunks.** `Hunk.path`, `Hunk.header` and `Hunk.changes` become `Vec<u8>`. `parse_hunks` takes `&[u8]` and splits with `split_inclusive(b'\n')`, so every line keeps its exact ending, including `\r`; header and `@@` lines are recognised on their bytes. `header_path` and `unquote` work on bytes.
+-   **Paths to git.** A path's bytes become an `OsString` only where it is passed to `git blame`: on Unix directly from the bytes; elsewhere through UTF-8, which is how git writes paths on Windows. Both branches are written (`rules/os-agnostic-code.md`); the Unix one is exercised by the non-UTF-8 name test, the other by CI on Windows. Messages show paths through lossy UTF-8.
+-   **Applying.** `split.rs` builds the patch as `Vec<u8>` and runs `git apply --cached --unidiff-zero --whitespace=nowarn`; `TempIndex::run_with_stdin` and the private helper take `&[u8]` input, and `git::run_with_stdin` passes its `&str` as bytes.
+-   **Spec.** `NONE`: `split` already requires `HEAD`'s tree to equal the staged tree, and `staged-line-target` already applies to every staged line, whatever the file's name.
+-   **Rejected:** keeping `String` and re-adding `\r` or trailing spaces, which would patch one symptom at a time; `OsString` for paths everywhere, which would need platform branches in the parser too.
+-   **Verification strategy.** Integration tests first, each case as in `acceptance.py` (CRLF, Latin-1, trailing whitespace with and without a final newline, both `apply.whitespace` settings, textconv, and a Unix-only non-UTF-8 name), and see them fail; then the change; then `acceptance.py` on the new build, the new tests against the unfixed source, `cargo test` and clippy.
+
+### DECIDE gate
+
+`ESTABLISHED`: the design covers every place bytes are lost, and each success Claim has a planned test.
 
 ## Implement
 
