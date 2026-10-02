@@ -302,15 +302,33 @@ Checkpoints:
 
 ### Technical
 
-`NONE` yet.
+SourceGit silently falls back to its built-in types on any read error; gir refuses instead, as the operator asked, so the two can disagree only while the file is invalid.
+`git config --show-origin` reports a repository value's origin relative to the top level; that, and the other origin facts in Understand, live in the published `config.md` requirements and this bundle. No further destination.
 
 ### Process
 
-`NONE` yet.
+`scripts/check-capsule` was not run before the first push, and the hosted `capsule` job caught an index entry form that `skills/work-control.md` does not state.
+Logged as friction in `SELF-IMPROVEMENT/20261002T172622Z-index-state-form-only-in-checker.md`; deciding a fix is the operator's call under `rules/self-improvement-log.md`.
+
+### LEARN gate
+
+`ESTABLISHED`: both learnings have a disposition above.
 
 ## Retention and promotion
 
-`NONE` yet.
+### Promotion: `p1-format`
+
+-   Claim: [p1-format](#p1-format)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: the accepted file format is now stated in `config.md`, and a future type picker reads it from there; SourceGit's own source is the authority for later versions.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `c1-setting` to `c6-no-regression`
+
+-   Claim: [c1-setting](#c1-setting) through [c6-no-regression](#c6-no-regression)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: they describe this change's behavior, which the published specification states as requirements.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim is carried forward: every Claim is `VERIFIED`.
 
 ## Archive readiness
 
