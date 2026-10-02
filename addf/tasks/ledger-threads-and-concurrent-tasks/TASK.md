@@ -8,13 +8,19 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Verify each success criterion against the committed files; keep the logs in the bundle's `logs/`.
+**Resume at:** Ask the operator whether to narrow `c1-ledger-threads` to "no current addf file tells anyone to read or write the root `LEDGER.md`"; the evidence is in `logs/c1-references-20261002-1000.log`.
 
-**Open obligations:** Every success criterion below is `UNVERIFIED` and blocks `VERIFY`.
+**Open obligations:** `c1-ledger-threads` is `UNVERIFIED` as worded and blocks leaving `VERIFY`; the operator decides whether to narrow it.
 
 ## Owned artifacts
 
 -   `ledger.md` - the root Ledger's ten fixup findings, moved here unchanged, and the questions that shaped this Task with the operator's answers.
+-   `logs/c1-references-20261002-1000.log` - Evidence: the root `LEDGER.md` is absent, and every current mention of it.
+-   `logs/c2-c3-rules-20261002-1000.log` - Evidence: the thread, handoff, archival and several-Task rules in the Skills and index.
+-   `logs/c4-tests-20261002-1000.log` - Evidence: the checker's test suite at `32db650`.
+-   `logs/c4-check-capsule-20261002-1000.log` - Evidence: the checker on this repository at `32db650`.
+-   `logs/c4-mutations-20261002-1001.log` - Evidence: removing each new check makes its test fail.
+-   `logs/c5-c6-20261002-1000.log` - Evidence: the findings in the thread compared with this Task's `ledger.md` and with the root Ledger at `e3e3c3b`; the SELF-IMPROVEMENT entry exists.
 
 ## Specification impact
 
@@ -43,46 +49,46 @@ addf supports exploration that leads to several Tasks or to none, and several ac
 #### `c2-thread-handoff`
 
 -   Claim: Work control says that starting a Task copies the thread entries it takes into its bundle and appends an entry to the thread naming the Task; that a thread is archived only once every entry has a disposition; and that `INDEX.md` lists open threads.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: `skills/work-control.md`, `skills/stewardship.md`, `templates/INDEX.md` and `INDEX.md`.
 -   Consequence if false: untasked findings are lost or buried in an unrelated Task.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c2-thread-handoff).
 
 <a id="c3-several-active-tasks"></a>
 #### `c3-several-active-tasks`
 
 -   Claim: Work control allows at most 3 active Tasks; when more than one is active, resuming asks the operator which one; Tasks that overlap in spec modules or files declare the overlap and their order in Constraints; and the Isolate question is asked once per Task.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: `skills/work-control.md` and `CORE.md`.
 -   Consequence if false: concurrent Tasks are allowed without the rules the operator chose, or are still forbidden.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c3-several-active-tasks).
 
 <a id="c4-checker-layout"></a>
 #### `c4-checker-layout`
 
 -   Claim: `scripts/check-capsule` validates the new layout (thread files under `ledger/`, no root `LEDGER.md`) and its test suite passes.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, this branch.
 -   Consequence if false: the checker rejects the new layout or silently stops checking ledger content.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c4-checker-layout).
 
 <a id="c5-findings-thread"></a>
 #### `c5-findings-thread`
 
 -   Claim: The ten fixup findings in this Task's `ledger.md` exist unchanged in `ledger/fixup-review-20261002.md` as open entries.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the findings stay buried in this unrelated Task.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c5-findings-thread).
 
 <a id="c6-self-improvement"></a>
 #### `c6-self-improvement`
 
 -   Claim: A `SELF-IMPROVEMENT/` entry records this framework change and the friction that caused it.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the framework change is not traceable through its own log.
--   Basis: pending check.
+-   Basis: [Verification](#verification-c6-self-improvement).
 
 ### Constraints
 
@@ -184,6 +190,51 @@ Residual uncertainty: none known. Verification strategy: each success criterion 
 - Evidence considered: the search output (129 lines, kept locally in `.scratch/understand-refs-20261002-0943.log`, not committed); the four `skills/work-control.md` passages listed under Relevant context; `check_index` in `scripts/check-capsule` iterating over every active Task.
 - Conclusion: `VERIFIED`: apart from `skills/work-control.md`, no current file assumes one active Task; within it, the opening line is the rule, and the other three passages are wording or the Isolate scope.
 - Limitations: a keyword search can miss a paraphrase. `skills/work-control.md` was read in full; `skills/stewardship.md` and `skills/evidence-and-verification.md` only around their hits.
+
+<a id="verification-c2-thread-handoff"></a>
+### Verification: `c2-thread-handoff`
+
+- Claim: [c2-thread-handoff](#c2-thread-handoff)
+- Method: read the Ledger section of `skills/work-control.md`, Archive a settled thread and Update the index in `skills/stewardship.md`, and the Ledger sections of `templates/INDEX.md` and `INDEX.md` at `32db650`.
+- Evidence considered: `logs/c2-c3-rules-20261002-1000.log` (`skills/work-control.md` lines 59-74, `skills/stewardship.md` lines 134-137, `templates/INDEX.md` line 25); `INDEX.md` lists `ledger/fixup-review-20261002.md`, and the checker enforces that listing (`logs/c4-mutations-20261002-1001.log`).
+- Conclusion: `VERIFIED`: starting a Task copies or moves the entries it takes, a partial take appends a `D:` line, a thread is archived only when every `Q:` has a `D:` line, and the index lists open threads.
+- Limitations: inspection of the rules, not a run of a Task taking part of a thread; the fix Tasks that follow will be the first such run.
+
+<a id="verification-c3-several-active-tasks"></a>
+### Verification: `c3-several-active-tasks`
+
+- Claim: [c3-several-active-tasks](#c3-several-active-tasks)
+- Method: read Isolate, Start or resume and Exit check in `skills/work-control.md` at `32db650`.
+- Evidence considered: `logs/c2-c3-rules-20261002-1000.log` (line 24 Isolate per Task, line 127 the limit, lines 140-141 overlap and order, line 146 the resume question); the `TASK_LIMIT` check and its test (`logs/c4-mutations-20261002-1001.log`).
+- Conclusion: `VERIFIED`: all four rules are stated, and the checker also enforces the limit.
+- Limitations: `CORE.md` needed no change for this criterion; it routes to Work control without assuming one Task.
+
+<a id="verification-c4-checker-layout"></a>
+### Verification: `c4-checker-layout`
+
+- Claim: [c4-checker-layout](#c4-checker-layout)
+- Method: ran `python3 -m unittest discover -s addf/scripts/tests -v` and `addf/scripts/check-capsule` at `32db650`; then removed each new check in turn and ran the suite again.
+- Evidence considered: `logs/c4-tests-20261002-1000.log` (63 tests, `OK`); `logs/c4-check-capsule-20261002-1000.log` (`capsule is consistent`); `logs/c4-mutations-20261002-1001.log` (each removal fails its test).
+- Conclusion: `VERIFIED`: the checker validates the new layout and its suite passes.
+- Limitations: Linux and the local Python 3 only; the suite was not run on Windows.
+
+<a id="verification-c5-findings-thread"></a>
+### Verification: `c5-findings-thread`
+
+- Claim: [c5-findings-thread](#c5-findings-thread)
+- Method: compared the findings block in `ledger/fixup-review-20261002.md` with the same block in this Task's `ledger.md` and in the root `LEDGER.md` at `e3e3c3b`, using `diff`; counted `Q:` and `D:` lines.
+- Evidence considered: `logs/c5-c6-20261002-1000.log` (both comparisons identical, 10 `Q:` entries, 0 `D:` lines).
+- Conclusion: `VERIFIED`: the ten findings are in the thread unchanged and all open.
+- Limitations: the thread's two-line introduction is new text, as intended.
+
+<a id="verification-c6-self-improvement"></a>
+### Verification: `c6-self-improvement`
+
+- Claim: [c6-self-improvement](#c6-self-improvement)
+- Method: checked that the entry exists and read it against `templates/SELF-IMPROVEMENT.md`.
+- Evidence considered: `logs/c5-c6-20261002-1000.log`; `SELF-IMPROVEMENT/20261002T075940Z-ledger-threads-and-several-active-tasks.md` has Trigger, What changed, Files touched and Why.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
 
 ## Learn
 
