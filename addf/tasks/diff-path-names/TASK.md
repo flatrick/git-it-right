@@ -201,19 +201,36 @@ VERIFY gate: `ESTABLISHED`; every success Claim is `VERIFIED`.
 
 ### Technical
 
-`PENDING`
+git's text output quotes unusual file names (C-style, and a trailing tab after names with spaces in patch headers). Where gir only needs names, `-z` output avoids quoting entirely; where it must read patch text, the header has to be decoded. The unit test `header_paths_drop_the_tab_terminator_and_decode_quoting` enforces the decoding.
 
 ### Process
 
-`PENDING`
+The Investigate section was written and committed together with Understand, before the `UNDERSTAND -> INVESTIGATE` transition, which is work ahead of the current State. No content depended on it, and the gate result stands; noted, no framework change.
+
+LEARN gate: `ESTABLISHED`.
 
 ## Retention and promotion
 
-`PENDING`
+The technical Learning is enforced by tests; no other permanent change.
+
+### Promotion: success Claims
+
+-   Claims: `c1-space-in-name`, `c2-quoted-name`, `c3-end-to-end`, `c4-regression-tests`.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; the behavior is required by `spec/fixup.md` and guarded by tests.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-space-name-fails`
+
+-   Claim: [p1-space-name-fails](#p1-space-name-fails)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`; it described the code before the fix.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim promoted to Knowledge, and no Claim carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`PENDING`
+The bundle holds its ledger, its probe and every log it cites under `logs/`; internal links are relative.
+References to source files, commits and `spec/fixup.md` are supplemental.
 
 ## Terminal record
 
