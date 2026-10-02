@@ -19,11 +19,14 @@ is available through its archived bundle, not through this index.
 
 - [diff-header-parsing](tasks/diff-header-parsing/TASK.md) -
   gir fixup reads `---`/`+++` only as file headers. State: `DEFINE`.
+- [split-preserves-index](tasks/split-preserves-index/TASK.md) -
+  gir fixup --split leaves untouched index entries alone. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - ten edge cases
-  in `gir fixup` and `--split` from a code review; nine open (Q2 taken).
+  in `gir fixup` and `--split` from a code review; seven open (Q1, Q2, Q8
+  taken).
 
 ## Skills
 
