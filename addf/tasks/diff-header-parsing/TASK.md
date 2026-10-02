@@ -108,7 +108,14 @@
 
 ## Investigate
 
-`PENDING`
+No further probe is needed. Dispositions:
+
+-   Whether the defect is real at `HEAD`: resolved by `p1-dash-dash-reproduces` and the other three probe cases.
+-   Whether a real diff can reach `parse_hunks` without a `diff --git` line: irrelevant to the fix if the parser treats the start of its input as header, which also keeps the existing unit test valid.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: every decision-relevant uncertainty has a disposition.
 
 ## Decide
 
