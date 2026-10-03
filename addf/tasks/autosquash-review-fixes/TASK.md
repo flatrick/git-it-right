@@ -20,6 +20,8 @@
 -   `logs/probe-git-rules-20261003-1726.log` - Evidence: the run of the current `probe-git-rules.py`.
 -   `acceptance.py` - Probe and acceptance: follows each `try:` hint literally and checks subjects and tree; adds r1 and r7 cases to the archived Task's script.
 -   `logs/acceptance-20261003-1815.log` - Evidence: the run on `e4c52d9`'s tree, 9/9.
+-   `logs/test-red-20261003-1750.log` - Evidence: the new tests failing on the code before `e4c52d9`.
+-   `logs/test-final-20261003-1825.log`, `logs/clippy-20261003-1825.log`, `logs/fmt-20261003-1825.log`, `logs/acceptance-final-20261003-1825.log` - Evidence: final checks on `e4c52d9`'s tree.
 
 ## Specification impact
 
@@ -41,64 +43,64 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 #### `r1-root-in-range`
 
 -   Claim: An unmatched fixup whose blamed target is the root commit inside the linted commits gets advice to move it below that commit, through `gir lint --range` and through pre-push on a repository's first push; when the oldest linted commit is the root, the hint says `git rebase -i --root`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the first push of every new repository gets wrong advice.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r1-root-in-range).
 
 <a id="r2-subject-rule"></a>
 #### `r2-subject-rule`
 
 -   Claim: gir reads every commit's subject as git does (the first paragraph joined with spaces) and strips the prefix chain with one or more spaces after each prefix (not tabs, which git does not skip), so its prediction matches git for wrapped fixup subjects, wrapped target titles and extra spaces. (Reworded in UNDERSTAND from "any whitespace"; `ledger.md` Q11.)
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the loop the previous Task removed returns for these subjects.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r2-subject-rule).
 
 <a id="r3-merges-not-targets"></a>
 #### `r3-merges-not-targets`
 
 -   Claim: A merge commit in the linted commits is never a fold target, matching a plain `git rebase`, so a fixup aimed only at a merge is `fixup-unmatched`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: a fixup of a merge is told to run a rebase that leaves it.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r3-merges-not-targets).
 
 <a id="r4-blame-fast"></a>
 #### `r4-blame-fast`
 
 -   Claim: The blame step runs at most one `git blame` per hunk, and `gir lint --range` on an unmatched fixup that rewrites 3000 lines finishes in under one second.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch, a debug build.
 -   Consequence if false: pre-push can take minutes on large fixups.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r4-blame-fast).
 
 <a id="r5-head-relative"></a>
 #### `r5-head-relative`
 
 -   Claim: A rev specifier that names `HEAD` or `@` resolves against the tip being linted (the pushed commit for pre-push, the newest commit for `lint --range`), not the checked-out `HEAD`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: pushing a branch other than the checked-out one misjudges such fixups.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r5-head-relative).
 
 <a id="r6-range-wording"></a>
 #### `r6-range-wording`
 
 -   Claim: `gir lint --range` describes a target outside the range as before the range, not as published; pre-push keeps "already published".
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: CI tells a user a local commit is published.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r6-range-wording).
 
 <a id="r7-amend-message"></a>
 #### `r7-amend-message`
 
 -   Claim: An `amend!` counts as carrying a new message only when it has a paragraph after its subject paragraph, so a wrapped `amend!` subject with no message is advised `fixup`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: following the advice empties the target's message.
--   Basis: none yet; pending.
+-   Basis: [Verification](#verification-r7-amend-message).
 
 ### Constraints
 
@@ -113,10 +115,10 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 #### `p1-review-findings`
 
 -   Claim: Findings 1–5 of the review reproduce on `8465c1d`; 6–8 are plausible.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, `8465c1d`.
 -   Consequence if false: some criteria fix nothing.
--   Basis: finding 1 reproduced in the parent session (`ledger.md` A1); the rest are the reviewer's runs, whose logs were not kept. Each is re-checked by the failing test written for it in IMPLEMENT.
+-   Basis: [Verification](#verification-p1-review-findings).
 
 ## Understand
 
@@ -189,7 +191,7 @@ All in `src/cmd/lint.rs` unless named.
 
 Commit `e4c52d9`, as decided; no deviation.
 
--   Tests first: `.scratch` run `test-red-20261003-1750` (local only) had all eight new or changed tests failing for the reviewed reasons: root target "already published" with `<base>` (lint and pre-push), a wrapped fixup subject predicted to fold, a merge predicted to fold, "already published" for `lint --range`, `fixup! HEAD~2` from another checkout unmatched, a wrapped `amend!` advised `fixup -C`, and the 3000-line fixup taking 7.82 s. That re-observes findings 1, 2, 5, 6, 7 and 8 on `8465c1d`'s code (premise `p1-review-findings`).
+-   Tests first: `logs/test-red-20261003-1750.log` had all eight new or changed tests failing for the reviewed reasons: root target "already published" with `<base>` (lint and pre-push), a wrapped fixup subject predicted to fold, a merge predicted to fold, "already published" for `lint --range`, `fixup! HEAD~2` from another checkout unmatched, a wrapped `amend!` advised `fixup -C`, and the 3000-line fixup taking 7.82 s. That re-observes findings 1, 2, 5, 6, 7 and 8 on `8465c1d`'s code (premise `p1-review-findings`).
 -   `src/cmd/lint.rs`: `subject`, `merges`, `head_at`; `folds` takes the merges and the tip; the base falls back to `--root`; the published wording depends on `pushing`; the `amend!` check looks for a paragraph after the subject.
 -   `src/cmd/fixup.rs`: `blame_range` (one `git blame --root -L first,last` per hunk); `blame` is back to its code on `main`, and `blame_at` is gone.
 -   `tests/lint.rs`: five new tests, a wrapped `amend!` case, the before-the-range wording, and a `lint_rev` helper; `tests/cli.rs`: a first-push test.
@@ -198,3 +200,83 @@ Commit `e4c52d9`, as decided; no deviation.
 ### IMPLEMENT gate
 
 `ESTABLISHED`: the change is in `e4c52d9`; `cargo test --no-fail-fast`, clippy and `cargo fmt --check` passed on it, and acceptance 9/9.
+
+## Verify
+
+All on the tree committed as `e4c52d9`, Linux, git 2.56.0. `logs/test-final-20261003-1825.log`: 16 test binaries ok, none failed. `logs/acceptance-final-20261003-1825.log`: 9/9. `logs/clippy-20261003-1825.log` and `logs/fmt-20261003-1825.log`: clean. `logs/test-red-20261003-1750.log`: the same new tests failing on the code before the change.
+
+<a id="verification-p1-review-findings"></a>
+### Verification: `p1-review-findings`
+
+- Claim: [`p1-review-findings`](#p1-review-findings).
+- Method: the failing-first tests on the code before `e4c52d9`.
+- Evidence considered: `logs/test-red-20261003-1750.log` shows findings 1 (root "already published", lint and pre-push), 2 (wrapped fixup predicted to fold), 5 (merge predicted to fold), 6 (7.82 s), 7 (`HEAD~2` from another checkout) and 8 (published wording; wrapped `amend!` advised `fixup -C`) failing. Finding 3 (wrapped target) and 4 (extra spaces) were confirmed by `logs/probe-git-rules-20261003-1726.log` against git; the review's "any whitespace" was corrected to spaces (`ledger.md` Q11).
+- Conclusion: `VERIFIED`.
+- Limitations: none that block completion.
+
+<a id="verification-r1-root-in-range"></a>
+### Verification: `r1-root-in-range`
+
+- Claim: [`r1-root-in-range`](#r1-root-in-range).
+- Method: `lint_range_names_a_root_target_and_rebases_with_root` (`tests/lint.rs`), `pre_push_names_a_root_target_on_a_first_push` (`tests/cli.rs`), and the acceptance case "r1".
+- Evidence considered: both tests ok in the final log; acceptance follows `git rebase -i --root: move it below <root> chore: init, change pick to fixup` and ends with `chore: init`, `feat: two` and the tree unchanged.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux and git 2.56.0 only.
+
+<a id="verification-r2-subject-rule"></a>
+### Verification: `r2-subject-rule`
+
+- Claim: [`r2-subject-rule`](#r2-subject-rule).
+- Method: `lint_range_reads_wrapped_subjects_and_extra_spaces_as_git_does`, whose four cases mirror the probe's observed git outcomes: wrapped fixup left, wrapped target folds, two spaces fold, a spaced chain folds.
+- Evidence considered: the test ok in the final log; failing before (`logs/test-red-20261003-1750.log`); git's outcomes in `logs/probe-git-rules-20261003-1726.log`. A tab after a prefix is not an autosquash commit to gir's `cc` parser either, matching git.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux and git 2.56.0 only.
+
+<a id="verification-r3-merges-not-targets"></a>
+### Verification: `r3-merges-not-targets`
+
+- Claim: [`r3-merges-not-targets`](#r3-merges-not-targets).
+- Method: `lint_range_never_folds_into_a_merge_commit`.
+- Evidence considered: ok in the final log, failing before; git leaves such a fixup (`logs/probe-git-rules-20261003-1726.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: `git rebase --rebase-merges` keeps merges, and gir assumes a plain rebase, as its hints run.
+
+<a id="verification-r4-blame-fast"></a>
+### Verification: `r4-blame-fast`
+
+- Claim: [`r4-blame-fast`](#r4-blame-fast).
+- Method: `lint_range_blames_a_large_unmatched_fixup_quickly` asserts the 3000-line case names its target in under one second; `fixup::blame_range` calls `git blame` once per hunk.
+- Evidence considered: ok in the final log (debug build); 7.82 s before (`logs/test-red-20261003-1750.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: the bound is asserted, not the exact time; history depth was small.
+
+<a id="verification-r5-head-relative"></a>
+### Verification: `r5-head-relative`
+
+- Claim: [`r5-head-relative`](#r5-head-relative).
+- Method: `lint_range_resolves_head_against_the_newest_commit_linted` lints `base..topic` from `main` with `fixup! HEAD~2` and `fixup! @~3`.
+- Evidence considered: ok in the final log, both `fixup-unsquashed`; failing before; git folds the same specifiers with the branch checked out (`logs/probe-git-rules-20261003-1726.log`).
+- Conclusion: `VERIFIED`.
+- Limitations: checkout-history forms such as `@{-1}` are out of scope (`ledger.md` A10).
+
+<a id="verification-r6-range-wording"></a>
+### Verification: `r6-range-wording`
+
+- Claim: [`r6-range-wording`](#r6-range-wording).
+- Method: `lint_range_unmatched_fixup_of_a_target_before_the_range_says_to_reword_it` and `pre_push_rejects_a_fixup_of_a_pushed_commit_and_names_no_verify`.
+- Evidence considered: both ok in the final log: `is before the range` for `lint --range`, `is already published` with `git push --no-verify` for pre-push.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+<a id="verification-r7-amend-message"></a>
+### Verification: `r7-amend-message`
+
+- Claim: [`r7-amend-message`](#r7-amend-message).
+- Method: the wrapped case in `lint_range_unmatched_fixup_names_the_target_blame_finds`, and the acceptance case "r7".
+- Evidence considered: ok in the final log, failing before; acceptance follows `change pick to fixup` and keeps `feat: add a`.
+- Conclusion: `VERIFIED`.
+- Limitations: Linux and git 2.56.0 only.
+
+### VERIFY gate
+
+`ESTABLISHED`: r1–r7 and the premise are `VERIFIED` above; clippy and format clean on the same tree.
