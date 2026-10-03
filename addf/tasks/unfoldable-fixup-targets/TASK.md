@@ -30,6 +30,8 @@
 
 `gir fixup`, `gir amend`, `gir squash` and `gir reword` never offer, accept or select a target commit that a default `git rebase -i --autosquash <base>` would leave unfolded.
 
+DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and success criteria c1–c6 (`ledger.md` Q6, A6).
+
 ### Success criteria
 
 <a id="c1-autosquash-behaviour"></a>
@@ -93,6 +95,9 @@
 -   Scope chosen by the operator: the picker, explicit targets and automatic selection.
     Whether `--first-parent` applies is decided after INVESTIGATE, not presumed.
 -   `rules/os-agnostic-code.md`: behaviour is the same on Windows and Linux.
+-   "Cannot fold" means under a default `git rebase -i --autosquash <base>`; `--rebase-merges` is out of scope (operator, 2026-10-03).
+-   When no base is found, the same filter applies to the commits on `HEAD` that the picker lists.
+-   An explicit unfoldable target is refused with exit `2`, not warned about.
 
 ### Material empirical premises
 

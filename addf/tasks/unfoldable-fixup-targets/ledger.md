@@ -23,3 +23,5 @@ Entry Q7 of `ledger/fixup-review-20261002.md`, copied unchanged.
 - A4: `unfoldable-fixup-targets`, chosen by the operator on 2026-10-03, replacing the proposed `picker-first-parent`: the scope grew past the picker, and `--first-parent` is no longer presumed.
 - Q5: Does this Task overlap another active Task?
 - A5: No other Task is active.
+- Q6: Are the objective, scope and success criteria c1–c6 viable, actionable and desirable, with `--rebase-merges` out of scope, the same filter when no base is found, and explicit unfoldable targets refused with exit `2`?
+- A6: Agreed by the operator on 2026-10-03, as written in `TASK.md`.
