@@ -17,8 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [unfoldable-fixup-targets](tasks/unfoldable-fixup-targets/TASK.md) -
-  gir never targets a commit that autosquash cannot fold. State: `LEARN`.
+`NONE`.
 
 ## Ledger
 
@@ -75,6 +74,13 @@ then do. gir installs no such hook today.
   fast-forward `git pull`.
 - [ref-transaction-veto-rebase](knowledge/ref-transaction-veto-rebase.md) -
   `git rebase`.
+
+What a plain `git rebase -i --autosquash` folds on a branch with a merge, with
+git 2.56.0.
+
+- [autosquash-merge-targets](knowledge/autosquash-merge-targets.md) - it drops
+  the merge, so a `fixup!` of the merge is left; a side-branch commit's
+  `fixup!` folds.
 
 ## Open Claims
 

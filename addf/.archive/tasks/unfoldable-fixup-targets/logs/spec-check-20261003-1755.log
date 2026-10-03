@@ -1,0 +1,12 @@
+PASS ask-branch-commit says non-merge
+PASS code lists non-merge commits
+PASS explicit-target-not-merge published
+PASS explicit-target-not-merge matches Implement
+PASS explicit message in code
+PASS explicit message asserted by a test
+PASS merge-limit published
+PASS merge-limit insertion rule published
+PASS merge-limit matches Implement
+PASS merge message in code
+PASS merge message asserted by a test
+11/11 passed

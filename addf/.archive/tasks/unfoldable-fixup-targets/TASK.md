@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Write Learn, then the terminal checkpoint: promote c1 to Knowledge (operator, 2026-10-03), publish the `spec/fixup.md` delta, and archive.
+**Resume at:** `NONE`
 
-**Open obligations:** (1) Publish the `spec/fixup.md` delta (c6) — terminal checkpoint.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -21,12 +21,13 @@
 -   `logs/test-final-20261003-1655.log`, `logs/clippy-20261003-1655.log`, `logs/fmt-20261003-1655.log`, `logs/fmt-20261003-1700.log`, `logs/test-fixup-20261003-1700.log` - Evidence: tests, clippy and formatting on the change (see Implement).
 -   `logs/probe-new-20261003-1702.log`, `logs/probe-new-20261003-1705.log` - Evidence: `probe.py` on the new build; the first is superseded (see Implement).
 -   `logs/ci-pr16-20261003.log` - Evidence: hosted CI run on PR #16 at `fd378b7`.
+-   `spec_check.py`, `logs/spec-check-20261003-1755.log` - Probe and Evidence: the published specification against the Implement wording, the code and the tests (c6).
 
 ## Specification impact
 
 - Current contract: `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-explicit-target`, `framework:spec/fixup.md#req-fixup-explicit-target-on-branch`, `framework:spec/fixup.md#req-fixup-explicit-target-after-base`, `framework:spec/fixup.md#req-fixup-staged-line-target`, `framework:spec/fixup.md#req-fixup-base-limit`
 - Proposed delta: `ask-branch-commit` lists only non-merge commits; a new `explicit-target-not-merge` refuses a merge target; a new `merge-limit` refuses a hunk with a line last changed by a merge, and an insertion whose neighbouring lines all were. Wording under Decide.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-explicit-target-not-merge`, `framework:spec/fixup.md#req-fixup-merge-limit`
 
 ## Define
 
@@ -87,10 +88,10 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `c6-spec`
 
 -   Claim: `spec/fixup.md` states the new behaviour for the picker, explicit targets and automatic selection, and matches the code.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch at completion.
 -   Consequence if false: the specification no longer describes gir.
--   Basis: [Verification](#verification-c6-spec), not yet settled
+-   Basis: [Verification](#verification-c6-spec)
 
 ### Constraints
 
@@ -113,6 +114,17 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 -   Scope: Linux, git 2.56.0.
 -   Consequence if false: Q7 describes a defect that is not there.
 -   Basis: [Verification](#verification-p1-picker-lists-merges)
+
+<a id="p2-autosquash-merge-targets"></a>
+#### `p2-autosquash-merge-targets`
+
+-   Claim: On a branch holding a `--no-ff` merge of a side branch, `git rebase -i --autosquash <base>` without `--rebase-merges` drops the merge commit from its todo and keeps the side branch's commits, linearised; a `fixup!` of the merge is left unfolded on the rewritten branch, and a `fixup!` of a side-branch commit is folded into that commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0; the side branch forked from the base branch or from a commit of the topic branch.
+-   Consequence if false: gir refuses or hides merge commits as autosquash targets that would fold, or offers side-branch commits that would not.
+-   Basis: [Verification](#verification-p2-autosquash-merge-targets)
+
+Added at the terminal checkpoint as the factual result of `c1-autosquash-behaviour`, which is worded as an observation to make, so that the result can be promoted to Knowledge (see Retention and promotion).
 
 ## Understand
 
@@ -214,6 +226,7 @@ Code in `ebdd50d`:
 -   `tests/fixup.rs`: seven tests: the picker leaves out the merge but lists the side commit; an explicit merge is refused by `fixup`, `amend`, `squash` and `reword`; an explicit side-branch commit is accepted; a merge-resolved line is refused by `fixup`, `fixup --split` and `amend`; a hunk with one merge line among others is refused; an insertion between a merge line and a topic line targets the topic commit; an insertion between a base line and a merge line is refused.
 
 Deviation from Decide: `merges` is a private function in `src/cmd/fixup.rs`, beside `lint::merges` in `src/cmd/lint.rs`, not a new `git::merges`; both make the same call, each in its own module, as `lint` already did.
+Decide refuses an insertion "only when every neighbouring line is blamed on a merge"; the code and the published `merge-limit` refuse it when no neighbouring line is from an eligible non-merge commit, which also covers an insertion between a base line and a merge line (`insertion_between_base_and_merge_lines_is_refused`), where the base line is not a candidate either.
 `trace` now blames all hunks before checking any, so an early refusal no longer skips the remaining blames; the order of checks and their results are unchanged.
 
 Checkpoints:
@@ -253,6 +266,15 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 - Evidence considered: `logs/probe-02b4061-20261003-1623.log` and `logs/probe-new-20261003-1705.log` (git alone; same result on both builds): the merge's `fixup!` is left unfolded, the side commit's `fixup!` folds and its change lands. `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` agrees for the merge.
 - Conclusion: `VERIFIED`.
 - Limitations: git 2.56.0 on Linux only; a plain rebase, per Constraints.
+
+<a id="verification-p2-autosquash-merge-targets"></a>
+### Verification: `p2-autosquash-merge-targets`
+
+- Claim: [`p2-autosquash-merge-targets`](#p2-autosquash-merge-targets).
+- Method: as for [`c1-autosquash-behaviour`](#verification-c1-autosquash-behaviour): `probe.py` scenarios c1, with `side` forked from `main` and from `topic`.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log` and `logs/probe-new-20261003-1705.log`: in both runs of each log, the merge's `fixup!` stays in `main..HEAD` after the rebase while the merge itself is gone, and the side commit's `fixup!` is gone with its change in `s.txt`; `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` agrees for the merge.
+- Conclusion: `VERIFIED`.
+- Limitations: git 2.56.0 on Linux only; `--rebase-merges` not probed.
 
 <a id="verification-c2-picker"></a>
 ### Verification: `c2-picker`
@@ -294,10 +316,10 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 ### Verification: `c6-spec`
 
 - Claim: [`c6-spec`](#c6-spec).
-- Method: the delta under Implement compared with the code at `ebdd50d` and the exact messages the tests assert.
-- Evidence considered: `ask-branch-commit`'s "non-merge" matches `--no-merges`; `explicit-target-not-merge`'s message is asserted verbatim by `explicit_merge_target_is_refused_by_every_subcommand`; `merge-limit`'s message is asserted verbatim by `line_last_changed_by_a_merge_is_refused`, and its insertion rule by the two insertion tests.
-- Conclusion: `UNVERIFIED` until Stewardship applies the delta to `spec/fixup.md` at completion; the wording is checked against the code.
-- Limitations: publication happens in the terminal checkpoint.
+- Method: `spec_check.py`, after the delta was applied to `spec/fixup.md` in the terminal checkpoint: the published text of the three requirements compared with the wording under Implement, the code and the messages the tests assert.
+- Evidence considered: `logs/spec-check-20261003-1755.log`, 11/11 checks pass: `ask-branch-commit` says "non-merge" and the code passes `--no-merges`; `explicit-target-not-merge` and `merge-limit` are published as worded under Implement, and their messages appear verbatim in the code and in `explicit_merge_target_is_refused_by_every_subcommand` and `line_last_changed_by_a_merge_is_refused`; the insertion rule is covered by the two insertion tests.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
 
 ### VERIFY gate
 
@@ -322,12 +344,43 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 
 ## Retention and promotion
 
-`NONE` yet.
+Learning: the technical learning about autosquash is promoted below; the process learnings stay Task-scoped, except the Open obligations form, already logged as `SELF-IMPROVEMENT/20261003T142500Z-open-obligations-list-form.md`.
+
+### Promotion: `p2-autosquash-merge-targets`
+
+-   Claim: [`p2-autosquash-merge-targets`](#p2-autosquash-merge-targets), the factual result of [`c1-autosquash-behaviour`](#c1-autosquash-behaviour)
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`: `gir lint` and `gir fixup` both depend on it, and any change to how gir predicts or chooses autosquash targets has to start from it.
+-   Disposition: promoted to `knowledge/autosquash-merge-targets.md` (operator, 2026-10-03, who agreed to promote c1's result).
+
+### Promotion: `c1-autosquash-behaviour`
+
+-   Claim: [`c1-autosquash-behaviour`](#c1-autosquash-behaviour)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no` as worded: it states that an observation was made; its result is `p2-autosquash-merge-targets`, promoted above.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-picker-lists-merges`, `c2-picker`, `c3-explicit-target`, `c4-automatic-selection`, `c5-no-regression`, `c6-spec`
+
+-   Claim: the premise and the success criteria about gir's own behaviour.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: the behaviour is now specified in `spec/fixup.md` and held by tests; p1 describes code that no longer exists.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim ends unverified, so nothing is carried forward to `open-claims/`.
 
 ## Archive readiness
 
-`NONE` yet.
+The bundle is self-contained: `TASK.md`, `ledger.md`, `probe.py`, `spec_check.py` and `logs/` hold every input to its conclusions, and Task-internal references are relative.
+References outside it (`history:tasks/autosquash-review-fixes/...`, `spec/fixup.md`, `src/`, `tests/`, the Ledger thread) are supplemental evidence or the published contract.
+`knowledge/autosquash-merge-targets.md` points into this bundle by its archived path, which this checkpoint creates.
 
 ## Terminal record
 
-`NONE` yet.
+### Summary
+
+`gir fixup`, `amend`, `squash` and `reword` no longer target a merge commit, which a plain autosquash rebase drops: the picker lists only non-merge commits, an explicit merge target is refused, and automatic selection refuses a line last changed by a merge.
+Side-branch commits stay eligible, because they fold.
+Code in `ebdd50d`; specification published in `spec/fixup.md`; c1 promoted to Knowledge; cherry-picked targets recorded as Q17 of the thread `fixup-review-20261002`.
+
+### Gate basis
+
+Every success Claim is `VERIFIED` through its Verification: c1 by probe, c2–c4 by tests that failed before the change and pass after it, c5 by the Linux run and PR #16's CI on Ubuntu, Windows and macOS, c6 by `spec_check.py` on the published text.
+The one deferred verification (c5 on Windows and macOS) is settled; no obligation remains.
