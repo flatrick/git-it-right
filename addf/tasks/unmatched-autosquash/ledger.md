@@ -43,3 +43,14 @@ DEFINE dialogue with the operator, 2026-10-03.
   "Comply" means gir does not try to stop a user who pushes it anyway, for example with `git push --no-verify`.
 - Q7: Are the objective, scope and success criteria c1–c4 in `TASK.md` viable, actionable and the outcome the operator wants?
 - A7: Yes: "Agreed, proceed to UNDERSTAND".
+
+DECIDE dialogue with the operator, 2026-10-03.
+
+- Q8: Which rule id should an autosquash commit that will not fold get: a new `fixup-unmatched`, two new ids (`fixup-unmatched`, `fixup-published`), or the existing `fixup-unsquashed`?
+- A8: A new `fixup-unmatched`, with its own `gir explain` page covering the no-target and published-target cases; commits that will fold keep `fixup-unsquashed`.
+- Q9: Should the advice name the target that `git blame` finds, at one extra blame per unmatched commit?
+- A9: Yes, when blame finds exactly one; otherwise the advice stays generic.
+- Q10: When the target is already published, should the message name `git push --no-verify`, or only say that pushing anyway is the user's call?
+- A10: Name `--no-verify` explicitly.
+- Q11: Should `<base>` in the hints show a concrete commit when known, or stay a placeholder?
+- A11: A concrete 10-character commit ID when known; `<base>` only when unknown.

@@ -27,7 +27,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/lint.md#req-lint-range-unsquashed`, `framework:spec/hooks.md#req-hooks-pre-push-rejects`, `framework:spec/explain.md#req-explain-known-pages`, `framework:spec/fixup.md#req-fixup-create-commit`, `framework:SPEC.md` (Boundaries)
-- Proposed delta: `PENDING` — settled in DECIDE.
+- Proposed delta: `range-unsquashed` narrowed to commits that will fold, with a concrete base; a new `range-unmatched` with rule `fixup-unmatched`; `pre-push-rejects` extended with `fixup-unmatched` and its `--no-verify` hint; `fixup-unmatched` added to `known-pages`. `fixup.md` unchanged. Text under Decide.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -152,6 +152,52 @@ Superseded runs are kept as owned Evidence: `logs/probe-matching-20261003-1412-e
 ### INVESTIGATE gate
 
 `ESTABLISHED`: every Understand assumption and open question has a disposition above — three resolved, one accepted as residual with the message constraint it implies.
+
+## Decide
+
+Operator choices: `ledger.md` Q8–Q11.
+
+### Approach
+
+-   `gir lint --range` and pre-push already hold the commits they lint, newest first. For each autosquash commit, gir decides whether it will fold with the rule found in Investigate: strip the prefix chain, then look for an older commit in the same list whose title equals the rest, whose title starts with the rest, or, when the rest has no space, whose SHA `git rev-parse --verify --quiet <rest>^{commit}` returns. Only autosquash commits pay for this, and only a no-space rest costs a git call.
+-   A commit that will fold keeps `fixup-unsquashed`, now with the concrete base.
+-   A commit that will not fold gets `fixup-unmatched`. gir blames, at the commit's parent, the lines it removes or changes (`git diff -U0`, `git blame --porcelain -L`), reusing `gir fixup`'s hunk parsing and blame where they fit:
+    -   one blamed commit in the list: the hint names it and says to move the commit below it in `git rebase -i <base>` and change `pick` to `fixup` (`squash` for `squash!`, `fixup -C` for `amend!`);
+    -   one blamed commit outside the list (published): the message names it as already published; the hint says to reword the commit into a normal commit in `git rebase -i <base>`, and pre-push adds `or push it as is: git push --no-verify` (A10);
+    -   none or several: a generic hint to move it below the commit it belongs to, or reword it into a normal commit.
+-   Base: the first parent of the oldest commit in the list, as a 10-character ID; `<base>` when that commit has no parent. This is the start of a `lint --range A..B` range and the remote's commit for pre-push on a linear branch.
+-   `gir explain fixup-unmatched` explains the three cases, why `git rebase --autosquash` leaves such a commit, that pushing anyway is the user's call (`git push --no-verify`), and that a reword of a target outside autosquash orphans its fixups (c4).
+-   c4 is met by its alternative: the Task records, from the probes, that no subject git reads survives an out-of-band reword; no change to `gir fixup`.
+
+### Proposed specification delta
+
+-   `lint.md`, `range-unsquashed`: "`gir lint --range` SHALL reject a commit whose subject starts with `fixup! `, `squash! ` or `amend! ` and that `git rebase --autosquash` would fold into an older commit in the range with rule `fixup-unsquashed` and a hint `git rebase --autosquash <base>`, where `<base>` is the 10-character ID of the first parent of the oldest commit linted, or `<base>` when it has none."
+-   `lint.md`, new `range-unmatched`: "`gir lint --range` SHALL reject such a commit that no older commit in the range matches — by exact title, title prefix, or (when the specifier after the prefixes has no space) a revision resolving to it — with rule `fixup-unmatched`. When blaming the lines it removes or changes names exactly one commit in the range, the hint SHALL name that commit and say to move it below it in `git rebase -i <base>`; when that commit is outside the range, the message SHALL name it as already published and the hint SHALL say to reword it into a normal commit; otherwise the hint SHALL say to move it below the commit it belongs to or reword it into a normal commit."
+-   `hooks.md`, `pre-push-rejects`: add "commits that would not fold with rule `fixup-unmatched`, as `range-unmatched` describes, where a published target's hint also offers `git push --no-verify`".
+-   `explain.md`, `known-pages`: add `fixup-unmatched`.
+
+### Rejected alternatives
+
+-   Separate `fixup-published` rule id; keeping `fixup-unsquashed` for both (A8).
+-   Generic advice only, without blame (A9).
+-   A `git patch-id` or hash-form subject to survive rewording (Investigate: neither survives).
+-   A warning at commit time (A4).
+
+### Consequences and residual uncertainty
+
+-   `tests/lint.rs`'s `lint_range_rejects_each_unsquashed_autosquash_subject` lints a fixup without its target in the range; under the delta that is `fixup-unmatched`, so the test gains its target, and its `<base>` assertion becomes the concrete base.
+-   A user who rebases onto an older base than gir's could fold a commit gir calls published; the message says published, not impossible.
+-   Behaviour is probed on Linux with git 2.56.0 only.
+
+### Verification strategy
+
+-   End-to-end tests with real repositories in `tests/` for: a commit that folds (concrete base); one whose target is in the range but reworded; a hand-written `squash! wip`; a published target, through both `lint --range` and pre-push (`--no-verify` only in pre-push); none and several blamed commits; rev forms (full hash, `feature~1`, `HEAD`); a mixed prefix chain; the explain page.
+-   `acceptance.py` in this bundle: for each unmatched case, run gir, follow its hint literally with `git rebase -i` and a todo editor, and check no autosquash commit is left and the tree is unchanged (c1, c2).
+-   `cargo test`, `cargo clippy --all-targets -- -D warnings`, and the commit-msg latency budget test unchanged.
+
+### DECIDE gate
+
+`ESTABLISHED`: the approach follows from the Investigate results and the operator's choices, each part is feasible with git commands gir already runs, and every success criterion has a named check.
 
 ## Verify
 
