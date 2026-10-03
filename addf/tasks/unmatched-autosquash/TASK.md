@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** DEFINE dialogue with the operator: agree the objective, scope and success criteria (questions in `ledger.md` from Q4 on).
+**Resume at:** Re-run the premise `p1-unmatched-survives` as a Probe owned by this Task, then map git 2.56.0's autosquash matching rules (exact subject, subject prefix, hash or ref) from git's documentation and a probe.
 
-**Open obligations:** Objective, scope and success criteria agreed with the operator — blocks the DEFINE gate.
+**Open obligations:** `p1-unmatched-survives` verified or refuted — blocks the UNDERSTAND gate. git's autosquash matching rules known well enough to mirror — blocks the UNDERSTAND gate.
 
 ## Owned artifacts
 
