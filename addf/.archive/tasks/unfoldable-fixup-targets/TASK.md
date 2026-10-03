@@ -1,0 +1,386 @@
+# TASK — `gir never targets a commit that autosquash cannot fold`
+
+## Resume
+
+**Contract version:** `2`
+
+**State:** `COMPLETED`
+
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
+
+**Resume at:** `NONE`
+
+**Open obligations:** `NONE`
+
+## Owned artifacts
+
+-   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `probe.py` - Probe: the picker after a `--no-ff` merge, what a plain autosquash folds, and what explicit and automatic targets gir accepts today.
+-   `logs/probe-02b4061-20261003-1623.log` - Evidence: `probe.py` on the build of `02b4061` (see Investigate).
+-   `logs/test-red-d9ab2b0-20261003-1654.log` - Evidence: the new tests on `d9ab2b0`'s code, before the change.
+-   `logs/test-final-20261003-1655.log`, `logs/clippy-20261003-1655.log`, `logs/fmt-20261003-1655.log`, `logs/fmt-20261003-1700.log`, `logs/test-fixup-20261003-1700.log` - Evidence: tests, clippy and formatting on the change (see Implement).
+-   `logs/probe-new-20261003-1702.log`, `logs/probe-new-20261003-1705.log` - Evidence: `probe.py` on the new build; the first is superseded (see Implement).
+-   `logs/ci-pr16-20261003.log` - Evidence: hosted CI run on PR #16 at `fd378b7`.
+-   `spec_check.py`, `logs/spec-check-20261003-1755.log` - Probe and Evidence: the published specification against the Implement wording, the code and the tests (c6).
+
+## Specification impact
+
+- Current contract: `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-explicit-target`, `framework:spec/fixup.md#req-fixup-explicit-target-on-branch`, `framework:spec/fixup.md#req-fixup-explicit-target-after-base`, `framework:spec/fixup.md#req-fixup-staged-line-target`, `framework:spec/fixup.md#req-fixup-base-limit`
+- Proposed delta: `ask-branch-commit` lists only non-merge commits; a new `explicit-target-not-merge` refuses a merge target; a new `merge-limit` refuses a hunk with a line last changed by a merge, and an insertion whose neighbouring lines all were. Wording under Decide.
+- Terminal publication: `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-explicit-target-not-merge`, `framework:spec/fixup.md#req-fixup-merge-limit`
+
+## Define
+
+### Objective
+
+`gir fixup`, `gir amend`, `gir squash` and `gir reword` never offer, accept or select a target commit that a default `git rebase -i --autosquash <base>` would leave unfolded.
+
+DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and success criteria c1–c6 (`ledger.md` Q6, A6).
+
+### Success criteria
+
+<a id="c1-autosquash-behaviour"></a>
+#### `c1-autosquash-behaviour`
+
+-   Claim: For a branch with a `--no-ff` merge of a side branch, it is observed (not inferred) whether `git rebase -i --autosquash <base>` folds a `fixup!` of the merge commit, and whether it folds a `fixup!` of a commit from the side branch.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, throwaway repositories.
+-   Consequence if false: the fix leaves out the wrong commits: it either still offers unfoldable targets or hides foldable ones.
+-   Basis: [Verification](#verification-c1-autosquash-behaviour)
+
+<a id="c2-picker"></a>
+#### `c2-picker`
+
+-   Claim: The commit picker (`ask-branch-commit`) lists none of the commits `c1-autosquash-behaviour` shows cannot be folded, and still lists up to 20 of the others.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, this branch.
+-   Consequence if false: the user can still pick a target that never folds.
+-   Basis: [Verification](#verification-c2-picker)
+
+<a id="c3-explicit-target"></a>
+#### `c3-explicit-target`
+
+-   Claim: `gir fixup COMMIT` (and `amend`, `squash`, `reword`) given such a commit refuses on stderr with exit `2` and creates no commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, this branch.
+-   Consequence if false: a named unfoldable target is still accepted.
+-   Basis: [Verification](#verification-c3-explicit-target)
+
+<a id="c4-automatic-selection"></a>
+#### `c4-automatic-selection`
+
+-   Claim: Automatic selection, including `--split`, never selects such a commit, for example when a merge's conflict resolution last changed a staged line; what it does instead is settled in `DECIDE`.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0, this branch.
+-   Consequence if false: gir creates an unfoldable `fixup!` without asking.
+-   Basis: [Verification](#verification-c4-automatic-selection)
+
+<a id="c5-no-regression"></a>
+#### `c5-no-regression`
+
+-   Claim: `cargo test` and `cargo clippy --all-targets -- -D warnings` pass, and the change follows `rules/os-agnostic-code.md`.
+-   State: `VERIFIED`
+-   Scope: this branch; Linux run, Windows by inspection and CI.
+-   Consequence if false: the change breaks existing behaviour or another OS.
+-   Basis: [Verification](#verification-c5-no-regression)
+
+<a id="c6-spec"></a>
+#### `c6-spec`
+
+-   Claim: `spec/fixup.md` states the new behaviour for the picker, explicit targets and automatic selection, and matches the code.
+-   State: `VERIFIED`
+-   Scope: this branch at completion.
+-   Consequence if false: the specification no longer describes gir.
+-   Basis: [Verification](#verification-c6-spec)
+
+### Constraints
+
+-   Isolated workspace and line of development, chosen by the operator on 2026-10-03: worktree `.worktrees/unfoldable-fixup-targets`, branch `unfoldable-fixup-targets`, started from `ledger-settle-open-entries` at `0f4aac1`.
+-   No other Task is active, so there is no overlap to order.
+-   Scope chosen by the operator: the picker, explicit targets and automatic selection.
+    Whether `--first-parent` applies is decided after INVESTIGATE, not presumed.
+-   `rules/os-agnostic-code.md`: behaviour is the same on Windows and Linux.
+-   "Cannot fold" means under a default `git rebase -i --autosquash <base>`; `--rebase-merges` is out of scope (operator, 2026-10-03).
+-   When no base is found, the same filter applies to the commits on `HEAD` that the picker lists.
+-   An explicit unfoldable target is refused with exit `2`, not warned about.
+
+### Material empirical premises
+
+<a id="p1-picker-lists-merges"></a>
+#### `p1-picker-lists-merges`
+
+-   Claim: On `fc55fbb`, after `git merge --no-ff side`, the picker lists the merge commit and the side branch's commits, because `pick_branch_commit` (`src/cmd/fixup.rs:162`) runs `rev-list --max-count=20 <base>..HEAD` with no filter.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0.
+-   Consequence if false: Q7 describes a defect that is not there.
+-   Basis: [Verification](#verification-p1-picker-lists-merges)
+
+<a id="p2-autosquash-merge-targets"></a>
+#### `p2-autosquash-merge-targets`
+
+-   Claim: On a branch holding a `--no-ff` merge of a side branch, `git rebase -i --autosquash <base>` without `--rebase-merges` drops the merge commit from its todo and keeps the side branch's commits, linearised; a `fixup!` of the merge is left unfolded on the rewritten branch, and a `fixup!` of a side-branch commit is folded into that commit.
+-   State: `VERIFIED`
+-   Scope: Linux, git 2.56.0; the side branch forked from the base branch or from a commit of the topic branch.
+-   Consequence if false: gir refuses or hides merge commits as autosquash targets that would fold, or offers side-branch commits that would not.
+-   Basis: [Verification](#verification-p2-autosquash-merge-targets)
+
+Added at the terminal checkpoint as the factual result of `c1-autosquash-behaviour`, which is worded as an observation to make, so that the result can be promoted to Knowledge (see Retention and promotion).
+
+## Understand
+
+### Relevant context
+
+A target commit reaches `commit()` (`src/cmd/fixup.rs`) by one of four paths, read from the code at `5131456`:
+
+-   **Picker**, `pick_branch_commit`: `rev-list --max-count=20 <base>..HEAD`, or `HEAD` with no base, unfiltered.
+    Used by `gir reword` without a commit, by `gir fixup` when a staged file cannot be traced, and by `--split` for each untraced file (`split.rs`).
+-   **Explicit target**, `explicit_target`: checks only that the commit is `HEAD` or its ancestor and, with a base, not reachable from it.
+-   **Automatic selection**, `trace`: `blame` runs `git blame -L n,n HEAD` per staged line, without `--first-parent`.
+    The allowed set is `rev-list <base>..HEAD`, which includes merges and side-branch commits; with no base, any blamed commit is allowed.
+    One target is used directly.
+    Several targets go to the `ask-several` list or to the `multiple-targets` refusal, and either may name a merge.
+-   **Split**: each round commits for the shas `trace` found; an insertion between two commits' lines is asked about with those two (`neighbours`).
+
+`git blame` without `--first-parent` blames a line merged cleanly from a side branch on the side-branch commit.
+It blames a merge commit only for a line that the merge result changed against both parents, such as a conflict resolution.
+
+Earlier evidence: `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` (git 2.56.0, Linux) shows a plain `git rebase -i --autosquash` dropping the merge from its todo and leaving `fixup! Merge branch 'side'` unfolded, while the side-branch commit `feat: side` stays, linearised.
+No fixup of a side-branch commit was tried there.
+Since that Task, `gir lint --range` and pre-push leave merges out of the fold targets (`src/cmd/lint.rs`, `merges`), so a `fixup!` that gir creates for a merge today is then rejected by gir's own pre-push as `fixup-unmatched`.
+
+Tests: `tests/fixup.rs` (targets, base, trace, split), `tests/fixup_modes.rs` (modes and picker), on the `Repo` helper in `tests/common/mod.rs`.
+
+### Assumptions
+
+-   A `fixup!` of a side-branch commit folds under a plain autosquash rebase; inferred from the side commit staying in the todo; unverified; if false, side-branch commits must be left out too (`--first-parent`).
+-   A merge is the only kind of commit in `<base>..HEAD` that a plain rebase drops; inferred from how `git rebase` builds its todo (it skips merges, and also skips commits already upstream by patch ID, which do not apply inside `<base>..HEAD` of the branch being rebased); unverified beyond merges.
+
+### Open questions
+
+-   See Open obligations (2) and (3).
+-   Should `ask-several` and `multiple-targets` leave a merge out of the list, or must the whole hunk be refused when one of its lines is blamed on a merge? Part of obligation (3).
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every path by which a target is chosen or checked is named, with the earlier evidence for merges. The two assumptions and the open questions carry into INVESTIGATE.
+
+### Deferred verification
+
+-   `c5-no-regression` on Windows (and macOS): CI runs only on `main` and on pull requests, and the operator chose on 2026-10-03 to deal with failures once the PR exists and CI has run (`ledger.md` Q10). Earliest checkpoint: the hosted CI run on this branch's PR. Settling observation: the `test` job passes on `windows-latest` and `macos-latest`. Consequence if false: the change breaks another OS. Blocked work: `VERIFY -> LEARN`.
+    Settled: PR #16's CI run passed on all three systems ([Verification](#verification-c5-no-regression)).
+
+## Investigate
+
+`probe.py` on `target/debug/gir` built from `02b4061`, git 2.56.0, Linux (`logs/probe-02b4061-20261003-1623.log`).
+Each repository has `main` (`chore: base`) and `topic` with `feat: a`, a `--no-ff` merge of `side` (`feat: side`), and `feat: b`; `side` forks from `main` in one run and from `feat: a` in the other.
+
+-   `p1-picker-lists-merges`: in both runs, `gir reword` without a commit lists `Merge branch 'side' into topic` and `feat: side` among its four commits.
+-   `c1-autosquash-behaviour`: in both runs, `git rebase -i --autosquash main` leaves `fixup! Merge branch 'side' into topic` unfolded on the linearised branch, and folds `fixup! feat: side` into `feat: side` (`s.txt` becomes `S`).
+    This agrees with `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` for the merge.
+-   Explicit target: `gir fixup --dry-run <merge>` exits `0` and names the merge.
+-   Automatic selection: with `f.txt` line 2 changed on both branches and the conflict resolved to `two-merged`, `git blame` names the merge for line 2.
+    Staging a change to that line, `gir fixup --dry-run` and `gir fixup --split --dry-run` both select the merge.
+
+Dispositions:
+
+-   Assumption "a side-branch commit folds": resolved, true. Leaving out side-branch commits (`--first-parent`) would hide targets that fold, so obligation (2) is resolved: leave out merge commits only.
+-   Assumption "a merge is the only commit in `<base>..HEAD` a plain rebase drops": not fully resolved.
+    `git rebase <upstream>` also drops a commit whose patch is already in `<upstream>`, for example one cherry-picked to `main` after the branch forked; a `fixup!` of it would then not fold.
+    gir does not compare patch IDs today; the operator decides in DECIDE whether this is in scope.
+-   Obligation (3), how automatic selection treats a line blamed on a merge: the evidence shows it must change; the choice of behaviour goes to DECIDE.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: p1 and c1 are observed, every assumption has a disposition, and the remaining choices (merge-blamed lines, cherry-picked commits) are decisions, not uncertainties a probe can settle.
+
+## Decide
+
+Leave out merge commits, and only merge commits (Investigate; `ledger.md` Q7–Q9).
+
+-   **Picker:** `pick_branch_commit` runs `rev-list --no-merges --max-count=20 <range>`, so it lists up to 20 non-merge commits.
+-   **Explicit target:** after the existing checks, `explicit_target` refuses a merge with ``gir: `COMMIT` is a merge commit, which a rebase drops; pass the commit the change belongs to``, exit `2`.
+    A merge on the base branch keeps its existing `already on the base branch` refusal.
+-   **Automatic selection:** `trace` learns which blamed commits are merges with one `git rev-list --merges --no-walk --stdin` call, made only when a hunk names any commit.
+    After the `base-limit` check, a hunk with a line blamed on a merge is refused with `<place> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>`; a pure insertion is refused only when every neighbouring line is blamed on a merge, and otherwise drops the merge from its candidates.
+    `trace` takes the `Mode` to name the subcommand.
+    `--split` gets its hunks from `trace`, so it refuses the same way.
+-   The merge lookup is a new `git::merges(ids)` in `src/git.rs`.
+    `lint::merges` makes the same git call over `(sha, subject)` pairs; it is left as is, to keep the diff to this Task.
+-   **Spec:** `ask-branch-commit` says "non-merge commits"; a new `explicit-target-not-merge` after `explicit-target-after-base`; a new `merge-limit` after `base-limit`.
+
+Rejected: `--first-parent` (it hides side-branch commits that fold, Investigate); treating a merge-blamed line as untraced or dropping it from a modified hunk (operator, `ledger.md` A8); cherry-picked commits (moved to the thread as Q17).
+
+Residual: a commit cherry-picked to the base branch can still be targeted (thread Q17); `--rebase-merges` is out of scope (Constraints).
+
+Verification strategy: tests first in `tests/fixup.rs` and `tests/fixup_modes.rs`, each failing on `d99d543`'s code for the reason in c2–c4, then passing; `probe.py` re-run against the new build; `cargo test` and `cargo clippy --all-targets -- -D warnings` for c5; `spec/fixup.md` compared with the code for c6.
+
+### DECIDE gate
+
+`ESTABLISHED`: the approach follows from the Investigate evidence and the operator's choices, each part uses git commands gir already runs, and every success criterion has a named check.
+
+## Implement
+
+Code in `ebdd50d`:
+
+-   `src/cmd/fixup.rs`: `pick_branch_commit` adds `--no-merges`; `explicit_target` refuses a merge; `trace` takes the `Mode`, blames every hunk first, asks `merges` once for all blamed commits, and after the `base-limit` check refuses a merge-blamed hunk or drops the merge from an insertion's candidates.
+-   `tests/fixup.rs`: seven tests: the picker leaves out the merge but lists the side commit; an explicit merge is refused by `fixup`, `amend`, `squash` and `reword`; an explicit side-branch commit is accepted; a merge-resolved line is refused by `fixup`, `fixup --split` and `amend`; a hunk with one merge line among others is refused; an insertion between a merge line and a topic line targets the topic commit; an insertion between a base line and a merge line is refused.
+
+Deviation from Decide: `merges` is a private function in `src/cmd/fixup.rs`, beside `lint::merges` in `src/cmd/lint.rs`, not a new `git::merges`; both make the same call, each in its own module, as `lint` already did.
+Decide refuses an insertion "only when every neighbouring line is blamed on a merge"; the code and the published `merge-limit` refuse it when no neighbouring line is from an eligible non-merge commit, which also covers an insertion between a base line and a merge line (`insertion_between_base_and_merge_lines_is_refused`), where the base line is not a candidate either.
+`trace` now blames all hunks before checking any, so an early refusal no longer skips the remaining blames; the order of checks and their results are unchanged.
+
+Checkpoints:
+
+-   Tests first: `logs/test-red-d9ab2b0-20261003-1654.log`: the six tests for c2–c4 fail on `d9ab2b0`'s code for the expected reasons (the picker lists the merge; the merge is accepted as an explicit target and selected automatically; the mixed hunk and the insertion name the merge as a second target); the side-branch test passes there, as it should.
+-   `logs/test-fixup-20261003-1700.log`: `cargo test --test fixup`, 35 passed, on the committed tree.
+-   `logs/test-final-20261003-1655.log`: `cargo test --no-fail-fast`, every suite passes, on the tree before the two assertions were reformatted (layout only); `logs/clippy-20261003-1655.log`: clean; `logs/fmt-20261003-1655.log` flagged two new test assertions, reformatted by hand; `logs/fmt-20261003-1700.log`: clean.
+-   `logs/probe-new-20261003-1705.log`: `probe.py` on the new build: the picker lists the side commit but not the merge; the explicit merge, automatic selection and `--split` are refused with exit `2`.
+    `logs/probe-new-20261003-1702.log` is the same run before `probe.py` required exit `0` for "picks the merge", so its two `True` lines only matched the merge's ID inside the refusal.
+
+Specification delta for `spec/fixup.md`, to publish at completion:
+
+-   `ask-branch-commit`: "list up to 20 of the newest non-merge commits after the base commit, or on `HEAD` when no base is found", the rest unchanged.
+-   New `explicit-target-not-merge`, after `explicit-target-after-base`: `gir fixup COMMIT` SHALL refuse a merge commit with ``gir: `COMMIT` is a merge commit, which a rebase drops; pass the commit the change belongs to`` on stderr and exit `2`, creating no commit.
+-   New `merge-limit`, after `base-limit`: automatic selection SHALL refuse a hunk that replaces any line last changed by a merge commit with `<path>:<line> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>` on stderr and exit `2`. A pure insertion SHALL be refused so only when none of its neighbouring lines was last changed by an eligible non-merge commit; otherwise the merge SHALL NOT be a target.
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: the change exists in `ebdd50d`, its tests failed before and pass now, and the spec wording is ready for VERIFY to compare with the code.
+
+## Verify
+
+<a id="verification-p1-picker-lists-merges"></a>
+### Verification: `p1-picker-lists-merges`
+
+- Claim: [`p1-picker-lists-merges`](#p1-picker-lists-merges).
+- Method: `probe.py`, scenario p1, on the build of `02b4061`.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log`: in both runs the picker lists `Merge branch 'side' into topic` and `feat: side`; `logs/test-red-d9ab2b0-20261003-1654.log`: `picker_leaves_out_merge_commits_but_keeps_side_branch_commits` fails there with the merge listed as item 2 of 4.
+- Conclusion: `VERIFIED`, observed twice on the code before the change.
+- Limitations: none.
+
+<a id="verification-c1-autosquash-behaviour"></a>
+### Verification: `c1-autosquash-behaviour`
+
+- Claim: [`c1-autosquash-behaviour`](#c1-autosquash-behaviour).
+- Method: `probe.py`, scenarios c1, with `side` forked from `main` and from `topic`: create the `fixup!` with `git commit --fixup`, run `git rebase -q -i --autosquash main`, compare subjects and file content.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log` and `logs/probe-new-20261003-1705.log` (git alone; same result on both builds): the merge's `fixup!` is left unfolded, the side commit's `fixup!` folds and its change lands. `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` agrees for the merge.
+- Conclusion: `VERIFIED`.
+- Limitations: git 2.56.0 on Linux only; a plain rebase, per Constraints.
+
+<a id="verification-p2-autosquash-merge-targets"></a>
+### Verification: `p2-autosquash-merge-targets`
+
+- Claim: [`p2-autosquash-merge-targets`](#p2-autosquash-merge-targets).
+- Method: as for [`c1-autosquash-behaviour`](#verification-c1-autosquash-behaviour): `probe.py` scenarios c1, with `side` forked from `main` and from `topic`.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log` and `logs/probe-new-20261003-1705.log`: in both runs of each log, the merge's `fixup!` stays in `main..HEAD` after the rebase while the merge itself is gone, and the side commit's `fixup!` is gone with its change in `s.txt`; `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` agrees for the merge.
+- Conclusion: `VERIFIED`.
+- Limitations: git 2.56.0 on Linux only; `--rebase-merges` not probed.
+
+<a id="verification-c2-picker"></a>
+### Verification: `c2-picker`
+
+- Claim: [`c2-picker`](#c2-picker).
+- Method: `picker_leaves_out_merge_commits_but_keeps_side_branch_commits` (`tests/fixup.rs`): a staged new file sends `gir fixup` to the picker; the list must not contain the merge, must contain `feat: side`, and offers `pick [1-3, q]`. `probe.py` p1 on the new build.
+- Evidence considered: fails on `d9ab2b0` (`logs/test-red-d9ab2b0-20261003-1654.log`), passes on `ebdd50d` (`logs/test-fixup-20261003-1700.log`); `logs/probe-new-20261003-1705.log`: merge not listed, side commit listed, in both runs.
+- Conclusion: `VERIFIED`.
+- Limitations: the 20-commit cap is `rev-list --max-count=20` after `--no-merges`, read from the code, not tested with more than 20 commits.
+
+<a id="verification-c3-explicit-target"></a>
+### Verification: `c3-explicit-target`
+
+- Claim: [`c3-explicit-target`](#c3-explicit-target).
+- Method: `explicit_merge_target_is_refused_by_every_subcommand` checks exit `2`, the exact message and an unchanged `HEAD` for `fixup`, `amend`, `squash` and `reword`; `explicit_side_branch_target_is_accepted` checks that the filter is merges only.
+- Evidence considered: the first fails on `d9ab2b0` (`fixup` created `fixup! Merge branch 'side' into topic`) and passes on `ebdd50d`; the second passes on both.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+<a id="verification-c4-automatic-selection"></a>
+### Verification: `c4-automatic-selection`
+
+- Claim: [`c4-automatic-selection`](#c4-automatic-selection).
+- Method: four tests on a merge whose resolution last changed `f.txt` line 2: `line_last_changed_by_a_merge_is_refused` (`fixup`, `fixup --split`, `amend`; exact message, exit `2`, `HEAD` unchanged), `hunk_with_one_line_from_a_merge_is_refused`, `insertion_next_to_a_merge_line_targets_the_other_neighbour`, `insertion_between_base_and_merge_lines_is_refused`.
+- Evidence considered: all four fail on `d9ab2b0` (the merge was selected or listed as a target) and pass on `ebdd50d`; `logs/probe-new-20261003-1705.log`: automatic selection and `--split` refuse with exit `2`.
+- Conclusion: `VERIFIED`.
+- Limitations: the interactive `ask-several` list is not tested with a merge; it is built from the same `trace` result, which no longer holds a merge.
+
+<a id="verification-c5-no-regression"></a>
+### Verification: `c5-no-regression`
+
+- Claim: [`c5-no-regression`](#c5-no-regression).
+- Method: `cargo test --no-fail-fast` and `cargo clippy --all-targets -- -D warnings` on Linux; inspection of the diff of `ebdd50d` against `rules/os-agnostic-code.md`.
+- Evidence considered: `logs/test-final-20261003-1655.log` (every suite passes), `logs/clippy-20261003-1655.log` (clean), `logs/test-fixup-20261003-1700.log`. The change adds only git arguments and string handling, no path, process or `cfg` code; the tests use only git commands and file names valid on Windows. `logs/ci-pr16-20261003.log`: hosted CI run `37133071050` on PR #16 at `fd378b7` concluded `success`, with `test` passing on `ubuntu-latest`, `windows-latest` and `macos-latest`, and `capsule` on Ubuntu and Windows.
+- Conclusion: `VERIFIED`.
+- Limitations: none blocking.
+
+<a id="verification-c6-spec"></a>
+### Verification: `c6-spec`
+
+- Claim: [`c6-spec`](#c6-spec).
+- Method: `spec_check.py`, after the delta was applied to `spec/fixup.md` in the terminal checkpoint: the published text of the three requirements compared with the wording under Implement, the code and the messages the tests assert.
+- Evidence considered: `logs/spec-check-20261003-1755.log`, 11/11 checks pass: `ask-branch-commit` says "non-merge" and the code passes `--no-merges`; `explicit-target-not-merge` and `merge-limit` are published as worded under Implement, and their messages appear verbatim in the code and in `explicit_merge_target_is_refused_by_every_subcommand` and `line_last_changed_by_a_merge_is_refused`; the insertion rule is covered by the two insertion tests.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+### VERIFY gate
+
+`ESTABLISHED`: p1 and c1–c5 are `VERIFIED`; c6's wording is checked against the code and is settled by applying it to `spec/fixup.md` in the terminal checkpoint, as Stewardship prescribes. No contradicting evidence is open.
+
+## Learn
+
+### Technical
+
+-   A plain `git rebase -i --autosquash <base>` drops merge commits from its todo and linearises the side-branch commits, so a `fixup!` of a merge is left unfolded and a `fixup!` of a side-branch commit folds (c1).
+    The review's suggested `--first-parent` was wrong for that reason: it would have hidden targets that fold.
+    gir now relies on this in two places, `lint::merges` and `fixup::merges`; promoted to Knowledge.
+-   `git blame` names the merge for a line its conflict resolution wrote, and the parent's commit for a line kept from a parent (observed: `f.txt` lines 2 and 3 in the tests).
+    That a cleanly merged side-branch line is blamed on the side-branch commit is inferred from the same rule, not run.
+
+### Process
+
+-   A suggested fix in a review finding is a hypothesis: Q7 stated the merge case as inferred and proposed `--first-parent` with it; running the rebase before deciding changed the fix.
+-   The probe's first "picks the merge" check matched the merge's ID inside the refusal message, so it reported `True` for a correct refusal; a probe that classifies an outcome should check the exit code, not only the text.
+-   The checker requires the Open obligations value to start on its label line, which no template states (`SELF-IMPROVEMENT/20261003T142500Z-open-obligations-list-form.md`).
+-   CI runs only on `main` and on pull requests, so a Task's Windows claim cannot be settled from a branch without opening a PR.
+
+## Retention and promotion
+
+Learning: the technical learning about autosquash is promoted below; the process learnings stay Task-scoped, except the Open obligations form, already logged as `SELF-IMPROVEMENT/20261003T142500Z-open-obligations-list-form.md`.
+
+### Promotion: `p2-autosquash-merge-targets`
+
+-   Claim: [`p2-autosquash-merge-targets`](#p2-autosquash-merge-targets), the factual result of [`c1-autosquash-behaviour`](#c1-autosquash-behaviour)
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`: `gir lint` and `gir fixup` both depend on it, and any change to how gir predicts or chooses autosquash targets has to start from it.
+-   Disposition: promoted to `knowledge/autosquash-merge-targets.md` (operator, 2026-10-03, who agreed to promote c1's result).
+
+### Promotion: `c1-autosquash-behaviour`
+
+-   Claim: [`c1-autosquash-behaviour`](#c1-autosquash-behaviour)
+-   Will this Claim's validity outlive this Task and inform a future decision? `no` as worded: it states that an observation was made; its result is `p2-autosquash-merge-targets`, promoted above.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `p1-picker-lists-merges`, `c2-picker`, `c3-explicit-target`, `c4-automatic-selection`, `c5-no-regression`, `c6-spec`
+
+-   Claim: the premise and the success criteria about gir's own behaviour.
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: the behaviour is now specified in `spec/fixup.md` and held by tests; p1 describes code that no longer exists.
+-   Disposition: not promoted — Task-scoped only.
+
+No Claim ends unverified, so nothing is carried forward to `open-claims/`.
+
+## Archive readiness
+
+The bundle is self-contained: `TASK.md`, `ledger.md`, `probe.py`, `spec_check.py` and `logs/` hold every input to its conclusions, and Task-internal references are relative.
+References outside it (`history:tasks/autosquash-review-fixes/...`, `spec/fixup.md`, `src/`, `tests/`, the Ledger thread) are supplemental evidence or the published contract.
+`knowledge/autosquash-merge-targets.md` points into this bundle by its archived path, which this checkpoint creates.
+
+## Terminal record
+
+### Summary
+
+`gir fixup`, `amend`, `squash` and `reword` no longer target a merge commit, which a plain autosquash rebase drops: the picker lists only non-merge commits, an explicit merge target is refused, and automatic selection refuses a line last changed by a merge.
+Side-branch commits stay eligible, because they fold.
+Code in `ebdd50d`; specification published in `spec/fixup.md`; c1 promoted to Knowledge; cherry-picked targets recorded as Q17 of the thread `fixup-review-20261002`.
+
+### Gate basis
+
+Every success Claim is `VERIFIED` through its Verification: c1 by probe, c2–c4 by tests that failed before the change and pass after it, c5 by the Linux run and PR #16's CI on Ubuntu, Windows and macOS, c6 by `spec_check.py` on the published text.
+The one deferred verification (c5 on Windows and macOS) is settled; no obligation remains.

@@ -6,8 +6,10 @@ gir is tested from terminals.
 A git client differs from a terminal in ways that can break gir:
 
 - It may run its own bundled git instead of the one on your `PATH`.
-- It may not see your shell's `PATH`, so the hooks cannot find `gir`. This is common for apps started from the macOS Dock or Finder.
-- It usually runs commands without a terminal. gir only asks questions in a terminal, and git can only open a terminal editor (vim, nano) in a terminal.
+- It may not see your shell's `PATH`, so the hooks cannot find `gir`.
+  This is common for apps started from the macOS Dock or Finder.
+- It usually runs commands without a terminal.
+  gir only asks questions in a terminal, and git can only open a terminal editor (vim, nano) in a terminal.
 - It shows hook output its own way: in full, cut short, or as a generic "hook failed".
 
 Each step below checks one of these.
@@ -25,8 +27,10 @@ You need:
 Write down, for the report:
 
 - The client's name and version, and your OS and version.
-- **Which git the client uses.** Many clients show this in their settings (often as "Git executable" or "embedded/system git"). If it has a built-in terminal, run `git --version` there.
-- **How you started the client**: from the Start menu, Dock or launcher, or from a terminal (`code .`). This changes which `PATH` it sees.
+- **Which git the client uses.** Many clients show this in their settings (often as "Git executable" or "embedded/system git").
+  If it has a built-in terminal, run `git --version` there.
+- **How you started the client**: from the Start menu, Dock or launcher, or from a terminal (`code .`).
+  This changes which `PATH` it sees.
 - `gir --version`.
 
 ## Create the test repository
@@ -44,21 +48,27 @@ pwsh path/to/git-it-right/scripts/client-test-repo.ps1
 
 The script creates:
 
-- `gir-client-test/work`: the repository to open in your client. gir's hooks are active in it, `main` holds `chore: base`, and branch `topic` (checked out) holds `feat: add a` (`a.txt`) and `feat: add b` (`b.txt`). Tag `client-test-start` marks this state.
+- `gir-client-test/work`: the repository to open in your client.
+  gir's hooks are active in it, `main` holds `chore: base`, and branch `topic` (checked out) holds `feat: add a` (`a.txt`) and `feat: add b` (`b.txt`).
+  Tag `client-test-start` marks this state.
 - `gir-client-test/remote.git`: a local stand-in for a server, already set up as `origin`.
 
 Open `gir-client-test/work` in your client.
 
-To reset between steps, run this in `gir-client-test/work`. It discards all changes there:
+To reset between steps, run this in `gir-client-test/work`.
+It discards all changes there:
 
 ```sh
 git reset --hard client-test-start
 ```
 
-**Stage changes for two commits** is used several times below. In the client:
+**Stage changes for two commits** is used several times below.
+In the client:
 
-1. In `a.txt`, change the line `two` to `TWO`. That line belongs to `feat: add a`.
-2. In `b.txt`, change `b` to `B`. That line belongs to `feat: add b`.
+1. In `a.txt`, change the line `two` to `TWO`.
+   That line belongs to `feat: add a`.
+2. In `b.txt`, change `b` to `B`.
+   That line belongs to `feat: add b`.
 3. Stage both files.
 
 ## Results
@@ -66,9 +76,11 @@ git reset --hard client-test-start
 Record each step as one of:
 
 - `PASS`: what happened matches **Expect**.
-- `FAIL`: it did not. Note what you saw instead: the exact text, a screenshot, or "nothing happened".
+- `FAIL`: it did not.
+  Note what you saw instead: the exact text, a screenshot, or "nothing happened".
 - `PARTIAL`: the result was right but something was wrong along the way, such as a cut-short message or a window that stayed open.
-- `N/A`: the client cannot do this step. Note why.
+- `N/A`: the client cannot do this step.
+  Note why.
 
 ## Steps
 
@@ -95,7 +107,8 @@ gir: commit rejected [type-missing] header must start with `<type>[(scope)][!]: 
   more: gir explain type-missing
 ```
 
-**Record:** whether the client showed all three lines, part of them, or only a generic error. Also record whether your message was kept so you can edit it.
+**Record:** whether the client showed all three lines, part of them, or only a generic error.
+Also record whether your message was kept so you can edit it.
 
 ### C3 An automatic fix is shown and kept
 
@@ -112,7 +125,8 @@ Skip this step (`N/A`) if the client has no fixup, squash or amend feature.
 
 **Do:** stage a change to `a.txt` and use the client's feature to create a fixup, squash or amend commit for `feat: add a`.
 
-**Expect:** the commit is created, with a subject starting `fixup! `, `squash! ` or `amend! `. The commit-msg hook does not refuse it.
+**Expect:** the commit is created, with a subject starting `fixup! `, `squash! ` or `amend! `.
+The commit-msg hook does not refuse it.
 
 ### C5 Push is refused while a fixup commit is unsquashed
 
@@ -134,7 +148,8 @@ Skip this step (`N/A`) if the client has no interactive rebase.
 **Do:** continuing from C5, use the client's interactive rebase onto `main` with autosquash, or with the fixup commit moved under `feat: add a` and marked fixup.
 Then push `topic` again.
 
-**Expect:** `topic` shows `feat: add a` and `feat: add b`, with no `fixup!` commit, and `a.txt` keeps your change. The push succeeds.
+**Expect:** `topic` shows `feat: add a` and `feat: add b`, with no `fixup!` commit, and `a.txt` keeps your change.
+The push succeeds.
 
 ### C7 `gir fixup` without a terminal does not wait for an answer
 
@@ -142,9 +157,12 @@ This is the most important step for gir's picker.
 Run gir the way the client runs external commands, not in a terminal window.
 Most clients have one of the following; use whichever yours has, and record which:
 
-- **Custom actions.** SourceTree and SourceGit can run a command on the current repository. Set the command to `gir`, the arguments to `fixup`, and turn on showing the full output if offered.
-- **External tools.** Visual Studio's Tools > External Tools. Set the command to `gir`, the arguments to `fixup`, the initial directory to the repository, and use the Output window.
-- **Visual Studio Code.** A task in `.vscode/tasks.json` runs in the integrated terminal, which counts as a terminal; test it in C10 instead. For this step, mark `N/A` unless an extension runs commands without the terminal.
+- **Custom actions.** SourceTree and SourceGit can run a command on the current repository.
+  Set the command to `gir`, the arguments to `fixup`, and turn on showing the full output if offered.
+- **External tools.** Visual Studio's Tools > External Tools.
+  Set the command to `gir`, the arguments to `fixup`, the initial directory to the repository, and use the Output window.
+- **Visual Studio Code.** A task in `.vscode/tasks.json` runs in the integrated terminal, which counts as a terminal; test it in C10 instead.
+  For this step, mark `N/A` unless an extension runs commands without the terminal.
 
 Menu names differ between versions; note in the report where you found the feature.
 
@@ -161,7 +179,8 @@ gir: staged changes belong to several commits:
 ```
 
 **It fails if** the action shows `pick [1-2, s, q]:`, or seems to hang.
-In that case, stop the action, then set the environment variable `GIR_INTERACTIVE=0` for the client (or the action) and try again. Record both results.
+In that case, stop the action, then set the environment variable `GIR_INTERACTIVE=0` for the client (or the action) and try again.
+Record both results.
 
 ### C8 `gir fixup --split` without a terminal
 
@@ -180,10 +199,16 @@ Reset, then run the action from C7 with the arguments `reword client-test-start~
 
 **Expect**, depending on the editor:
 
-- **Graphical editor** (for example `code --wait`, `notepad`, or a GUI editor set in the client): it opens with the message of `feat: add a`. Save and close it; the action creates `amend! feat: add a` and prints `gir: created amend! for <sha> feat: add a`. Record `PASS`.
-- **Terminal editor** (vim, vi, nano, emacs -nw), or nothing set: the action may fail with `error: there was a problem with the editor` followed by `gir: git commit --quiet --fixup=reword:<sha> failed`. Record `FAIL` with the text. It may also hang: a terminal editor waits for a terminal that does not exist. Record `FAIL` and "hangs".
+- **Graphical editor** (for example `code --wait`, `notepad`, or a GUI editor set in the client): it opens with the message of `feat: add a`.
+  Save and close it; the action creates `amend! feat: add a` and prints `gir: created amend! for <sha> feat: add a`.
+  Record `PASS`.
+- **Terminal editor** (vim, vi, nano, emacs -nw), or nothing set: the action may fail with `error: there was a problem with the editor` followed by `gir: git commit --quiet --fixup=reword:<sha> failed`.
+  Record `FAIL` with the text.
+  It may also hang: a terminal editor waits for a terminal that does not exist.
+  Record `FAIL` and "hangs".
 
-**If it hangs:** stop the action. If the client does not stop it, end the `vim`/`vi`/`nano` or `git` process.
+**If it hangs:** stop the action.
+If the client does not stop it, end the `vim`/`vi`/`nano` or `git` process.
 A stopped commit can leave `.git/index.lock` behind; git then refuses everything with `Unable to create '.../.git/index.lock': File exists`.
 Delete that file once no git process is running for the repository.
 

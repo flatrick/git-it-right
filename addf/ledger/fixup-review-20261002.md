@@ -89,3 +89,15 @@ For each one, whether to fix it on this branch is still OPEN.
 - A15: No, observed while verifying the Task `doctor-fix-missing-hook`, on both the old (`--chmod=+x`) and the new code: the index entry becomes `100755`, but the file stays `100644`. With `core.filemode=true`, `git status` then shows every fixed script as modified, and a later `git add` would stage `100644` again, undoing the fix.
   Possible fix: also set the executable bit on the file when it exists (Unix only; Windows has no such bit). Not tested.
 - D7: settles Q15 -> taken by Task doctor-fix-file-mode
+- Q16: What happens to the entries still open, Q7, Q9, Q10 and Q12?
+- A16: Decided by the operator on 2026-10-03, after a status review that found the problem of each still present in the code at `fc55fbb`.
+  Q7, Q9 and Q12 are each fixed in their own Task, in that order (Q7 and Q9 both change `pick_branch_commit`).
+  Q10 is fixed in a docs-only commit, without a Task.
+  Each Task is created when its turn comes.
+- D8: settles Q10 -> moved to commit `8c5cdf6`, which breaks the lines of `ROADMAP.md`, `CLIENT-TESTING.md` and `SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` at sentence ends
+- D9: settles Q7 -> taken by Task unfoldable-fixup-targets
+- Q17: Can gir target a commit that was cherry-picked onto the base branch after the topic branch forked?
+- A17: OPEN. Found in the INVESTIGATE of Task `unfoldable-fixup-targets` on 2026-10-03; inferred from how `git rebase <upstream>` skips commits whose patch is already upstream, not run.
+  A plain `git rebase -i --autosquash <base>` would drop such a commit, so a `fixup!` of it would not fold, yet the picker, explicit targets and automatic selection all accept it.
+  Detecting it needs a patch-ID comparison against the base branch (`git cherry`).
+  The operator kept it out of that Task and asked for it to be recorded here.

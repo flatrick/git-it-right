@@ -22,7 +22,7 @@ is available through its archived bundle, not through this index.
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
-  in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
+  in `gir fixup`, `--split` and `gir doctor`; three open (Q9, Q12, Q17).
 
 ## Skills
 
@@ -74,6 +74,13 @@ then do. gir installs no such hook today.
   fast-forward `git pull`.
 - [ref-transaction-veto-rebase](knowledge/ref-transaction-veto-rebase.md) -
   `git rebase`.
+
+What a plain `git rebase -i --autosquash` folds on a branch with a merge, with
+git 2.56.0.
+
+- [autosquash-merge-targets](knowledge/autosquash-merge-targets.md) - it drops
+  the merge, so a `fixup!` of the merge is left; a side-branch commit's
+  `fixup!` folds.
 
 ## Open Claims
 

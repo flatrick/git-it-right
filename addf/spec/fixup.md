@@ -40,6 +40,9 @@
 <a id="req-fixup-explicit-target-after-base"></a>
 **explicit-target-after-base.** When a base branch is found, `gir fixup COMMIT` SHALL refuse a target reachable from that base with ``gir: `COMMIT` is already on the base branch`` on stderr and exit `2`, creating no commit.
 
+<a id="req-fixup-explicit-target-not-merge"></a>
+**explicit-target-not-merge.** `gir fixup COMMIT` SHALL refuse a merge commit with ``gir: `COMMIT` is a merge commit, which a rebase drops; pass the commit the change belongs to`` on stderr and exit `2`, creating no commit.
+
 <a id="req-fixup-invalid-target"></a>
 **invalid-target.** Given staged changes, `gir fixup no-such-commit` SHALL print ``gir: `no-such-commit` is not a commit`` to stderr and exit `2`.
 
@@ -54,6 +57,9 @@
 
 <a id="req-fixup-base-limit"></a>
 **base-limit.** When a base branch is found, automatic selection SHALL accept only commits after the base commit and SHALL refuse a hunk that replaces any line last changed on the base branch with `already on the base branch` on stderr, even when it also replaces later lines. A pure insertion SHALL be refused only when every neighbouring line is on the base branch.
+
+<a id="req-fixup-merge-limit"></a>
+**merge-limit.** Automatic selection SHALL refuse a hunk that replaces any line last changed by a merge commit with `<path>:<line> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>` on stderr and exit `2`. A pure insertion SHALL be refused so only when none of its neighbouring lines was last changed by an eligible non-merge commit; otherwise the merge SHALL NOT be a target.
 
 <a id="req-fixup-no-base-limit"></a>
 **no-base-limit.** When no branch base can be found, automatic selection SHALL permit a commit already present on the current branch if its staged lines identify that commit.
@@ -88,7 +94,7 @@
 **ask-several.** When interactive and the staged hunks identify several eligible commits, `gir fixup` SHALL, instead of refusing, list each target numbered from `1` with its 10-character commit ID, subject and file locations, then, unless a staged hunk changes lines last changed by several commits, `s) split: one fixup! per commit`, on stderr, and read an answer from stdin.
 
 <a id="req-fixup-ask-branch-commit"></a>
-**ask-branch-commit.** When interactive, and automatic selection meets a new file or a file or hunk it cannot trace, or `gir reword` has no commit argument, gir SHALL list up to 20 of the newest commits after the base commit, or on `HEAD` when no base is found, numbered from `1` with their 10-character commit ID and subject, on stderr, and read an answer from stdin.
+**ask-branch-commit.** When interactive, and automatic selection meets a new file or a file or hunk it cannot trace, or `gir reword` has no commit argument, gir SHALL list up to 20 of the newest non-merge commits after the base commit, or on `HEAD` when no base is found, numbered from `1` with their 10-character commit ID and subject, on stderr, and read an answer from stdin.
 
 <a id="req-fixup-ask-answers"></a>
 **ask-answers.** A listed number SHALL select that commit as the target of all staged changes; `s`, where offered, SHALL split as `--split` does; any other answer except a cancel SHALL ask again.

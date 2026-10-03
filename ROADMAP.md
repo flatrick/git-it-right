@@ -3,8 +3,10 @@
 Planned features that are not being worked on yet.
 
 - Each item says what it is, why, and what it depends on.
-- When an item becomes an addf Task (`addf/tasks/<name>/`), remove it from this file in the same change. From then on the Task is where its scope and decisions live.
-- An item here is a plan, not a promise or a specification. Current behavior is specified in `addf/SPEC.md`.
+- When an item becomes an addf Task (`addf/tasks/<name>/`), remove it from this file in the same change.
+  From then on the Task is where its scope and decisions live.
+- An item here is a plan, not a promise or a specification.
+  Current behavior is specified in `addf/SPEC.md`.
 
 ## Refuse a terminal editor when there is no terminal
 
@@ -15,7 +17,9 @@ Planned features that are not being worked on yet.
 
 The refusal names the editor and says how to fix it: a graphical `core.editor`, or running the command in a terminal.
 
-**Why:** from a GUI client's custom action, git starts the terminal editor, which waits forever for a terminal that does not exist. Stopping it leaves `.git/index.lock` behind, and git then refuses every command in that repository until the file is deleted. See step C9 in `CLIENT-TESTING.md`.
+**Why:** from a GUI client's custom action, git starts the terminal editor, which waits forever for a terminal that does not exist.
+Stopping it leaves `.git/index.lock` behind, and git then refuses every command in that repository until the file is deleted.
+See step C9 in `CLIENT-TESTING.md`.
 
 **Depends on:** `gir amend`, `reword` and `squash` being merged to `main`.
 
@@ -37,7 +41,9 @@ It only reports; gir makes no decision based on the process names.
 
 **What:** the `commit-msg` hook lints the replacement message inside an `amend!` commit (created by `gir amend`, `gir reword` or `git commit --fixup=amend:`/`reword:`) when the commit is made.
 
-**Why:** today an `amend!` subject returns before any rule runs. A replacement message that is not a Conventional Commit is only caught after `git rebase --autosquash` has folded it in. By then it is an ordinary commit, which `pre-push` or CI rejects, and fixing it takes another reword.
+**Why:** today an `amend!` subject returns before any rule runs.
+A replacement message that is not a Conventional Commit is only caught after `git rebase --autosquash` has folded it in.
+By then it is an ordinary commit, which `pre-push` or CI rejects, and fixing it takes another reword.
 
 **Depends on:** nothing.
 

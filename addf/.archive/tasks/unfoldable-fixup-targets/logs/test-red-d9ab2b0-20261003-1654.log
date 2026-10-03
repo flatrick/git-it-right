@@ -1,0 +1,122 @@
+   Compiling libc v0.2.189
+   Compiling rustix v1.1.5
+   Compiling getrandom v0.4.3
+   Compiling cfg-if v1.0.5
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling tempfile v3.27.0
+   Compiling gir v0.2.1 (/home/flatrick/src/github/flatrick/git-it-right/.worktrees/unfoldable-fixup-targets)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.25s
+     Running tests/fixup.rs (target/debug/deps/fixup-74e23b3b8e56bfa7)
+
+running 35 tests
+test automatic_target_reports_unattributed_lines ... ok
+test automatic_target_refuses_a_new_file ... ok
+test automatic_target_has_no_base_limit_when_no_base_exists ... ok
+test automatic_target_refuses_a_new_binary_file ... ok
+test automatic_target_refuses_a_staged_file_without_line_changes ... ok
+test added_line_starting_with_plus_b_is_not_a_new_file ... ok
+test automatic_target_reports_multiple_targets_and_split_hint ... ok
+test accepts_optional_target_and_dry_run_in_either_order ... ok
+test base_lookup_prefers_origin_head_over_main_and_limits_automatic_target ... ok
+test base_lookup_falls_back_to_master ... ok
+test commit_failure_reports_git_command_and_target ... ok
+test base_lookup_falls_back_to_upstream ... ok
+test deleted_line_starting_with_dashes_is_traced_like_any_other ... ok
+test deleted_dev_null_comment_does_not_hide_later_hunks ... ok
+test explicit_target_must_be_after_base ... ok
+test explicit_target_ignores_line_origin_and_accepts_new_files ... ok
+test explicit_target_must_be_in_current_branch_history ... ok
+test dev_null_comment_split_folds_into_the_right_commits ... ok
+test explicit_merge_target_is_refused_by_every_subcommand ... FAILED
+test explicit_side_branch_target_is_accepted ... ok
+test hunk_with_one_line_from_a_merge_is_refused ... FAILED
+test insertion_between_base_and_topic_lines_targets_topic ... ok
+test insertion_uses_adjacent_head_lines ... ok
+test mixed_base_and_topic_replacement_is_refused ... ok
+test insertion_between_base_and_merge_lines_is_refused ... FAILED
+test insertion_next_to_a_merge_line_targets_the_other_neighbour ... FAILED
+test file_name_with_a_space_is_traced_and_split ... ok
+test requires_staged_changes_even_with_explicit_target ... ok
+test line_last_changed_by_a_merge_is_refused ... FAILED
+test rejects_invalid_explicit_commit ... ok
+test multiple_targets_suggest_installed_git_absorb ... ok
+test success_without_base_prints_base_placeholder ... ok
+test picker_leaves_out_merge_commits_but_keeps_side_branch_commits ... FAILED
+test successful_fixup_prints_target_and_base_and_preserves_config ... ok
+test quoted_file_names_are_traced_and_split ... ok
+
+failures:
+
+---- explicit_merge_target_is_refused_by_every_subcommand stdout ----
+
+thread 'explicit_merge_target_is_refused_by_every_subcommand' (173625) panicked at tests/fixup.rs:439:9:
+assertion `left == right` failed: fixup: gir: created fixup! for b1d3b1ca6b Merge branch 'side' into topic
+  fold: git rebase --autosquash 9a88188da4
+
+  left: Some(0)
+ right: Some(2)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- hunk_with_one_line_from_a_merge_is_refused stdout ----
+
+thread 'hunk_with_one_line_from_a_merge_is_refused' (173707) panicked at tests/fixup.rs:477:5:
+gir: staged changes belong to several commits:
+  8ac8e3c516 Merge branch 'side' into topic  <- f.txt:2
+  fcc93e1ee1 feat: topic  <- f.txt:2
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+
+
+---- insertion_between_base_and_merge_lines_is_refused stdout ----
+
+thread 'insertion_between_base_and_merge_lines_is_refused' (173803) panicked at tests/fixup.rs:494:5:
+assertion `left == right` failed: 
+  left: Some(0)
+ right: Some(2)
+
+---- insertion_next_to_a_merge_line_targets_the_other_neighbour stdout ----
+
+thread 'insertion_next_to_a_merge_line_targets_the_other_neighbour' (173850) panicked at tests/fixup.rs:485:5:
+assertion `left == right` failed: gir: staged changes belong to several commits:
+  8ac8e3c516 Merge branch 'side' into topic  <- f.txt:2
+  fcc93e1ee1 feat: topic  <- f.txt:2
+  split: git restore --staged . && git add -p, then one gir fixup per commit
+  or: gir fixup --split creates one fixup! per commit
+
+  left: Some(2)
+ right: Some(0)
+
+---- line_last_changed_by_a_merge_is_refused stdout ----
+
+thread 'line_last_changed_by_a_merge_is_refused' (173879) panicked at tests/fixup.rs:461:9:
+assertion `left == right` failed: ["fixup"]: gir: created fixup! for 8ac8e3c516 Merge branch 'side' into topic
+  fold: git rebase --autosquash d26fc10f89
+
+  left: Some(0)
+ right: Some(2)
+
+---- picker_leaves_out_merge_commits_but_keeps_side_branch_commits stdout ----
+
+thread 'picker_leaves_out_merge_commits_but_keeps_side_branch_commits' (173999) panicked at tests/fixup.rs:426:5:
+a merge is never offered: gir: new.txt is a new file, so it has no earlier commit; pick the commit it belongs to:
+  1) 984911e485 feat: add b
+  2) b1d3b1ca6b Merge branch 'side' into topic
+  3) 20d28454b4 feat: add a
+  4) b8a5848020 feat: side
+pick [1-4, q]: gir: cancelled; nothing committed
+
+
+
+failures:
+    explicit_merge_target_is_refused_by_every_subcommand
+    hunk_with_one_line_from_a_merge_is_refused
+    insertion_between_base_and_merge_lines_is_refused
+    insertion_next_to_a_merge_line_targets_the_other_neighbour
+    line_last_changed_by_a_merge_is_refused
+    picker_leaves_out_merge_commits_but_keeps_side_branch_commits
+
+test result: FAILED. 29 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+error: test failed, to rerun pass `--test fixup`
