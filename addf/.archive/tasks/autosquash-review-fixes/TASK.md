@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Write Learn and Retention and promotion, then the terminal checkpoint with the spec delta.
+**Resume at:** `NONE`
 
-**Open obligations:** Learn and Retention and promotion recorded — blocks the LEARN gate. The spec delta written into `spec/` — terminal checkpoint.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -26,8 +26,8 @@
 ## Specification impact
 
 - Current contract: `framework:spec/lint.md#req-lint-range-unsquashed`, `framework:spec/lint.md#req-lint-range-unmatched`, `framework:spec/hooks.md#req-hooks-pre-push-rejects`
-- Proposed delta: `PENDING` — settled in DECIDE.
-- Terminal publication: `PENDING`
+- Proposed delta: `range-unsquashed` uses `--root` for a parentless base; `range-unmatched` defines subjects, the prefix chain, merges, `HEAD`/`@` and the before-the-range wording; `pre-push-rejects` keeps "already published". Text under Decide.
+- Terminal publication: `framework:spec/lint.md#req-lint-range-unsquashed`, `framework:spec/lint.md#req-lint-range-unmatched`, `framework:spec/hooks.md#req-hooks-pre-push-rejects`
 
 ## Define
 
@@ -299,3 +299,17 @@ All on the tree committed as `e4c52d9`, Linux, git 2.56.0. `logs/test-final-2026
 ## Retention and promotion
 
 No Claim is promoted: each describes git behaviour that `tests/lint.rs` now checks against a real repository, so a change in git breaks a test rather than leaving a stale Knowledge file. No Learning is promoted.
+
+## Archive readiness
+
+The bundle is self-contained: `ledger.md` carries the review's findings and the operator's answers, and the probe, acceptance script and every cited log are inside it. The review's own scripts stayed in the session scratchpad and are not needed: each finding is re-observed by `logs/test-red-20261003-1750.log` or `logs/probe-git-rules-20261003-1726.log`. Specification references use `framework:`; commit IDs and source paths are supplemental anchors; the archived Task `unmatched-autosquash` is context, not required to read this one.
+
+## Terminal record
+
+### Summary
+
+All eight review findings on `fix-unmatched-autosquash` are fixed in `e4c52d9`: root targets, wrapped subjects, spaces after prefixes, merges, `HEAD`/`@` specifiers, before-the-range wording, wrapped `amend!` subjects, and one blame per hunk. Every criterion has a test that failed before and passes now.
+
+### Gate basis
+
+r1–r7 and `p1-review-findings` are `VERIFIED` (Verify). No deferred verification remains. The specification delta is published in this checkpoint.
