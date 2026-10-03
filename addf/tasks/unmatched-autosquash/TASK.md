@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Probe git's matching precedence and the no-space condition for revs (Assumptions), then probe candidate advice for each unmatched kind (Open questions).
+**Resume at:** Settle with the operator the rule ids, whether advice names the target found by blame, how the published-target message words pushing anyway, and the base shown in hints; then write the proposed spec delta.
 
-**Open obligations:** Each Understand assumption and open question has a disposition — blocks the INVESTIGATE gate.
+**Open obligations:** The selected approach, its spec delta and its verification strategy recorded under Decide — blocks the DECIDE gate.
 
 ## Owned artifacts
 
