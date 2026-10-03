@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Once the operator has the branch pushed and a PR opened, read the hosted CI run and settle `c5-no-regression` (Understand, Deferred verification).
+**Resume at:** Move to `LEARN`.
 
-**Open obligations:** (1) The Windows and macOS half of `c5-no-regression`, deferred to the PR's CI run — blocks `VERIFY` exit.
+**Open obligations:** (1) Publish the `spec/fixup.md` delta (c6) — terminal checkpoint.
 
 ## Owned artifacts
 
@@ -20,6 +20,7 @@
 -   `logs/test-red-d9ab2b0-20261003-1654.log` - Evidence: the new tests on `d9ab2b0`'s code, before the change.
 -   `logs/test-final-20261003-1655.log`, `logs/clippy-20261003-1655.log`, `logs/fmt-20261003-1655.log`, `logs/fmt-20261003-1700.log`, `logs/test-fixup-20261003-1700.log` - Evidence: tests, clippy and formatting on the change (see Implement).
 -   `logs/probe-new-20261003-1702.log`, `logs/probe-new-20261003-1705.log` - Evidence: `probe.py` on the new build; the first is superseded (see Implement).
+-   `logs/ci-pr16-20261003.log` - Evidence: hosted CI run on PR #16 at `fd378b7`.
 
 ## Specification impact
 
@@ -77,10 +78,10 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `c5-no-regression`
 
 -   Claim: `cargo test` and `cargo clippy --all-targets -- -D warnings` pass, and the change follows `rules/os-agnostic-code.md`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch; Linux run, Windows by inspection and CI.
 -   Consequence if false: the change breaks existing behaviour or another OS.
--   Basis: [Verification](#verification-c5-no-regression), not yet settled
+-   Basis: [Verification](#verification-c5-no-regression)
 
 <a id="c6-spec"></a>
 #### `c6-spec`
@@ -154,6 +155,7 @@ Tests: `tests/fixup.rs` (targets, base, trace, split), `tests/fixup_modes.rs` (m
 ### Deferred verification
 
 -   `c5-no-regression` on Windows (and macOS): CI runs only on `main` and on pull requests, and the operator chose on 2026-10-03 to deal with failures once the PR exists and CI has run (`ledger.md` Q10). Earliest checkpoint: the hosted CI run on this branch's PR. Settling observation: the `test` job passes on `windows-latest` and `macos-latest`. Consequence if false: the change breaks another OS. Blocked work: `VERIFY -> LEARN`.
+    Settled: PR #16's CI run passed on all three systems ([Verification](#verification-c5-no-regression)).
 
 ## Investigate
 
@@ -284,9 +286,9 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 
 - Claim: [`c5-no-regression`](#c5-no-regression).
 - Method: `cargo test --no-fail-fast` and `cargo clippy --all-targets -- -D warnings` on Linux; inspection of the diff of `ebdd50d` against `rules/os-agnostic-code.md`.
-- Evidence considered: `logs/test-final-20261003-1655.log` (every suite passes), `logs/clippy-20261003-1655.log` (clean), `logs/test-fixup-20261003-1700.log`. The change adds only git arguments and string handling, no path, process or `cfg` code; the tests use only git commands and file names valid on Windows.
-- Conclusion: `UNVERIFIED`: Linux is verified; the Windows half rests on inspection until hosted CI runs.
-- Limitations: needs a push to run CI on Windows and macOS; obligation (2).
+- Evidence considered: `logs/test-final-20261003-1655.log` (every suite passes), `logs/clippy-20261003-1655.log` (clean), `logs/test-fixup-20261003-1700.log`. The change adds only git arguments and string handling, no path, process or `cfg` code; the tests use only git commands and file names valid on Windows. `logs/ci-pr16-20261003.log`: hosted CI run `37133071050` on PR #16 at `fd378b7` concluded `success`, with `test` passing on `ubuntu-latest`, `windows-latest` and `macos-latest`, and `capsule` on Ubuntu and Windows.
+- Conclusion: `VERIFIED`.
+- Limitations: none blocking.
 
 <a id="verification-c6-spec"></a>
 ### Verification: `c6-spec`
@@ -296,6 +298,10 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 - Evidence considered: `ask-branch-commit`'s "non-merge" matches `--no-merges`; `explicit-target-not-merge`'s message is asserted verbatim by `explicit_merge_target_is_refused_by_every_subcommand`; `merge-limit`'s message is asserted verbatim by `line_last_changed_by_a_merge_is_refused`, and its insertion rule by the two insertion tests.
 - Conclusion: `UNVERIFIED` until Stewardship applies the delta to `spec/fixup.md` at completion; the wording is checked against the code.
 - Limitations: publication happens in the terminal checkpoint.
+
+### VERIFY gate
+
+`ESTABLISHED`: p1 and c1–c5 are `VERIFIED`; c6's wording is checked against the code and is settled by applying it to `spec/fixup.md` in the terminal checkpoint, as Stewardship prescribes. No contradicting evidence is open.
 
 ## Learn
 

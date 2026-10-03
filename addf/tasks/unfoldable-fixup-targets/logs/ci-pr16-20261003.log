@@ -1,0 +1,1 @@
+{"conclusion":"success","headSha":"fd378b7354aa360d756e9861cd4f607745c88e15","jobs":[{"conclusion":"success","name":"capsule (ubuntu-latest)"},{"conclusion":"success","name":"capsule (windows-latest)"},{"conclusion":"success","name":"test (windows-latest)"},{"conclusion":"success","name":"test (ubuntu-latest)"},{"conclusion":"success","name":"test (macos-latest)"}]}
