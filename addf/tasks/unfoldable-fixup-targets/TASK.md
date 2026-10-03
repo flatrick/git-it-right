@@ -4,14 +4,14 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Ask the operator how automatic selection treats a line blamed on a merge, and whether commits already cherry-picked to the base branch are in scope; then write Decide.
+**Resume at:** Write the tests for c2–c4 in `tests/fixup.rs` and `tests/fixup_modes.rs`, and log them failing on the current code.
 
-**Open obligations:** (1) Whether a commit whose patch is already upstream (cherry-picked) is in scope — blocks `DECIDE`.
-(2) How automatic selection treats a staged line last changed by a merge commit (untraced, refused, or traced past the merge) — blocks `DECIDE`.
+**Open obligations:** (1) Tests for c2–c4 fail first, then pass — blocks `IMPLEMENT` exit.
+(2) `spec/fixup.md` delta written — blocks `VERIFY` exit (c6).
 
 ## Owned artifacts
 
