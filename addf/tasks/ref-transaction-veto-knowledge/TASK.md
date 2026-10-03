@@ -287,3 +287,56 @@ Every Verification below rests on `logs/probe-veto-20261003-1945.log` (git 2.56.
 ### VERIFY gate
 
 `ESTABLISHED`: the premise and f1–f5 are `VERIFIED` from the probe log; k1–k5 are `VERIFIED` with their publication in the terminal checkpoint, which `check-capsule` validates.
+
+## Learn
+
+### Technical
+
+-   A `reference-transaction` veto is not atomic with the working tree: every operation probed except `git commit` had already rewritten the index and working tree when the ref update was refused, and the usual recoveries update the same ref, so the hook can refuse them too. `git rebase --abort` sends an all-zero old value, so a guard that compares old and new values refuses it even when the branch would not move.
+
+### Process
+
+-   Two Claims (f3, f5) were first drafted from a summary of the log and were wrong about what `merge --abort` and `rebase --abort` do under the stricter hook; rereading the raw log before the Verification caught both. Disposition: no permanent change; Evidence and verification already asks for Claims established from observations, which is what caught them.
+-   addf friction around Knowledge as a Task's deliverable: `SELF-IMPROVEMENT/20261003T133924Z-knowledge-as-a-success-criterion.md`.
+
+### LEARN gate
+
+`ESTABLISHED`: the learnings above are recorded with their dispositions.
+
+## Retention and promotion
+
+### Promotion: `f1-ff-merge-veto`
+
+-   Claim: [`f1-ff-merge-veto`](#f1-ff-merge-veto).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`: it is what any design that guards a branch with a `reference-transaction` hook must handle for a fast-forward.
+-   Disposition: promoted to `knowledge/ref-transaction-veto-ff-merge.md`.
+
+### Promotion: `f2-commit-veto`
+
+-   Claim: [`f2-commit-veto`](#f2-commit-veto).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`, as for f1, for commits.
+-   Disposition: promoted to `knowledge/ref-transaction-veto-commit.md`.
+
+### Promotion: `f3-merge-commit-veto`
+
+-   Claim: [`f3-merge-commit-veto`](#f3-merge-commit-veto).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`, as for f1, for merge commits.
+-   Disposition: promoted to `knowledge/ref-transaction-veto-merge-commit.md`.
+
+### Promotion: `f4-pull-veto`
+
+-   Claim: [`f4-pull-veto`](#f4-pull-veto).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`, as for f1, for pulls.
+-   Disposition: promoted to `knowledge/ref-transaction-veto-pull.md`.
+
+### Promotion: `f5-rebase-veto`
+
+-   Claim: [`f5-rebase-veto`](#f5-rebase-veto).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`, as for f1, for rebases.
+-   Disposition: promoted to `knowledge/ref-transaction-veto-rebase.md`.
+
+### Promotion: `p1-veto-leaves-staged`
+
+-   Claim: [`p1-veto-leaves-staged`](#p1-veto-leaves-staged).
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: f1 states it in full.
+-   Disposition: not promoted — covered by f1.
