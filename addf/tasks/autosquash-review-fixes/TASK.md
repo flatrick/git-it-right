@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** DEFINE dialogue with the operator: agree the objective and success criteria r1–r7.
+**Resume at:** Probe git 2.56.0 for the subject rule, prefix whitespace, merges in the todo, `HEAD` during `git rebase <upstream> <branch>`, and `git blame` on root lines and line ranges.
 
-**Open obligations:** Objective and success criteria agreed with the operator — blocks the DEFINE gate.
+**Open obligations:** The git behaviours r1–r7 depend on are observed — blocks the UNDERSTAND gate.
 
 ## Owned artifacts
 
