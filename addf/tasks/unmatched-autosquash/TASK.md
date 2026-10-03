@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Add the fold check and `fixup-unmatched` to the range lint and pre-push (`src/cmd/lint.rs`, `src/cmd/hook.rs`), with end-to-end tests first.
+**Resume at:** Run `cargo test --no-fail-fast`, clippy, `cargo fmt --check` and `acceptance.py` on the final tree into `logs/`, then write a Verification for each of c1–c4.
 
-**Open obligations:** The change exists and can be evaluated — blocks the IMPLEMENT gate. `acceptance.py` written and run — blocks the VERIFY gate.
+**Open obligations:** A Verification for each of c1–c4 — blocks the VERIFY gate. The spec delta written into `spec/` — terminal checkpoint.
 
 ## Owned artifacts
 

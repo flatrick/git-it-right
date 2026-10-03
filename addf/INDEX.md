@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [unmatched-autosquash](tasks/unmatched-autosquash/TASK.md) - an
-  unmatched autosquash commit gets advice that works. State: `IMPLEMENT`.
+  unmatched autosquash commit gets advice that works. State: `VERIFY`.
 
 ## Ledger
 
