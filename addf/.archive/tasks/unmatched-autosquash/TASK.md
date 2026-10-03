@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Write Learn and Retention and promotion, then the terminal checkpoint with the spec delta.
+**Resume at:** `NONE`
 
-**Open obligations:** Learn and Retention and promotion recorded — blocks the LEARN gate. The spec delta written into `spec/` — terminal checkpoint.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -33,7 +33,7 @@
 
 - Current contract: `framework:spec/lint.md#req-lint-range-unsquashed`, `framework:spec/hooks.md#req-hooks-pre-push-rejects`, `framework:spec/explain.md#req-explain-known-pages`, `framework:spec/fixup.md#req-fixup-create-commit`, `framework:SPEC.md` (Boundaries)
 - Proposed delta: `range-unsquashed` narrowed to commits that will fold, with a concrete base; a new `range-unmatched` with rule `fixup-unmatched`; `pre-push-rejects` extended with `fixup-unmatched` and its `--no-verify` hint; `fixup-unmatched` added to `known-pages`. `fixup.md` unchanged. Text under Decide.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:spec/lint.md#req-lint-range-unsquashed`, `framework:spec/lint.md#req-lint-range-unmatched`, `framework:spec/hooks.md#req-hooks-pre-push-rejects`, `framework:spec/explain.md#req-explain-known-pages`
 
 ## Define
 
@@ -309,3 +309,17 @@ All runs below are on the tree committed as `48bfb47`, Linux, git 2.56.0.
 -   Disposition: not promoted — the archived Verification and the explain page carry it; no Knowledge file.
 
 No Learning is promoted beyond the self-improvement entry.
+
+## Archive readiness
+
+The bundle is self-contained: `ledger.md`, the probes, `acceptance.py` and every log it cites are inside it, linked by bundle-relative paths. Specification references use `framework:` and name the published requirements. Commit IDs (`eb6fdce`, `48bfb47`) and source paths are supplemental evidence anchors. The phase-0 material under `.agents/` is not referenced as evidence; what was needed from it is copied into `ledger.md` A1.
+
+## Terminal record
+
+### Summary
+
+`gir lint --range` and pre-push now tell an autosquash commit that `git rebase --autosquash` would leave in place from one it would fold, and reject the first as `fixup-unmatched` with advice that, followed literally, leaves no autosquash commit: move it below the commit blame names, or reword it into a normal commit when that commit is published, with `git push --no-verify` named in pre-push. Fixups that fold keep `fixup-unsquashed` with a concrete base. c4 was met by its alternative: no subject git reads survives an out-of-band reword. Code: `eb6fdce`, `48bfb47`.
+
+### Gate basis
+
+c1–c4 are `VERIFIED` (Verify). No deferred verification remains. The specification delta is published in this checkpoint (Specification impact, Terminal publication).
