@@ -28,11 +28,9 @@
 
 `For every case the review of fix-unmatched-autosquash found, gir lint --range and pre-push predict what git rebase --autosquash does, give advice that can be followed, and stay fast on large fixups.`
 
-Draft; not yet agreed with the operator.
+DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success criteria r1–r7 (`ledger.md` Q10, A10).
 
 ### Success criteria
-
-Draft; not yet agreed with the operator.
 
 <a id="r1-root-in-range"></a>
 #### `r1-root-in-range`
@@ -41,7 +39,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the first push of every new repository gets wrong advice.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r2-subject-rule"></a>
 #### `r2-subject-rule`
@@ -50,7 +48,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the loop the previous Task removed returns for these subjects.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r3-merges-not-targets"></a>
 #### `r3-merges-not-targets`
@@ -59,7 +57,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: a fixup of a merge is told to run a rebase that leaves it.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r4-blame-fast"></a>
 #### `r4-blame-fast`
@@ -68,7 +66,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch, a debug build.
 -   Consequence if false: pre-push can take minutes on large fixups.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r5-head-relative"></a>
 #### `r5-head-relative`
@@ -77,7 +75,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: pushing a branch other than the checked-out one misjudges such fixups.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r6-range-wording"></a>
 #### `r6-range-wording`
@@ -86,7 +84,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: this branch.
 -   Consequence if false: CI tells a user a local commit is published.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 <a id="r7-amend-message"></a>
 #### `r7-amend-message`
@@ -95,7 +93,7 @@ Draft; not yet agreed with the operator.
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: following the advice empties the target's message.
--   Basis: none yet; Task in DEFINE.
+-   Basis: none yet; pending.
 
 ### Constraints
 

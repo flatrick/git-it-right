@@ -26,3 +26,5 @@ Append-only: never edit or delete a prior entry; append new ones at the end.
 - A8: Plausible, not tested: the second line of a wrapped subject counts as a message body, so `fixup -C` could be advised for an `amend!` with no new message.
 - Q9: Which findings does the operator want fixed, and where?
 - A9: All of them (1–8) plus tests for each gap the review listed (root and merge in the range, wrapped subjects, extra whitespace, a large unmatched fixup, a first push), in a new Task on the same branch and worktree, before the branch is merged.
+- Q10: Are the objective and success criteria r1–r7 in `TASK.md` viable, actionable and the outcome the operator wants, including r4's one-second bound and r5 leaving checkout-history forms such as `@{-1}` out of scope?
+- A10: Yes: "Agreed, proceed".
