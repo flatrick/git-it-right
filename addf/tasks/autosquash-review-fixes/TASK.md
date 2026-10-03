@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Record the approach for r1–r7, its spec delta and verification strategy under Decide.
+**Resume at:** Write the failing tests for r1–r7 in `tests/lint.rs` and `tests/cli.rs`, see them fail, then change `src/cmd/lint.rs` and `src/cmd/fixup.rs`.
 
-**Open obligations:** Approach, spec delta and verification strategy recorded — blocks the DECIDE gate.
+**Open obligations:** The change exists and can be evaluated — blocks the IMPLEMENT gate.
 
 ## Owned artifacts
 
