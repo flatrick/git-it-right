@@ -18,6 +18,9 @@
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
 -   `probe.py` - Probe: the picker after a `--no-ff` merge, what a plain autosquash folds, and what explicit and automatic targets gir accepts today.
 -   `logs/probe-02b4061-20261003-1623.log` - Evidence: `probe.py` on the build of `02b4061` (see Investigate).
+-   `logs/test-red-d9ab2b0-20261003-1654.log` - Evidence: the new tests on `d9ab2b0`'s code, before the change.
+-   `logs/test-final-20261003-1655.log`, `logs/clippy-20261003-1655.log`, `logs/fmt-20261003-1655.log`, `logs/fmt-20261003-1700.log`, `logs/test-fixup-20261003-1700.log` - Evidence: tests, clippy and formatting on the change (see Implement).
+-   `logs/probe-new-20261003-1702.log`, `logs/probe-new-20261003-1705.log` - Evidence: `probe.py` on the new build; the first is superseded (see Implement).
 
 ## Specification impact
 
@@ -204,7 +207,31 @@ Verification strategy: tests first in `tests/fixup.rs` and `tests/fixup_modes.rs
 
 ## Implement
 
-`NONE` yet.
+Code in `ebdd50d`:
+
+-   `src/cmd/fixup.rs`: `pick_branch_commit` adds `--no-merges`; `explicit_target` refuses a merge; `trace` takes the `Mode`, blames every hunk first, asks `merges` once for all blamed commits, and after the `base-limit` check refuses a merge-blamed hunk or drops the merge from an insertion's candidates.
+-   `tests/fixup.rs`: seven tests: the picker leaves out the merge but lists the side commit; an explicit merge is refused by `fixup`, `amend`, `squash` and `reword`; an explicit side-branch commit is accepted; a merge-resolved line is refused by `fixup`, `fixup --split` and `amend`; a hunk with one merge line among others is refused; an insertion between a merge line and a topic line targets the topic commit; an insertion between a base line and a merge line is refused.
+
+Deviation from Decide: `merges` is a private function in `src/cmd/fixup.rs`, beside `lint::merges` in `src/cmd/lint.rs`, not a new `git::merges`; both make the same call, each in its own module, as `lint` already did.
+`trace` now blames all hunks before checking any, so an early refusal no longer skips the remaining blames; the order of checks and their results are unchanged.
+
+Checkpoints:
+
+-   Tests first: `logs/test-red-d9ab2b0-20261003-1654.log`: the six tests for c2–c4 fail on `d9ab2b0`'s code for the expected reasons (the picker lists the merge; the merge is accepted as an explicit target and selected automatically; the mixed hunk and the insertion name the merge as a second target); the side-branch test passes there, as it should.
+-   `logs/test-fixup-20261003-1700.log`: `cargo test --test fixup`, 35 passed, on the committed tree.
+-   `logs/test-final-20261003-1655.log`: `cargo test --no-fail-fast`, every suite passes, on the tree before the two assertions were reformatted (layout only); `logs/clippy-20261003-1655.log`: clean; `logs/fmt-20261003-1655.log` flagged two new test assertions, reformatted by hand; `logs/fmt-20261003-1700.log`: clean.
+-   `logs/probe-new-20261003-1705.log`: `probe.py` on the new build: the picker lists the side commit but not the merge; the explicit merge, automatic selection and `--split` are refused with exit `2`.
+    `logs/probe-new-20261003-1702.log` is the same run before `probe.py` required exit `0` for "picks the merge", so its two `True` lines only matched the merge's ID inside the refusal.
+
+Specification delta for `spec/fixup.md`, to publish at completion:
+
+-   `ask-branch-commit`: "list up to 20 of the newest non-merge commits after the base commit, or on `HEAD` when no base is found", the rest unchanged.
+-   New `explicit-target-not-merge`, after `explicit-target-after-base`: `gir fixup COMMIT` SHALL refuse a merge commit with ``gir: `COMMIT` is a merge commit, which a rebase drops; pass the commit the change belongs to`` on stderr and exit `2`, creating no commit.
+-   New `merge-limit`, after `base-limit`: automatic selection SHALL refuse a hunk that replaces any line last changed by a merge commit with `<path>:<line> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>` on stderr and exit `2`. A pure insertion SHALL be refused so only when none of its neighbouring lines was last changed by an eligible non-merge commit; otherwise the merge SHALL NOT be a target.
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: the change exists in `ebdd50d`, its tests failed before and pass now, and the spec wording is ready for VERIFY to compare with the code.
 
 ## Verify
 

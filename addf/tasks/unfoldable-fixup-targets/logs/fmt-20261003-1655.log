@@ -1,0 +1,25 @@
+Diff in /home/flatrick/src/github/flatrick/git-it-right/.worktrees/unfoldable-fixup-targets/tests/fixup.rs:437:
+     for sub in ["fixup", "amend", "squash", "reword"] {
+         let out = repo.gir_with(&[sub, &merge], &[("GIT_EDITOR", "true")], "");
+         assert_eq!(out.status.code(), Some(2), "{sub}: {}", stderr(&out));
+[31m-        assert_eq!(stderr(&out), format!("gir: `{merge}` is a merge commit, which a rebase drops; pass the commit the change belongs to\n"), "{sub}");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            stderr(&out),
+(B[m[32m+            format!("gir: `{merge}` is a merge commit, which a rebase drops; pass the commit the change belongs to\n"),
+(B[m[32m+            "{sub}"
+(B[m[32m+        );
+(B[m         assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{sub}: refusal must create no commit");
+     }
+ }
+Diff in /home/flatrick/src/github/flatrick/git-it-right/.worktrees/unfoldable-fixup-targets/tests/fixup.rs:461:
+         assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
+         assert_eq!(
+             stderr(&out),
+[31m-            format!("gir: f.txt:2 was last changed by the merge {}, which a rebase drops; commit it normally, or pass one: gir {sub} <commit>\n", &merge[..10]),
+(B[m[32m+            format!(
+(B[m[32m+                "gir: f.txt:2 was last changed by the merge {}, which a rebase drops; commit it normally, or pass one: gir {sub} <commit>\n",
+(B[m[32m+                &merge[..10]
+(B[m[32m+            ),
+(B[m             "{args:?}"
+         );
+         assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{args:?}: refusal must create no commit");

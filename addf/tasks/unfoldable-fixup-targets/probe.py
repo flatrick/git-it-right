@@ -128,6 +128,6 @@ print(f"  merge {merge[:10]}; git blame -L 2,2: {git(d, 'blame', '-l', '-s', '-L
 write(d, "f.txt", "one\nTWO\nthree\n")
 git(d, "add", "f.txt")
 code, text = gir(d, "fixup", "--dry-run")
-print(f"  OBSERVED automatic selection picks the merge: {merge[:10] in text}")
+print(f"  OBSERVED automatic selection picks the merge: {code == 0 and merge[:10] in text}")
 code, text = gir(d, "fixup", "--split", "--dry-run")
-print(f"  OBSERVED --split picks the merge: {merge[:10] in text}")
+print(f"  OBSERVED --split picks the merge: {code == 0 and merge[:10] in text}")
