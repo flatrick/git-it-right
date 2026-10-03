@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
 
-**Resume at:** Read git 2.56.0's `githooks` documentation for `reference-transaction`, then write the probe for the five operations.
+**Resume at:** Record the Knowledge files' names, content and verification under Decide.
 
-**Open obligations:** The hook's documented contract and the probe design recorded — blocks the UNDERSTAND gate.
+**Open obligations:** The publication plan recorded — blocks the DECIDE gate.
 
 ## Owned artifacts
 
@@ -159,3 +159,7 @@ The findings below were added in UNDERSTAND from `probe-veto.py`; each is the Cl
 ### UNDERSTAND gate
 
 `ESTABLISHED`: the hook's documented contract is recorded, and the probe observed every operation in scope under both hook designs with the agreed recoveries. No open question remains for INVESTIGATE.
+
+## Investigate
+
+INVESTIGATE gate: `NOT_APPLICABLE` — skipped. The probe ran in UNDERSTAND and left no decision-relevant uncertainty; what it did not cover is listed there and becomes each Knowledge file's Limitations.
