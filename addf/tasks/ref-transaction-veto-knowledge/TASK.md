@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> VERIFY -> LEARN`
 
-**Resume at:** Write a Verification for `p1-veto-leaves-staged`, f1–f5 and k1–k5.
+**Resume at:** Write Learn and Retention and promotion, then the terminal checkpoint with the five Knowledge files.
 
-**Open obligations:** Verifications recorded — blocks the VERIFY gate. Five Knowledge files and their index entries — terminal checkpoint.
+**Open obligations:** Learn and Retention and promotion recorded — blocks the LEARN gate. Five Knowledge files and their index entries — terminal checkpoint.
 
 ## Owned artifacts
 
