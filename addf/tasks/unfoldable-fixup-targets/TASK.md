@@ -305,7 +305,20 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 
 ## Learn
 
-`NONE` yet.
+### Technical
+
+-   A plain `git rebase -i --autosquash <base>` drops merge commits from its todo and linearises the side-branch commits, so a `fixup!` of a merge is left unfolded and a `fixup!` of a side-branch commit folds (c1).
+    The review's suggested `--first-parent` was wrong for that reason: it would have hidden targets that fold.
+    gir now relies on this in two places, `lint::merges` and `fixup::merges`; promoted to Knowledge.
+-   `git blame` names the merge for a line its conflict resolution wrote, and the parent's commit for a line kept from a parent (observed: `f.txt` lines 2 and 3 in the tests).
+    That a cleanly merged side-branch line is blamed on the side-branch commit is inferred from the same rule, not run.
+
+### Process
+
+-   A suggested fix in a review finding is a hypothesis: Q7 stated the merge case as inferred and proposed `--first-parent` with it; running the rebase before deciding changed the fix.
+-   The probe's first "picks the merge" check matched the merge's ID inside the refusal message, so it reported `True` for a correct refusal; a probe that classifies an outcome should check the exit code, not only the text.
+-   The checker requires the Open obligations value to start on its label line, which no template states (`SELF-IMPROVEMENT/20261003T142500Z-open-obligations-list-form.md`).
+-   CI runs only on `main` and on pull requests, so a Task's Windows claim cannot be settled from a branch without opening a PR.
 
 ## Retention and promotion
 
