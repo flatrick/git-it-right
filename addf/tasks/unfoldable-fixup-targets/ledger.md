@@ -25,3 +25,10 @@ Entry Q7 of `ledger/fixup-review-20261002.md`, copied unchanged.
 - A5: No other Task is active.
 - Q6: Are the objective, scope and success criteria c1–c6 viable, actionable and desirable, with `--rebase-merges` out of scope, the same filter when no base is found, and explicit unfoldable targets refused with exit `2`?
 - A6: Agreed by the operator on 2026-10-03, as written in `TASK.md`.
+- Q7: Which commits are left out, now that INVESTIGATE observed that a `fixup!` of a merge is left unfolded and a `fixup!` of a side-branch commit folds?
+- A7: Merge commits only (`--no-merges`), following from the evidence, as the operator asked on 2026-10-03 (A2).
+- Q8: What does automatic selection do with a staged line last changed by a merge?
+- A8: Refuse it, like `base-limit`, chosen by the operator on 2026-10-03: `<place> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>`, exit `2`.
+  An insertion is refused only when every neighbouring line was last changed by a merge; `--split` refuses the same way.
+- Q9: Are commits already cherry-picked onto the base branch in scope?
+- A9: No, chosen by the operator on 2026-10-03: recorded as Q17 of the thread `fixup-review-20261002` instead.

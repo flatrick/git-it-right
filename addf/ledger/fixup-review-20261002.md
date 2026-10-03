@@ -96,3 +96,8 @@ For each one, whether to fix it on this branch is still OPEN.
   Each Task is created when its turn comes.
 - D8: settles Q10 -> moved to commit `8c5cdf6`, which breaks the lines of `ROADMAP.md`, `CLIENT-TESTING.md` and `SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` at sentence ends
 - D9: settles Q7 -> taken by Task unfoldable-fixup-targets
+- Q17: Can gir target a commit that was cherry-picked onto the base branch after the topic branch forked?
+- A17: OPEN. Found in the INVESTIGATE of Task `unfoldable-fixup-targets` on 2026-10-03; inferred from how `git rebase <upstream>` skips commits whose patch is already upstream, not run.
+  A plain `git rebase -i --autosquash <base>` would drop such a commit, so a `fixup!` of it would not fold, yet the picker, explicit targets and automatic selection all accept it.
+  Detecting it needs a patch-ID comparison against the base branch (`git cherry`).
+  The operator kept it out of that Task and asked for it to be recorded here.

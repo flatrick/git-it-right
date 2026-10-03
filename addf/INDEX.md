@@ -23,7 +23,7 @@ is available through its archived bundle, not through this index.
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
-  in `gir fixup`, `--split` and `gir doctor`; two open (Q9, Q12).
+  in `gir fixup`, `--split` and `gir doctor`; three open (Q9, Q12, Q17).
 
 ## Skills
 

@@ -22,7 +22,7 @@
 ## Specification impact
 
 - Current contract: `framework:spec/fixup.md#req-fixup-ask-branch-commit`, `framework:spec/fixup.md#req-fixup-explicit-target`, `framework:spec/fixup.md#req-fixup-explicit-target-on-branch`, `framework:spec/fixup.md#req-fixup-explicit-target-after-base`, `framework:spec/fixup.md#req-fixup-staged-line-target`, `framework:spec/fixup.md#req-fixup-base-limit`
-- Proposed delta: `ask-branch-commit` lists no commit that `git rebase --autosquash <base>` cannot fold (at least merge commits); explicit targets refuse such a commit; automatic selection never selects one. Which commits that covers, and the exact wording and messages, are settled in `DECIDE`.
+- Proposed delta: `ask-branch-commit` lists only non-merge commits; a new `explicit-target-not-merge` refuses a merge target; a new `merge-limit` refuses a hunk with a line last changed by a merge, and an insertion whose neighbouring lines all were. Wording under Decide.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -179,7 +179,28 @@ Dispositions:
 
 ## Decide
 
-`NONE` yet.
+Leave out merge commits, and only merge commits (Investigate; `ledger.md` Q7–Q9).
+
+-   **Picker:** `pick_branch_commit` runs `rev-list --no-merges --max-count=20 <range>`, so it lists up to 20 non-merge commits.
+-   **Explicit target:** after the existing checks, `explicit_target` refuses a merge with ``gir: `COMMIT` is a merge commit, which a rebase drops; pass the commit the change belongs to``, exit `2`.
+    A merge on the base branch keeps its existing `already on the base branch` refusal.
+-   **Automatic selection:** `trace` learns which blamed commits are merges with one `git rev-list --merges --no-walk --stdin` call, made only when a hunk names any commit.
+    After the `base-limit` check, a hunk with a line blamed on a merge is refused with `<place> was last changed by the merge <sha>, which a rebase drops; commit it normally, or pass one: gir <subcommand> <commit>`; a pure insertion is refused only when every neighbouring line is blamed on a merge, and otherwise drops the merge from its candidates.
+    `trace` takes the `Mode` to name the subcommand.
+    `--split` gets its hunks from `trace`, so it refuses the same way.
+-   The merge lookup is a new `git::merges(ids)` in `src/git.rs`.
+    `lint::merges` makes the same git call over `(sha, subject)` pairs; it is left as is, to keep the diff to this Task.
+-   **Spec:** `ask-branch-commit` says "non-merge commits"; a new `explicit-target-not-merge` after `explicit-target-after-base`; a new `merge-limit` after `base-limit`.
+
+Rejected: `--first-parent` (it hides side-branch commits that fold, Investigate); treating a merge-blamed line as untraced or dropping it from a modified hunk (operator, `ledger.md` A8); cherry-picked commits (moved to the thread as Q17).
+
+Residual: a commit cherry-picked to the base branch can still be targeted (thread Q17); `--rebase-merges` is out of scope (Constraints).
+
+Verification strategy: tests first in `tests/fixup.rs` and `tests/fixup_modes.rs`, each failing on `d99d543`'s code for the reason in c2–c4, then passing; `probe.py` re-run against the new build; `cargo test` and `cargo clippy --all-targets -- -D warnings` for c5; `spec/fixup.md` compared with the code for c6.
+
+### DECIDE gate
+
+`ESTABLISHED`: the approach follows from the Investigate evidence and the operator's choices, each part uses git commands gir already runs, and every success criterion has a named check.
 
 ## Implement
 
