@@ -18,6 +18,8 @@
 -   `probe-git-rules.py` - Probe: the git behaviours r1–r7 depend on.
 -   `logs/probe-git-rules-20261003-1722.log` - Evidence: first run, without the checked-out `HEAD` cases.
 -   `logs/probe-git-rules-20261003-1726.log` - Evidence: the run of the current `probe-git-rules.py`.
+-   `acceptance.py` - Probe and acceptance: follows each `try:` hint literally and checks subjects and tree; adds r1 and r7 cases to the archived Task's script.
+-   `logs/acceptance-20261003-1815.log` - Evidence: the run on `e4c52d9`'s tree, 9/9.
 
 ## Specification impact
 
@@ -182,3 +184,17 @@ All in `src/cmd/lint.rs` unless named.
 ### DECIDE gate
 
 `ESTABLISHED`: each criterion maps to a change grounded in the Understand observations, and each has a failing-first test.
+
+## Implement
+
+Commit `e4c52d9`, as decided; no deviation.
+
+-   Tests first: `.scratch` run `test-red-20261003-1750` (local only) had all eight new or changed tests failing for the reviewed reasons: root target "already published" with `<base>` (lint and pre-push), a wrapped fixup subject predicted to fold, a merge predicted to fold, "already published" for `lint --range`, `fixup! HEAD~2` from another checkout unmatched, a wrapped `amend!` advised `fixup -C`, and the 3000-line fixup taking 7.82 s. That re-observes findings 1, 2, 5, 6, 7 and 8 on `8465c1d`'s code (premise `p1-review-findings`).
+-   `src/cmd/lint.rs`: `subject`, `merges`, `head_at`; `folds` takes the merges and the tip; the base falls back to `--root`; the published wording depends on `pushing`; the `amend!` check looks for a paragraph after the subject.
+-   `src/cmd/fixup.rs`: `blame_range` (one `git blame --root -L first,last` per hunk); `blame` is back to its code on `main`, and `blame_at` is gone.
+-   `tests/lint.rs`: five new tests, a wrapped `amend!` case, the before-the-range wording, and a `lint_rev` helper; `tests/cli.rs`: a first-push test.
+-   `acceptance.py`: copied from the archived Task with cases for r1 and r7; `logs/acceptance-20261003-1815.log` 9/9.
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: the change is in `e4c52d9`; `cargo test --no-fail-fast`, clippy and `cargo fmt --check` passed on it, and acceptance 9/9.
