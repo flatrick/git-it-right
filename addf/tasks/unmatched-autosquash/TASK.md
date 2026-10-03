@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Re-run the premise `p1-unmatched-survives` as a Probe owned by this Task, then map git 2.56.0's autosquash matching rules (exact subject, subject prefix, hash or ref) from git's documentation and a probe.
+**Resume at:** Probe git's matching precedence and the no-space condition for revs (Assumptions), then probe candidate advice for each unmatched kind (Open questions).
 
-**Open obligations:** `p1-unmatched-survives` verified or refuted — blocks the UNDERSTAND gate. git's autosquash matching rules known well enough to mirror — blocks the UNDERSTAND gate.
+**Open obligations:** Each Understand assumption and open question has a disposition — blocks the INVESTIGATE gate.
 
 ## Owned artifacts
 
