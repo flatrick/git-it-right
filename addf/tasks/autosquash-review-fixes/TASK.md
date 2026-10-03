@@ -280,3 +280,22 @@ All on the tree committed as `e4c52d9`, Linux, git 2.56.0. `logs/test-final-2026
 ### VERIFY gate
 
 `ESTABLISHED`: r1–r7 and the premise are `VERIFIED` above; clippy and format clean on the same tree.
+
+## Learn
+
+### Technical
+
+-   git's autosquash subject is the joined first paragraph; prefixes are followed by spaces, not any whitespace; merges are not targets of a plain rebase; `HEAD` means what is checked out when the rebase starts; `git blame` needs `--root` for full root IDs. All are now encoded in `src/cmd/lint.rs` and `tests/lint.rs`.
+
+### Process
+
+-   The previous Task's own probes and acceptance passed while a cold-context review then found eight defects: its cases were drawn from the shapes the author already had in mind (linear history, single-line subjects, no root in range, small fixups). A blind reviewer with permission to run experiments found the shapes the author did not. Disposition: no permanent change; the operator asked for this review, and it is recorded here as evidence that such a review paid off.
+-   A reviewer's claim about git ("any whitespace") was itself wrong in part; probing it before encoding it avoided a new mismatch. Disposition: no permanent change; it is what Evidence and verification already asks.
+
+### LEARN gate
+
+`ESTABLISHED`: the learnings above are recorded with their dispositions.
+
+## Retention and promotion
+
+No Claim is promoted: each describes git behaviour that `tests/lint.rs` now checks against a real repository, so a change in git breaks a test rather than leaving a stale Knowledge file. No Learning is promoted.
