@@ -98,7 +98,7 @@ The whole workflow: `gir explain fixup`.
 ## fixup-unmatched
 A `fixup!`, `squash!` or `amend!` commit matches no earlier commit among those being pushed or linted, so `git rebase --autosquash` reports success and leaves it where it is.
 git matches the text after the prefix against the title of an earlier commit (all of it, or its start), or resolves it as a commit ID; a fixup made before its target was reworded no longer matches.
-When gir can tell which commit the change belongs to, `try:` names it: in `git rebase -i <base>`, move the line below that commit and change `pick` to `fixup` (`squash` for `squash!`, `fixup -C` for `amend!`).
+When gir can tell which commit the change belongs to, `try:` names it: in `git rebase -i <base>`, move the line below that commit and change `pick` to `fixup` (`squash` for `squash!`, and `fixup -C` for an `amend!` that carries a new message).
 When that commit is already published, folding into it rewrites published history: reword the commit into a normal Conventional Commit instead (`reword` in `git rebase -i <base>`).
 Pushing it as it is stays your call: `git push --no-verify` skips the `pre-push` check.
 
