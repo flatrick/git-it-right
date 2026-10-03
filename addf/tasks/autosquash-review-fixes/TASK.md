@@ -147,3 +147,38 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 ## Investigate
 
 INVESTIGATE gate: `NOT_APPLICABLE` — skipped. Understand left no assumption or open question; the review and `probe-git-rules.py` already settled every uncertainty r1–r7 depend on.
+
+## Decide
+
+### Approach
+
+All in `src/cmd/lint.rs` unless named.
+
+-   r2, r7: one `subject(body)` that joins the first paragraph's lines, each trimmed at the end, with one space; `folds` uses it for the fixup and for every older commit, and strips each prefix only when one or more spaces follow it, then those spaces. The `amend!` check asks whether a non-empty paragraph follows the subject paragraph.
+-   r3: `lint_recorded` asks git which listed commits are merges, with one `git rev-list --merges --no-walk --stdin` fed their IDs, and only when the list holds an autosquash commit; merges are left out of the fold targets.
+-   r5: a specifier that is `HEAD` or `@`, or starts with `HEAD~`, `HEAD^`, `@~` or `@^`, has that leading name replaced by the newest listed commit (the tip being linted or pushed) before `git rev-parse`.
+-   r1, r4: a new `fixup::blame_range(rev, path, lines)` runs one `git blame --root -l -s -L <first>,<last>` per hunk and reads the ID on every line; `lint::blamed` uses it. `fixup::blame` goes back to its code on `main`, and the `blame_at` added by the previous Task goes away, so `gir fixup` is byte-for-byte unchanged against `main`.
+-   r1: when the oldest listed commit has no parent, the base is `--root`, so hints read `git rebase --autosquash --root` and `git rebase -i --root`.
+-   r6: the published-target message says `is already published` when pushing and `is before the range` for `gir lint --range`.
+
+### Proposed specification delta
+
+-   `lint.md`, `range-unsquashed`: `<base>` becomes the 10-character ID of the first parent of the oldest commit linted, "or `--root` when it has none".
+-   `lint.md`, `range-unmatched`: define the subject as git's (first paragraph joined with spaces), the prefix chain as each prefix followed by one or more spaces, exclude merge commits from the targets, resolve a specifier starting with `HEAD` or `@` against the newest commit linted, and word a target outside the range as "before the range".
+-   `hooks.md`, `pre-push-rejects`: a target outside the pushed commits is worded "already published".
+
+### Rejected alternatives
+
+-   Fetching parents for every commit through `lint::commits`' format: changes a function both callers share, for data needed only when an autosquash commit exists.
+-   Adding `--root` and ranged blame to `fixup::blame` as well: it would change `gir fixup`, which no criterion covers.
+
+### Verification strategy
+
+-   For each of r1–r7, an end-to-end test in `tests/lint.rs` or `tests/cli.rs` written first and seen failing on the current code, then passing.
+-   r4: a test that lints an unmatched fixup rewriting 3000 lines and asserts it finishes in under one second, plus a timing log.
+-   `acceptance.py` from the archived Task, run again, with cases for a root target and a wrapped `amend!`.
+-   `cargo test --no-fail-fast`, clippy, `cargo fmt --check`.
+
+### DECIDE gate
+
+`ESTABLISHED`: each criterion maps to a change grounded in the Understand observations, and each has a failing-first test.
