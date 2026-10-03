@@ -8,10 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Write a Verification for `p1-picker-lists-merges` and each of c1–c6 from the Implement evidence, and settle each Claim's State.
+**Resume at:** Ask the operator how to settle the Windows half of `c5-no-regression` (push for hosted CI, a manual Windows run, or another decision).
 
-**Open obligations:** (1) A Verification for p1 and c1–c6 — blocks `VERIFY` exit.
-(2) The Windows half of `c5-no-regression`: hosted CI needs a push, which needs the operator — blocks `VERIFY` exit unless the operator decides otherwise.
+**Open obligations:** (1) The Windows half of `c5-no-regression`: hosted CI needs a push, which needs the operator — blocks `VERIFY` exit unless the operator decides otherwise.
 
 ## Owned artifacts
 
@@ -42,37 +41,37 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `c1-autosquash-behaviour`
 
 -   Claim: For a branch with a `--no-ff` merge of a side branch, it is observed (not inferred) whether `git rebase -i --autosquash <base>` folds a `fixup!` of the merge commit, and whether it folds a `fixup!` of a commit from the side branch.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, throwaway repositories.
 -   Consequence if false: the fix leaves out the wrong commits: it either still offers unfoldable targets or hides foldable ones.
--   Basis: pending; A7 states the merge case as inferred only.
+-   Basis: [Verification](#verification-c1-autosquash-behaviour)
 
 <a id="c2-picker"></a>
 #### `c2-picker`
 
 -   Claim: The commit picker (`ask-branch-commit`) lists none of the commits `c1-autosquash-behaviour` shows cannot be folded, and still lists up to 20 of the others.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the user can still pick a target that never folds.
--   Basis: pending.
+-   Basis: [Verification](#verification-c2-picker)
 
 <a id="c3-explicit-target"></a>
 #### `c3-explicit-target`
 
 -   Claim: `gir fixup COMMIT` (and `amend`, `squash`, `reword`) given such a commit refuses on stderr with exit `2` and creates no commit.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: a named unfoldable target is still accepted.
--   Basis: pending.
+-   Basis: [Verification](#verification-c3-explicit-target)
 
 <a id="c4-automatic-selection"></a>
 #### `c4-automatic-selection`
 
 -   Claim: Automatic selection, including `--split`, never selects such a commit, for example when a merge's conflict resolution last changed a staged line; what it does instead is settled in `DECIDE`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: gir creates an unfoldable `fixup!` without asking.
--   Basis: pending.
+-   Basis: [Verification](#verification-c4-automatic-selection)
 
 <a id="c5-no-regression"></a>
 #### `c5-no-regression`
@@ -81,7 +80,7 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 -   State: `UNVERIFIED`
 -   Scope: this branch; Linux run, Windows by inspection and CI.
 -   Consequence if false: the change breaks existing behaviour or another OS.
--   Basis: pending.
+-   Basis: [Verification](#verification-c5-no-regression), not yet settled
 
 <a id="c6-spec"></a>
 #### `c6-spec`
@@ -90,7 +89,7 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 -   State: `UNVERIFIED`
 -   Scope: this branch at completion.
 -   Consequence if false: the specification no longer describes gir.
--   Basis: pending.
+-   Basis: [Verification](#verification-c6-spec), not yet settled
 
 ### Constraints
 
@@ -109,10 +108,10 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `p1-picker-lists-merges`
 
 -   Claim: On `fc55fbb`, after `git merge --no-ff side`, the picker lists the merge commit and the side branch's commits, because `pick_branch_commit` (`src/cmd/fixup.rs:162`) runs `rev-list --max-count=20 <base>..HEAD` with no filter.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0.
 -   Consequence if false: Q7 describes a defect that is not there.
--   Basis: A7 reproduced it up to the picker list on `d246ab2`; not yet repeated on this branch.
+-   Basis: [Verification](#verification-p1-picker-lists-merges)
 
 ## Understand
 
@@ -235,7 +234,68 @@ Specification delta for `spec/fixup.md`, to publish at completion:
 
 ## Verify
 
-`NONE` yet.
+<a id="verification-p1-picker-lists-merges"></a>
+### Verification: `p1-picker-lists-merges`
+
+- Claim: [`p1-picker-lists-merges`](#p1-picker-lists-merges).
+- Method: `probe.py`, scenario p1, on the build of `02b4061`.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log`: in both runs the picker lists `Merge branch 'side' into topic` and `feat: side`; `logs/test-red-d9ab2b0-20261003-1654.log`: `picker_leaves_out_merge_commits_but_keeps_side_branch_commits` fails there with the merge listed as item 2 of 4.
+- Conclusion: `VERIFIED`, observed twice on the code before the change.
+- Limitations: none.
+
+<a id="verification-c1-autosquash-behaviour"></a>
+### Verification: `c1-autosquash-behaviour`
+
+- Claim: [`c1-autosquash-behaviour`](#c1-autosquash-behaviour).
+- Method: `probe.py`, scenarios c1, with `side` forked from `main` and from `topic`: create the `fixup!` with `git commit --fixup`, run `git rebase -q -i --autosquash main`, compare subjects and file content.
+- Evidence considered: `logs/probe-02b4061-20261003-1623.log` and `logs/probe-new-20261003-1705.log` (git alone; same result on both builds): the merge's `fixup!` is left unfolded, the side commit's `fixup!` folds and its change lands. `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` agrees for the merge.
+- Conclusion: `VERIFIED`.
+- Limitations: git 2.56.0 on Linux only; a plain rebase, per Constraints.
+
+<a id="verification-c2-picker"></a>
+### Verification: `c2-picker`
+
+- Claim: [`c2-picker`](#c2-picker).
+- Method: `picker_leaves_out_merge_commits_but_keeps_side_branch_commits` (`tests/fixup.rs`): a staged new file sends `gir fixup` to the picker; the list must not contain the merge, must contain `feat: side`, and offers `pick [1-3, q]`. `probe.py` p1 on the new build.
+- Evidence considered: fails on `d9ab2b0` (`logs/test-red-d9ab2b0-20261003-1654.log`), passes on `ebdd50d` (`logs/test-fixup-20261003-1700.log`); `logs/probe-new-20261003-1705.log`: merge not listed, side commit listed, in both runs.
+- Conclusion: `VERIFIED`.
+- Limitations: the 20-commit cap is `rev-list --max-count=20` after `--no-merges`, read from the code, not tested with more than 20 commits.
+
+<a id="verification-c3-explicit-target"></a>
+### Verification: `c3-explicit-target`
+
+- Claim: [`c3-explicit-target`](#c3-explicit-target).
+- Method: `explicit_merge_target_is_refused_by_every_subcommand` checks exit `2`, the exact message and an unchanged `HEAD` for `fixup`, `amend`, `squash` and `reword`; `explicit_side_branch_target_is_accepted` checks that the filter is merges only.
+- Evidence considered: the first fails on `d9ab2b0` (`fixup` created `fixup! Merge branch 'side' into topic`) and passes on `ebdd50d`; the second passes on both.
+- Conclusion: `VERIFIED`.
+- Limitations: none.
+
+<a id="verification-c4-automatic-selection"></a>
+### Verification: `c4-automatic-selection`
+
+- Claim: [`c4-automatic-selection`](#c4-automatic-selection).
+- Method: four tests on a merge whose resolution last changed `f.txt` line 2: `line_last_changed_by_a_merge_is_refused` (`fixup`, `fixup --split`, `amend`; exact message, exit `2`, `HEAD` unchanged), `hunk_with_one_line_from_a_merge_is_refused`, `insertion_next_to_a_merge_line_targets_the_other_neighbour`, `insertion_between_base_and_merge_lines_is_refused`.
+- Evidence considered: all four fail on `d9ab2b0` (the merge was selected or listed as a target) and pass on `ebdd50d`; `logs/probe-new-20261003-1705.log`: automatic selection and `--split` refuse with exit `2`.
+- Conclusion: `VERIFIED`.
+- Limitations: the interactive `ask-several` list is not tested with a merge; it is built from the same `trace` result, which no longer holds a merge.
+
+<a id="verification-c5-no-regression"></a>
+### Verification: `c5-no-regression`
+
+- Claim: [`c5-no-regression`](#c5-no-regression).
+- Method: `cargo test --no-fail-fast` and `cargo clippy --all-targets -- -D warnings` on Linux; inspection of the diff of `ebdd50d` against `rules/os-agnostic-code.md`.
+- Evidence considered: `logs/test-final-20261003-1655.log` (every suite passes), `logs/clippy-20261003-1655.log` (clean), `logs/test-fixup-20261003-1700.log`. The change adds only git arguments and string handling, no path, process or `cfg` code; the tests use only git commands and file names valid on Windows.
+- Conclusion: `UNVERIFIED`: Linux is verified; the Windows half rests on inspection until hosted CI runs.
+- Limitations: needs a push to run CI on Windows and macOS; obligation (2).
+
+<a id="verification-c6-spec"></a>
+### Verification: `c6-spec`
+
+- Claim: [`c6-spec`](#c6-spec).
+- Method: the delta under Implement compared with the code at `ebdd50d` and the exact messages the tests assert.
+- Evidence considered: `ask-branch-commit`'s "non-merge" matches `--no-merges`; `explicit-target-not-merge`'s message is asserted verbatim by `explicit_merge_target_is_refused_by_every_subcommand`; `merge-limit`'s message is asserted verbatim by `line_last_changed_by_a_merge_is_refused`, and its insertion rule by the two insertion tests.
+- Conclusion: `UNVERIFIED` until Stewardship applies the delta to `spec/fixup.md` at completion; the wording is checked against the code.
+- Limitations: publication happens in the terminal checkpoint.
 
 ## Learn
 
