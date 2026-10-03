@@ -15,6 +15,9 @@
 ## Owned artifacts
 
 -   `ledger.md` - the review findings that shaped this Task and its DEFINE dialogue.
+-   `probe-git-rules.py` - Probe: the git behaviours r1–r7 depend on.
+-   `logs/probe-git-rules-20261003-1722.log` - Evidence: first run, without the checked-out `HEAD` cases.
+-   `logs/probe-git-rules-20261003-1726.log` - Evidence: the run of the current `probe-git-rules.py`.
 
 ## Specification impact
 
@@ -44,7 +47,7 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 <a id="r2-subject-rule"></a>
 #### `r2-subject-rule`
 
--   Claim: gir reads every commit's subject as git does (the first paragraph joined with spaces) and strips the prefix chain with any whitespace after each prefix, so its prediction matches git for wrapped fixup subjects, wrapped target titles and extra whitespace.
+-   Claim: gir reads every commit's subject as git does (the first paragraph joined with spaces) and strips the prefix chain with one or more spaces after each prefix (not tabs, which git does not skip), so its prediction matches git for wrapped fixup subjects, wrapped target titles and extra spaces. (Reworded in UNDERSTAND from "any whitespace"; `ledger.md` Q11.)
 -   State: `UNVERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the loop the previous Task removed returns for these subjects.
@@ -112,3 +115,31 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 -   Scope: Linux, git 2.56.0, `8465c1d`.
 -   Consequence if false: some criteria fix nothing.
 -   Basis: finding 1 reproduced in the parent session (`ledger.md` A1); the rest are the reviewer's runs, whose logs were not kept. Each is re-checked by the failing test written for it in IMPLEMENT.
+
+## Understand
+
+### Relevant context
+
+`probe-git-rules.py`, git 2.56.0, Linux (`logs/probe-git-rules-20261003-1726.log`; `-1722.log` is the same run without the checked-out `HEAD` cases):
+
+-   Subject: git joins the lines of the first paragraph with one space after trimming each line's trailing whitespace (`feat: one`, `  two  `, `three` gives `feat: one   two three`).
+-   A wrapped fixup subject is matched on the joined subject (left when only the first line would match); a wrapped target title is matched on its joined subject (folds).
+-   After a prefix git skips one or more spaces, inside a chain too (`fixup!  squash!  feat: one` folds); a tab is not skipped (`fixup!\tfeat: one` is left) — the reviewer's "any whitespace" is narrower in fact.
+-   A wrapped `amend!` subject with no message paragraph folds, and git's own autosquash then leaves the target with an empty message.
+-   A plain `git rebase` drops a merge commit from its todo; a fixup naming the merge is left on the linearised branch.
+-   `HEAD`-relative specifiers resolve against what is checked out when the rebase starts: with the branch checked out, `fixup! HEAD~2` and `fixup! @~2` fold relative to its tip; `git rebase <base> feature` run from another branch leaves `fixup! HEAD~2`. gir's hints are `git rebase ... <base>` run on the branch being fixed, so the tip being linted is the right reference (r5 as agreed).
+-   `git blame` prints a root-commit line as `^` plus 39 characters; `git blame --root` prints the full 40-character ID.
+-   3000 single-line `git blame` calls took 6.04 s; one `-L 1,3000` call took 0.003 s and printed 3000 lines.
+-   In gir: `lint::title` reads the first line; `folds` strips `fixup! ` with one space; `older` includes merges; `blamed` runs `fixup::blame_at` per line without `--root`; the base hint is `<base>` when the oldest commit has no parent; the published message does not depend on `pushing`; the `amend!` check counts any non-empty line after the first.
+
+### Assumptions
+
+-   None material beyond the probe's scope (Linux, git 2.56.0).
+
+### Open questions
+
+-   None: every r1–r7 mechanism is observed above.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every git behaviour r1–r7 rely on is observed, one review claim is corrected (tab), and the gir code paths are known.

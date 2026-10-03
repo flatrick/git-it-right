@@ -1,0 +1,51 @@
+git version 2.56.0
+
+=== subject rule (r2)
+%s of 'feat: one\n  two  \nthree\n\nbody': 'feat: one   two three\n'
+
+## wrapped fixup subject vs older 'feat: one three'
+%s before: ['feat: one three', 'fixup! feat: one two']
+%s after:  ['feat: one three', 'fixup! feat: one two']
+RESULT: LEFT
+
+## wrapped target title, fixup names the joined subject
+%s before: ['feat: one two', 'fixup! feat: one two']
+%s after:  ['feat: one two']
+RESULT: folded
+
+## two spaces after the prefix
+%s before: ['feat: one', 'fixup!  feat: one']
+%s after:  ['feat: one']
+RESULT: folded
+
+## tab after the prefix
+%s before: ['feat: one', 'fixup!\tfeat: one']
+%s after:  ['feat: one', 'fixup!\tfeat: one']
+RESULT: LEFT
+
+## prefix chain with two spaces inside
+%s before: ['feat: one', 'fixup!  squash!  feat: one']
+%s after:  ['feat: one']
+RESULT: folded
+
+## wrapped amend! subject, no message paragraph
+%s before: ['feat: one', 'amend! feat: one']
+%s after:  ['']
+RESULT: folded
+
+=== merge commit as a target (r3)
+before: ['feat: side', 'feat: main', "Merge branch 'side'", "fixup! Merge branch 'side'"]
+after:  ['feat: main', 'feat: side', "fixup! Merge branch 'side'"]
+
+=== HEAD during `git rebase <upstream> <branch>` from another checkout (r5)
+after: ['feat: a', 'feat: b', 'fixup! HEAD~2']
+files: ['feat:', 'a:', 'a', 'feat:', 'b:', 'b', 'fixup!', 'HEAD~2:', 'c']
+
+=== git blame on root lines, and with --root (r1)
+root id:        83de533e6b8535f27ec73343b383dd3473b63e41 (40)
+blame:          ^83de533e6b8535f27ec73343b383dd3473b63e4 (40)
+blame --root:   83de533e6b8535f27ec73343b383dd3473b63e41 (40)
+
+=== git blame cost: per line vs one range (r4)
+3000 single-line blames: 6.04 s; one 1,3000 blame: 0.003 s, 3000 lines
+
