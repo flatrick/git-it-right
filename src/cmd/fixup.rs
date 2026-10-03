@@ -438,15 +438,11 @@ fn range(r: &str) -> (u32, u32) {
 }
 
 fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
-    blame_at("HEAD", path, lines)
-}
-
-pub(crate) fn blame_at(rev: &str, path: &[u8], lines: &[u32]) -> BTreeSet<String> {
     let path = git::os_path(path);
     let mut shas = BTreeSet::new();
     for line in lines {
         let range = format!("{line},{line}");
-        let args = ["blame", "-l", "-s", "-L", &range, rev, "--"].map(OsStr::new);
+        let args = ["blame", "-l", "-s", "-L", &range, "HEAD", "--"].map(OsStr::new);
         if let Ok(out) = git::run_raw(&[&args[..], &[path.as_os_str()]].concat())
             && let Some(sha) = out.split(u8::is_ascii_whitespace).next().filter(|s| !s.is_empty())
         {
@@ -454,6 +450,20 @@ pub(crate) fn blame_at(rev: &str, path: &[u8], lines: &[u32]) -> BTreeSet<String
         }
     }
     shas
+}
+
+/// The commits that last changed `lines` at `rev`, from one `git blame` over their span;
+/// `--root` prints a root commit's full ID instead of a `^`-marked short one.
+pub(crate) fn blame_range(rev: &str, path: &[u8], lines: &[u32]) -> BTreeSet<String> {
+    let (Some(first), Some(last)) = (lines.iter().min(), lines.iter().max()) else { return BTreeSet::new() };
+    let range = format!("{first},{last}");
+    let path = git::os_path(path);
+    let args = ["blame", "--root", "-l", "-s", "-L", &range, rev, "--"].map(OsStr::new);
+    let Ok(out) = git::run_raw(&[&args[..], &[path.as_os_str()]].concat()) else { return BTreeSet::new() };
+    out.split(|&b| b == b'\n')
+        .filter_map(|line| line.split(u8::is_ascii_whitespace).next().filter(|s| !s.is_empty()))
+        .map(|sha| String::from_utf8_lossy(sha).to_string())
+        .collect()
 }
 
 #[cfg(test)]

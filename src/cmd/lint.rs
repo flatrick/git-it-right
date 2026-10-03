@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use std::io::Read;
 use std::path::Path;
 
@@ -86,21 +86,24 @@ pub fn commits(args: &[&str]) -> Result<Vec<(String, String)>, String> {
 
 /// Lints commits already recorded, newest first as `commits` lists them, which the commit-msg
 /// hook can no longer fix. An autosquash commit is judged against the older commits in the
-/// list, as `git rebase --autosquash` would; `pushing` adds `git push --no-verify` to the
-/// advice for a target that is already published.
+/// list, as `git rebase --autosquash` would; `pushing` says the commits are being pushed, so a
+/// target outside them is published and `git push --no-verify` is offered.
 pub fn lint_recorded(commits: &[(String, String)], cfg: &Config, pushing: bool) -> Vec<(Option<String>, Outcome)> {
     let base = commits
         .last()
         .and_then(|(oldest, _)| git::run(&["rev-parse", "--verify", "--quiet", &format!("{oldest}^")]).ok())
-        .map_or_else(|| "<base>".to_string(), |b| b[..10].to_string());
+        .map_or_else(|| "--root".to_string(), |b| b[..10].to_string());
+    let tip = commits.first().map_or("", |(sha, _)| sha.as_str());
+    let outcomes: Vec<Outcome> = commits.iter().map(|(_, body)| cc::check(body, cfg)).collect();
+    let merges = if outcomes.iter().any(|o| matches!(o.kind, Kind::Autosquash(_))) { merges(commits) } else { HashSet::new() };
     commits
         .iter()
+        .zip(outcomes)
         .enumerate()
-        .map(|(i, (sha, body))| {
-            let mut outcome = cc::check(body, cfg);
+        .map(|(i, ((sha, body), mut outcome))| {
             if let Kind::Autosquash(prefix) = &outcome.kind {
                 let older = &commits[i + 1..];
-                let violation = if folds(body, older) {
+                let violation = if folds(body, older, &merges, tip) {
                     Violation {
                         rule: "fixup-unsquashed",
                         message: format!("`{prefix}` commit must be squashed before pushing"),
@@ -117,23 +120,49 @@ pub fn lint_recorded(commits: &[(String, String)], cfg: &Config, pushing: bool) 
         .collect()
 }
 
-fn title(body: &str) -> &str {
-    body.lines().next().unwrap_or("")
+/// A commit's subject as git reads it: the first paragraph, each line trimmed at the end and
+/// joined with one space.
+fn subject(body: &str) -> String {
+    body.lines().take_while(|l| !l.trim().is_empty()).map(str::trim_end).collect::<Vec<_>>().join(" ")
 }
 
-/// Whether `git rebase --autosquash` finds a target among `older`: after the chain of
-/// prefixes, an older title equal to or starting with the rest, or, when the rest has no
-/// space, a revision that resolves to an older commit.
-fn folds(body: &str, older: &[(String, String)]) -> bool {
-    let mut rest = title(body);
-    while let Some(r) = ["fixup! ", "squash! ", "amend! "].iter().find_map(|p| rest.strip_prefix(p)) {
-        rest = r;
+/// The listed commits that are merges, which a plain `git rebase` drops from its todo.
+fn merges(commits: &[(String, String)]) -> HashSet<String> {
+    let ids: String = commits.iter().map(|(sha, _)| format!("{sha}\n")).collect();
+    git::run_with_stdin(&["rev-list", "--merges", "--no-walk", "--stdin"], &ids)
+        .map(|out| out.lines().map(str::to_string).collect())
+        .unwrap_or_default()
+}
+
+/// Whether `git rebase --autosquash` finds a target among `older`, merges left out: after the
+/// chain of prefixes, each followed by one or more spaces, an older subject equal to or
+/// starting with the rest, or, when the rest has no space, a revision that resolves to an
+/// older commit.
+fn folds(body: &str, older: &[(String, String)], merges: &HashSet<String>, tip: &str) -> bool {
+    let own = subject(body);
+    let mut rest = own.as_str();
+    while let Some(r) = ["fixup!", "squash!", "amend!"].iter().find_map(|p| rest.strip_prefix(p).filter(|r| r.starts_with(' '))) {
+        rest = r.trim_start_matches(' ');
     }
-    older.iter().any(|(_, b)| title(b).starts_with(rest))
+    let mut targets = older.iter().filter(|(sha, _)| !merges.contains(sha));
+    targets.clone().any(|(_, b)| subject(b).starts_with(rest))
         || (!rest.contains(' ')
             && !rest.starts_with('-')
-            && git::run(&["rev-parse", "--verify", "--quiet", &format!("{rest}^{{commit}}")])
-                .is_ok_and(|sha| older.iter().any(|(s, _)| *s == sha)))
+            && git::run(&["rev-parse", "--verify", "--quiet", &format!("{}^{{commit}}", head_at(rest, tip))])
+                .is_ok_and(|sha| targets.any(|(s, _)| *s == sha)))
+}
+
+/// `HEAD` and `@` name the tip being linted, which is what is checked out when the hinted
+/// rebase runs.
+fn head_at(rest: &str, tip: &str) -> String {
+    for name in ["HEAD", "@"] {
+        if let Some(r) = rest.strip_prefix(name)
+            && (r.is_empty() || r.starts_with(['~', '^']))
+        {
+            return format!("{tip}{r}");
+        }
+    }
+    rest.to_string()
 }
 
 /// The commits that last changed, before `sha`, the lines `sha` changes.
@@ -154,15 +183,15 @@ fn blamed(sha: &str) -> BTreeSet<String> {
         sha,
     ];
     let Ok(diff) = git::run_raw(&args) else { return BTreeSet::new() };
-    fixup::parse_hunks(&diff).iter().flat_map(|h| fixup::blame_at(&parent, &h.path, &h.lines)).collect()
+    fixup::parse_hunks(&diff).iter().flat_map(|h| fixup::blame_range(&parent, &h.path, &h.lines)).collect()
 }
 
-/// `fixup -C` takes the `amend!` commit's message without its title, so an `amend!` with no
-/// message after its title would leave its target with an empty message.
+/// `fixup -C` takes the `amend!` commit's message without its subject, so an `amend!` with no
+/// paragraph after its subject would leave its target with an empty message.
 fn unmatched(prefix: &str, sha: &str, body: &str, older: &[(String, String)], base: &str, pushing: bool) -> Violation {
     let action = match prefix {
         "squash!" => "squash",
-        "amend!" if body.lines().skip(1).any(|l| !l.trim().is_empty()) => "fixup -C",
+        "amend!" if body.lines().skip_while(|l| !l.trim().is_empty()).any(|l| !l.trim().is_empty()) => "fixup -C",
         _ => "fixup",
     };
     let leaves = format!("`{prefix}` commit matches no earlier commit, so git rebase --autosquash leaves it");
@@ -171,13 +200,17 @@ fn unmatched(prefix: &str, sha: &str, body: &str, older: &[(String, String)], ba
     let (message, hint) = match only {
         Some(t) => match older.iter().find(|(s, _)| s == t) {
             Some((_, body)) => {
-                (leaves, format!("git rebase -i {base}: move it below {} {}, change pick to {action}", &t[..10], title(body)))
+                (leaves, format!("git rebase -i {base}: move it below {} {}, change pick to {action}", &t[..10], subject(body)))
             }
             None => {
-                let subject = git::run(&["log", "-1", "--format=%s", t]).unwrap_or_default();
-                let anyway = if pushing { ", or push it as is: git push --no-verify" } else { "" };
+                let title = git::run(&["log", "-1", "--format=%s", t]).unwrap_or_default();
+                let (outside, anyway) = if pushing {
+                    ("is already published", ", or push it as is: git push --no-verify")
+                } else {
+                    ("is before the range", "")
+                };
                 (
-                    format!("`{prefix}` commit's target {} {subject} is already published", &t[..10]),
+                    format!("`{prefix}` commit's target {} {title} {outside}", &t[..10]),
                     format!("git rebase -i {base}: reword it into a normal commit{anyway}"),
                 )
             }
