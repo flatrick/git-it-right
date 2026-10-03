@@ -114,15 +114,39 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 
 ### Relevant context
 
-`NONE` yet.
+A target commit reaches `commit()` (`src/cmd/fixup.rs`) by one of four paths, read from the code at `5131456`:
+
+-   **Picker**, `pick_branch_commit`: `rev-list --max-count=20 <base>..HEAD`, or `HEAD` with no base, unfiltered.
+    Used by `gir reword` without a commit, by `gir fixup` when a staged file cannot be traced, and by `--split` for each untraced file (`split.rs`).
+-   **Explicit target**, `explicit_target`: checks only that the commit is `HEAD` or its ancestor and, with a base, not reachable from it.
+-   **Automatic selection**, `trace`: `blame` runs `git blame -L n,n HEAD` per staged line, without `--first-parent`.
+    The allowed set is `rev-list <base>..HEAD`, which includes merges and side-branch commits; with no base, any blamed commit is allowed.
+    One target is used directly.
+    Several targets go to the `ask-several` list or to the `multiple-targets` refusal, and either may name a merge.
+-   **Split**: each round commits for the shas `trace` found; an insertion between two commits' lines is asked about with those two (`neighbours`).
+
+`git blame` without `--first-parent` blames a line merged cleanly from a side branch on the side-branch commit.
+It blames a merge commit only for a line that the merge result changed against both parents, such as a conflict resolution.
+
+Earlier evidence: `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` (git 2.56.0, Linux) shows a plain `git rebase -i --autosquash` dropping the merge from its todo and leaving `fixup! Merge branch 'side'` unfolded, while the side-branch commit `feat: side` stays, linearised.
+No fixup of a side-branch commit was tried there.
+Since that Task, `gir lint --range` and pre-push leave merges out of the fold targets (`src/cmd/lint.rs`, `merges`), so a `fixup!` that gir creates for a merge today is then rejected by gir's own pre-push as `fixup-unmatched`.
+
+Tests: `tests/fixup.rs` (targets, base, trace, split), `tests/fixup_modes.rs` (modes and picker), on the `Repo` helper in `tests/common/mod.rs`.
 
 ### Assumptions
 
--   `NONE` yet.
+-   A `fixup!` of a side-branch commit folds under a plain autosquash rebase; inferred from the side commit staying in the todo; unverified; if false, side-branch commits must be left out too (`--first-parent`).
+-   A merge is the only kind of commit in `<base>..HEAD` that a plain rebase drops; inferred from how `git rebase` builds its todo (it skips merges, and also skips commits already upstream by patch ID, which do not apply inside `<base>..HEAD` of the branch being rebased); unverified beyond merges.
 
 ### Open questions
 
--   See Open obligations.
+-   See Open obligations (2) and (3).
+-   Should `ask-several` and `multiple-targets` leave a merge out of the list, or must the whole hunk be refused when one of its lines is blamed on a merge? Part of obligation (3).
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: every path by which a target is chosen or checked is named, with the earlier evidence for merges. The two assumptions and the open questions carry into INVESTIGATE.
 
 ### Deferred verification
 
