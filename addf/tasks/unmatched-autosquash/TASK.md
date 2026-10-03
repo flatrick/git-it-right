@@ -15,6 +15,9 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took (Q1–Q3, from `ledger/unmatched-autosquash-20261003.md`), and its DEFINE dialogue.
+-   `probe-matching.py` - Probe: which autosquash subjects `git rebase --autosquash <base>` folds.
+-   `logs/probe-matching-20261003-1354.log` - Evidence: the first run, whose reword cases reworded to a title the old one is a prefix of (see Understand).
+-   `logs/probe-matching-20261003-1400-reword-fixed.log` - Evidence: the run of the current `probe-matching.py`.
 
 ## Specification impact
 
@@ -82,7 +85,51 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `p1-unmatched-survives`
 
 -   Claim: With git 2.56.0, `git rebase --autosquash <base>` leaves a `squash!` or `fixup!` commit whose subject matches no commit in `<base>..HEAD` in place, reports success and exits `0`.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, gir 0.2.1.
 -   Consequence if false: there is no loop to fix.
--   Basis: one phase-0 probe on 2026-10-03 (`ledger.md` A1); to be re-run as a Probe owned by this Task in UNDERSTAND.
+-   Basis: [Verification](#verification-p1-unmatched-survives).
+
+## Understand
+
+### Relevant context
+
+-   git 2.56.0's `--autosquash` documentation: the rest of the title after `squash! `, `fixup! ` or `amend! ` "is taken as a commit specifier, which matches a previous commit if it matches the title or the hash of that commit. If no commit matches fully, matches of the specifier with the start of commit titles are considered."
+-   `probe-matching.py` with git 2.56.0 (`logs/probe-matching-20261003-1400-reword-fixed.log`) shows which subjects fold:
+    -   Fold: an exact title; a plain string prefix of a title (`feat: add al` folds into `feat: add alpha`); a full or 7-character hash; a ref expression such as `feature~1`; chained prefixes (`fixup! fixup! X`); `amend!` and `fixup!` of one target in one rebase; a title shared by two commits.
+    -   Left in place, with `Successfully rebased` and exit `0`: no matching title (`squash! wip`); `fixup! HEAD`, which resolves to the fixup itself; a target on the base branch, outside `main..HEAD`; a fixup older than its target; a target whose title was reworded by an earlier rebase to a title the subject is not a prefix of; a hash-form fixup after its target was reworded, because a reword changes the hash.
+-   The first probe log (`logs/probe-matching-20261003-1354.log`) reported the reword case as folded only because the new title, `feat: add alpha`, starts with the old one; the re-run rewords to `feat: introduce a`.
+-   In gir, `cc::check` (`src/cc/mod.rs`) judges one message with no context and returns `Kind::Autosquash` for the three prefixes; `lint::reject_recorded` (`src/cmd/lint.rs`) turns that into `fixup-unsquashed` with the hint `git rebase --autosquash <base>`.
+    It is called per commit by `gir lint --range` (`Source::Range` in `src/cmd/lint.rs`) and by `hook::pre_push` (`src/cmd/hook.rs`).
+    Knowing whether a commit can fold needs the ordered list of commits around it, which only those two callers have.
+-   pre-push lints `<remote sha>..<local sha>`, or `<local sha> --not --remotes=<remote>` for a new branch: the commits not yet on the remote.
+    `gir lint --range` lints the range the user gives.
+-   `gir fixup`, `amend` and `squash` create the commit with `git commit --fixup=<sha>` (and `amend:`/`reword:`), so its subject is `<prefix> <target title>` (`src/cmd/fixup.rs`).
+    `explicit_target` already refuses a target on the base branch; `find_base` tries `origin/HEAD`, `main`, `master` and the upstream.
+
+### Assumptions
+
+-   git resolves a hash or ref specifier only when the rest of the title contains no space, and tries the exact title before the hash and the hash before a prefix; source: recollection of git's `sequencer.c`; not verified; if false, gir's mirror of the rules misjudges subjects that fit several forms.
+-   For pre-push, the commits being pushed stand in for the rebase todo: a target outside them is already on the remote, so folding it means rewriting published history; source: reasoning from the pre-push range; not verified against a user's actual `<base>`.
+
+### Open questions
+
+-   Which literal advice, for each kind of unmatched commit, leaves no autosquash commit behind when followed (c1)?
+-   Can anything make a gir-made fixup fold after an out-of-band reword of its target (c4)? The probe shows neither the title form nor the hash form does; a body trailer git does not read (for example the target's `git patch-id`) could only let gir name the new target in its advice.
+-   How faithfully must gir mirror git's rules: precedence, the no-space condition for revs, and ref expressions such as `feature~1` that git resolves when the rebase starts?
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the premise reproduces in a Probe this Task owns, git 2.56.0's matching behaviour is mapped for every case listed above, and the code paths that produce `fixup-unsquashed` and the ranges each caller has are known.
+The two unverified assumptions and the open questions are carried into INVESTIGATE.
+
+## Verify
+
+<a id="verification-p1-unmatched-survives"></a>
+### Verification: `p1-unmatched-survives`
+
+- Claim: [`p1-unmatched-survives`](#p1-unmatched-survives).
+- Method: `probe-matching.py`, case `p1`, with git 2.56.0 on Linux: `feat: add a`, `squash! wip`, `squash! wip` on `feature`, then `git rebase --autosquash main` with `GIT_SEQUENCE_EDITOR=true`.
+- Evidence considered: `logs/probe-matching-20261003-1354.log` and `logs/probe-matching-20261003-1400-reword-fixed.log` both show exit `0`, `Successfully rebased and updated refs/heads/feature.` and both `squash! wip` commits left; the same holds for `fixup!` in the cases with a target outside the range, a fixup older than its target, and a reworded target. The phase-0 probe (`ledger.md` A1) showed the same with gir 0.2.1's `lint --range` rejecting both again.
+- Conclusion: `VERIFIED`; the rebase reports success and leaves the commits in place.
+- Limitations: Linux and git 2.56.0 only.
