@@ -27,6 +27,7 @@
 -   `logs/acceptance-20261003-1530.log` - Evidence: first run; its subject check missed an empty message, and one fixture was broken (see Implement).
 -   `logs/acceptance-20261003-1540.log`, `logs/acceptance-20261003-1545.log` - Evidence: runs with exact subject checks, before and after fixing the script's own subject parsing; the second shows the `amend!` defect.
 -   `logs/acceptance-20261003-1557.log` - Evidence: the run on `eb6fdce`, 7/7.
+-   `logs/test-final-20261003-1615.log`, `logs/clippy-20261003-1615.log`, `logs/fmt-20261003-1615.log`, `logs/acceptance-final-20261003-1615.log`, `logs/explain-pages-20261003-1615.log` - Evidence: `cargo test --no-fail-fast`, clippy, `cargo fmt --check`, `acceptance.py` and both explain pages on the tree committed as `48bfb47`.
 
 ## Specification impact
 
@@ -48,37 +49,37 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 #### `c1-unmatched-detected`
 
 -   Claim: `gir lint --range` and pre-push reject an autosquash commit that `git rebase --autosquash <base>` would not fold with a message that says it will not fold and why, and advice that, followed literally, leaves no autosquash commit behind.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the user keeps looping between the rejection and a rebase that reports success.
--   Basis: none yet; Task in DEFINE.
+-   Basis: [Verification](#verification-c1-unmatched-detected).
 
 <a id="c2-published-target"></a>
 #### `c2-published-target`
 
 -   Claim: When an autosquash commit's target is already on the base branch or the remote, `gir lint --range` and pre-push still reject it, and the message says the target is already published and that pushing it anyway is the user's call.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: the user is told to run a rebase that cannot fold the commit, or is not told why.
--   Basis: none yet; Task in DEFINE.
+-   Basis: [Verification](#verification-c2-published-target).
 
 <a id="c3-explain-covers"></a>
 #### `c3-explain-covers`
 
 -   Claim: `gir explain fixup-unsquashed` describes the unmatched case and the published-target case, and what to do in each.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: this branch.
 -   Consequence if false: the long-form help still sends the user into the loop.
--   Basis: none yet; Task in DEFINE.
+-   Basis: [Verification](#verification-c3-explain-covers).
 
 <a id="c4-survives-reword"></a>
 #### `c4-survives-reword`
 
 -   Claim: A commit made by `gir fixup`, `gir amend` or `gir squash` still folds into its target with `git rebase --autosquash <base>` after the target was reworded, or this Task records, from a probe, why that cannot be done without rewriting commits.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Linux, git 2.56.0, this branch.
 -   Consequence if false: gir's own fixup workflow keeps producing commits that cannot fold.
--   Basis: none yet; Task in DEFINE.
+-   Basis: [Verification](#verification-c4-survives-reword).
 
 ### Constraints
 
@@ -234,3 +235,45 @@ Checkpoint on `eb6fdce`: `cargo test --no-fail-fast` passed (16 test binaries), 
 - Evidence considered: `logs/probe-matching-20261003-1354.log` and `logs/probe-matching-20261003-1400-reword-fixed.log` both show exit `0`, `Successfully rebased and updated refs/heads/feature.` and both `squash! wip` commits left; the same holds for `fixup!` in the cases with a target outside the range, a fixup older than its target, and a reworded target. The phase-0 probe (`ledger.md` A1) showed the same with gir 0.2.1's `lint --range` rejecting both again.
 - Conclusion: `VERIFIED`; the rebase reports success and leaves the commits in place.
 - Limitations: Linux and git 2.56.0 only.
+
+All runs below are on the tree committed as `48bfb47`, Linux, git 2.56.0.
+
+<a id="verification-c1-unmatched-detected"></a>
+### Verification: `c1-unmatched-detected`
+
+- Claim: [`c1-unmatched-detected`](#c1-unmatched-detected).
+- Method: `acceptance.py` runs `gir lint --range` on each case, follows the `try:` hint literally with `git rebase` and a scripted todo editor, and checks the rebase exit code, that no `fixup!`/`squash!`/`amend!` subject is left, the exact resulting subjects, and an unchanged tree. End-to-end tests in `tests/lint.rs` check the rule, message and hint text for every case, and that the specifier forms git folds stay `fixup-unsquashed`.
+- Evidence considered: `logs/acceptance-final-20261003-1615.log`, 7/7: a foldable `fixup!` with the concrete base; unmatched `fixup!`, `squash!`, `amend!` with and without a new message, each moved below the blamed target; generic advice followed by its reword alternative. `logs/test-final-20261003-1615.log`: 16 test binaries ok, none failed, including `lint_range_folds_every_specifier_form_git_matches`, `lint_range_unmatched_fixup_names_the_target_blame_finds`, `lint_range_unmatched_when_target_is_reworded_older_than_it_or_head` and `lint_range_unmatched_fixup_without_one_blamed_target_gets_generic_advice`. Contradicting evidence found and resolved before this run: `logs/acceptance-20261003-1545.log` showed `fixup -C` emptying a target's message (Implement, Deviations).
+- Conclusion: `VERIFIED`; every unmatched case is told it will not fold and why, and every hint, followed literally, leaves no autosquash commit and the tree unchanged.
+- Limitations: Linux and git 2.56.0 only. Generic advice cannot name the target, so following it literally means taking its reword branch; moving the commit needs the user to pick the target. A specifier git would match differently from gir's mirror was not found among the probed forms, but other forms were not exhausted.
+
+<a id="verification-c2-published-target"></a>
+### Verification: `c2-published-target`
+
+- Claim: [`c2-published-target`](#c2-published-target).
+- Method: `tests/cli.rs` `pre_push_rejects_a_fixup_of_a_pushed_commit_and_names_no_verify` pushes a target, then a fixup of it, through the installed hook; `tests/lint.rs` `lint_range_unmatched_fixup_of_a_published_target_says_to_reword_it` lints a range that starts after the target; `acceptance.py` follows the reword hint.
+- Evidence considered: `logs/test-final-20261003-1615.log` (both tests ok): the push is rejected with `[fixup-unmatched] ... target <sha> feat: add a is already published` and `try: git rebase -i <remote sha>: reword it into a normal commit, or push it as is: git push --no-verify`; `lint --range` gives the same without `--no-verify`. `logs/acceptance-final-20261003-1615.log`: following the reword hint leaves `fix: correct a` and the tree unchanged.
+- Conclusion: `VERIFIED`; the commit is still rejected, the message says the target is published, and pre-push leaves pushing anyway to the user.
+- Limitations: Linux and git 2.56.0 only; "published" means outside the linted commits, as Investigate accepted.
+
+<a id="verification-c3-explain-covers"></a>
+### Verification: `c3-explain-covers`
+
+- Claim: [`c3-explain-covers`](#c3-explain-covers).
+- Method: `gir explain fixup-unsquashed` and `gir explain fixup-unmatched` from the built binary; `explain::tests::every_rule_and_type_has_a_page` lists `fixup-unmatched`.
+- Evidence considered: `logs/explain-pages-20261003-1615.log`: the `fixup-unsquashed` page says a commit that matches no earlier commit, or whose target is published, is reported as `fixup-unmatched`, and to move it below its target in `git rebase -i <base>` or reword it into a normal commit; the `fixup-unmatched` page explains why the rebase leaves it, the move with the action per prefix, the reword for a published target, and `git push --no-verify`. The unit test passed in `logs/test-final-20261003-1615.log`.
+- Conclusion: `VERIFIED`.
+- Limitations: none that block completion.
+
+<a id="verification-c4-survives-reword"></a>
+### Verification: `c4-survives-reword`
+
+- Claim: [`c4-survives-reword`](#c4-survives-reword), through its alternative: this Task records, from a probe, why a gir-made fixup cannot fold after an out-of-band reword without rewriting commits.
+- Method: `probe-matching.py` cases "target reworded by an earlier rebase" in subject form (what `gir fixup` creates) and in hash form.
+- Evidence considered: `logs/probe-matching-20261003-1431.log`: both are left in place after `git rebase --autosquash main`, because git reads only the title, the reworded title no longer starts with the old one, and the reword changed the hash. `logs/probe-matching-20261003-1354.log` folded only because its new title started with the old one, which the later runs corrected (Understand). Investigate records why a `git patch-id` trailer would not help.
+- Conclusion: `VERIFIED` (alternative branch); the mitigation is the blame-named target in `fixup-unmatched`'s hint, verified under c1.
+- Limitations: Linux and git 2.56.0 only.
+
+### VERIFY gate
+
+`ESTABLISHED`: c1–c4 are `VERIFIED` through the Verifications above; `cargo clippy --all-targets -- -D warnings` (`logs/clippy-20261003-1615.log`) and `cargo fmt --check` (`logs/fmt-20261003-1615.log`) are clean on the same tree. The spec delta is published in the terminal checkpoint.
