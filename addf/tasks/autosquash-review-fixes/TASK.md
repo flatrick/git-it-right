@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
 
-**Resume at:** Probe git 2.56.0 for the subject rule, prefix whitespace, merges in the todo, `HEAD` during `git rebase <upstream> <branch>`, and `git blame` on root lines and line ranges.
+**Resume at:** Record the approach for r1–r7, its spec delta and verification strategy under Decide.
 
-**Open obligations:** The git behaviours r1–r7 depend on are observed — blocks the UNDERSTAND gate.
+**Open obligations:** Approach, spec delta and verification strategy recorded — blocks the DECIDE gate.
 
 ## Owned artifacts
 
@@ -143,3 +143,7 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success 
 ### UNDERSTAND gate
 
 `ESTABLISHED`: every git behaviour r1–r7 rely on is observed, one review claim is corrected (tab), and the gir code paths are known.
+
+## Investigate
+
+INVESTIGATE gate: `NOT_APPLICABLE` — skipped. Understand left no assumption or open question; the review and `probe-git-rules.py` already settled every uncertainty r1–r7 depend on.
