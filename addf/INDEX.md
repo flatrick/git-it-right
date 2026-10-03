@@ -17,12 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [unfoldable-fixup-targets](tasks/unfoldable-fixup-targets/TASK.md) -
+  gir never targets a commit that autosquash cannot fold. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
-  in `gir fixup`, `--split` and `gir doctor`; three open (Q7, Q9, Q12).
+  in `gir fixup`, `--split` and `gir doctor`; two open (Q9, Q12).
 
 ## Skills
 

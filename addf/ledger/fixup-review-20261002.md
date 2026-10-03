@@ -95,3 +95,4 @@ For each one, whether to fix it on this branch is still OPEN.
   Q10 is fixed in a docs-only commit, without a Task.
   Each Task is created when its turn comes.
 - D8: settles Q10 -> moved to commit `8c5cdf6`, which breaks the lines of `ROADMAP.md`, `CLIENT-TESTING.md` and `SELF-IMPROVEMENT/20260927T112030Z-one-commit-per-task-state-change.md` at sentence ends
+- D9: settles Q7 -> taken by Task unfoldable-fixup-targets

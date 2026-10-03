@@ -1,0 +1,25 @@
+# Ledger — unfoldable-fixup-targets
+
+## Taken from the thread `fixup-review-20261002`
+
+Entry Q7 of `ledger/fixup-review-20261002.md`, copied unchanged.
+
+- Q7: Can the commit picker offer merge commits as a fixup target?
+- A7: Yes, reproduced up to the picker list.
+  `pick_branch_commit` at `src/cmd/fixup.rs:158` lists `rev-list base..HEAD`, so after `git merge --no-ff side` it lists `Merge side` and the side branch's commits.
+  That `fixup! Merge side` cannot be folded by a default `git rebase --autosquash` is inferred, not run.
+  Suggested fix: add `--no-merges --first-parent`.
+
+## This Task
+
+- Q1: Isolated workspace and line of development?
+- A1: Yes, decided by the operator on 2026-10-03: a new worktree `.worktrees/unfoldable-fixup-targets` and branch `unfoldable-fixup-targets`, started from `ledger-settle-open-entries` at `0f4aac1` so the thread's Q16 and D8 are present.
+- Q2: Which commits should the picker leave out: merges only, or merges and side-branch commits (`--first-parent`)?
+- A2: Decided after INVESTIGATE, by the operator on 2026-10-03.
+  The agent noted, inferred and not run, that a flattening `git rebase -i --autosquash` probably keeps side-branch commits in its todo list, so `--first-parent` may hide commits that can be fixed up.
+- Q3: Besides the picker list, which other places should leave out merge commits?
+- A3: Explicit targets and automatic selection, chosen by the operator on 2026-10-03, in addition to the picker.
+- Q4: What is the Task called?
+- A4: `unfoldable-fixup-targets`, chosen by the operator on 2026-10-03, replacing the proposed `picker-first-parent`: the scope grew past the picker, and `--first-parent` is no longer presumed.
+- Q5: Does this Task overlap another active Task?
+- A5: No other Task is active.
