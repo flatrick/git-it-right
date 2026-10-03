@@ -163,3 +163,16 @@ The findings below were added in UNDERSTAND from `probe-veto.py`; each is the Cl
 ## Investigate
 
 INVESTIGATE gate: `NOT_APPLICABLE` — skipped. The probe ran in UNDERSTAND and left no decision-relevant uncertainty; what it did not cover is listed there and becomes each Knowledge file's Limitations.
+
+## Decide
+
+-   Five files under `knowledge/`, one per finding, from `templates/KNOWLEDGE.md`: `ref-transaction-veto-ff-merge.md` (f1, k1), `ref-transaction-veto-commit.md` (f2, k2), `ref-transaction-veto-merge-commit.md` (f3, k3), `ref-transaction-veto-pull.md` (f4, k4), `ref-transaction-veto-rebase.md` (f5, k5).
+-   Each Claim and Scope repeat f1–f5 word for word; State `VERIFIED`; Basis `history:tasks/ref-transaction-veto-knowledge/TASK.md#verification-<finding>`; evidence anchors `probe-veto.py` and `logs/probe-veto-20261003-1945.log` in the archived bundle; Derivation names the probe case and the observed lines; Limitations lists what Understand records as not covered and says gir installs no `reference-transaction` hook today (`ledger.md` A5).
+-   `INDEX.md`'s Knowledge section lists the five files.
+-   They are written in the terminal checkpoint, as Stewardship requires; IMPLEMENT has no repository change of its own and is skipped.
+-   Verification: f1–f5 and `p1-veto-leaves-staged` from the probe log; k1–k5 by the publication in the terminal checkpoint, where `check-capsule` requires each Knowledge Basis to resolve to the matching Verification with the same Claim and Scope.
+-   Rejected: one Knowledge file for all five operations (addf allows one Claim per file); prescribing a hook design (Knowledge describes, it does not prescribe).
+
+### DECIDE gate
+
+`ESTABLISHED`: the plan follows the operator's answers and addf's Knowledge contract, and each criterion has a check.
