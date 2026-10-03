@@ -1,0 +1,60 @@
+
+## p1: picker after a --no-ff merge (side forked from main)
+  merge 14819db333, side commit 22de965a6c
+  $ GIR_INTERACTIVE=1 gir reword <<< '\n' -> exit 1:
+    gir: nothing to trace for a reword; pick the commit to reword:
+      1) 25bf4248ae feat: b
+      2) 14819db333 Merge branch 'side' into topic
+      3) 811ec833a6 feat: a
+      4) 22de965a6c feat: side
+    pick [1-4, q]: gir: cancelled; nothing committed
+  OBSERVED picker lists merge: True; lists side commit: True
+
+## c1: autosquash of a fixup! of the merge (side forked from main)
+  before: ["fixup! Merge branch 'side' into topic", 'feat: b', "Merge branch 'side' into topic", 'feat: a', 'feat: side']
+  git rebase -i --autosquash main -> exit 0 
+  after:  ["fixup! Merge branch 'side' into topic", 'feat: b', 'feat: side', 'feat: a']
+  OBSERVED fixup! of merge: LEFT unfolded; a.txt at HEAD = 'A'
+
+## c1: autosquash of a fixup! of the side-branch commit (side forked from main)
+  before: ['fixup! feat: side', 'feat: b', "Merge branch 'side' into topic", 'feat: a', 'feat: side']
+  git rebase -i --autosquash main -> exit 0 
+  after:  ['feat: b', 'feat: side', 'feat: a']
+  OBSERVED fixup! of side commit: FOLDED; s.txt at HEAD = 'S'
+
+## p1: picker after a --no-ff merge (side forked from topic)
+  merge f782f4c9cd, side commit 20c9d8aa2d
+  $ GIR_INTERACTIVE=1 gir reword <<< '\n' -> exit 1:
+    gir: nothing to trace for a reword; pick the commit to reword:
+      1) 7a9900c8c8 feat: b
+      2) f782f4c9cd Merge branch 'side' into topic
+      3) 086a5e7138 feat: a
+      4) 20c9d8aa2d feat: side
+    pick [1-4, q]: gir: cancelled; nothing committed
+  OBSERVED picker lists merge: True; lists side commit: True
+
+## c1: autosquash of a fixup! of the merge (side forked from topic)
+  before: ["fixup! Merge branch 'side' into topic", 'feat: b', "Merge branch 'side' into topic", 'feat: a', 'feat: side']
+  git rebase -i --autosquash main -> exit 0 
+  after:  ["fixup! Merge branch 'side' into topic", 'feat: b', 'feat: side', 'feat: a']
+  OBSERVED fixup! of merge: LEFT unfolded; a.txt at HEAD = 'A'
+
+## c1: autosquash of a fixup! of the side-branch commit (side forked from topic)
+  before: ['fixup! feat: side', 'feat: b', "Merge branch 'side' into topic", 'feat: a', 'feat: side']
+  git rebase -i --autosquash main -> exit 0 
+  after:  ['feat: b', 'feat: side', 'feat: a']
+  OBSERVED fixup! of side commit: FOLDED; s.txt at HEAD = 'S'
+
+## explicit target: gir fixup --dry-run <merge>
+  $ gir fixup --dry-run 23134286018d9cc63aafcfc805ec0057ef2cdcfc -> exit 0:
+    2313428601 Merge branch 'side' into topic
+  (merge is 2313428601)
+
+## automatic selection: a staged line last changed by a conflict-resolving merge
+  merge d72559ad38; git blame -L 2,2: d72559ad38713195d88e3aa7d9a880da629486d2 2) two-merged
+  $ gir fixup --dry-run -> exit 0:
+    d72559ad38 Merge branch 'side' into topic
+  OBSERVED automatic selection picks the merge: True
+  $ gir fixup --split --dry-run -> exit 0:
+    d72559ad38 Merge branch 'side' into topic
+  OBSERVED --split picks the merge: True

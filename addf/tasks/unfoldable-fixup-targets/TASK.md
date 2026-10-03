@@ -17,6 +17,8 @@
 ## Owned artifacts
 
 -   `ledger.md` - the thread entries this Task took, and the questions that shaped it with the operator's answers.
+-   `probe.py` - Probe: the picker after a `--no-ff` merge, what a plain autosquash folds, and what explicit and automatic targets gir accepts today.
+-   `logs/probe-02b4061-20261003-1623.log` - Evidence: `probe.py` on the build of `02b4061` (see Investigate).
 
 ## Specification impact
 
@@ -154,7 +156,27 @@ Tests: `tests/fixup.rs` (targets, base, trace, split), `tests/fixup_modes.rs` (m
 
 ## Investigate
 
-`NONE` yet.
+`probe.py` on `target/debug/gir` built from `02b4061`, git 2.56.0, Linux (`logs/probe-02b4061-20261003-1623.log`).
+Each repository has `main` (`chore: base`) and `topic` with `feat: a`, a `--no-ff` merge of `side` (`feat: side`), and `feat: b`; `side` forks from `main` in one run and from `feat: a` in the other.
+
+-   `p1-picker-lists-merges`: in both runs, `gir reword` without a commit lists `Merge branch 'side' into topic` and `feat: side` among its four commits.
+-   `c1-autosquash-behaviour`: in both runs, `git rebase -i --autosquash main` leaves `fixup! Merge branch 'side' into topic` unfolded on the linearised branch, and folds `fixup! feat: side` into `feat: side` (`s.txt` becomes `S`).
+    This agrees with `history:tasks/autosquash-review-fixes/logs/probe-git-rules-20261003-1726.log` for the merge.
+-   Explicit target: `gir fixup --dry-run <merge>` exits `0` and names the merge.
+-   Automatic selection: with `f.txt` line 2 changed on both branches and the conflict resolved to `two-merged`, `git blame` names the merge for line 2.
+    Staging a change to that line, `gir fixup --dry-run` and `gir fixup --split --dry-run` both select the merge.
+
+Dispositions:
+
+-   Assumption "a side-branch commit folds": resolved, true. Leaving out side-branch commits (`--first-parent`) would hide targets that fold, so obligation (2) is resolved: leave out merge commits only.
+-   Assumption "a merge is the only commit in `<base>..HEAD` a plain rebase drops": not fully resolved.
+    `git rebase <upstream>` also drops a commit whose patch is already in `<upstream>`, for example one cherry-picked to `main` after the branch forked; a `fixup!` of it would then not fold.
+    gir does not compare patch IDs today; the operator decides in DECIDE whether this is in scope.
+-   Obligation (3), how automatic selection treats a line blamed on a merge: the evidence shows it must change; the choice of behaviour goes to DECIDE.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: p1 and c1 are observed, every assumption has a disposition, and the remaining choices (merge-blamed lines, cherry-picked commits) are decisions, not uncertainties a probe can settle.
 
 ## Decide
 
