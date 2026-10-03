@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Read how `find_base`, `pick_branch_commit`, `explicit_target`, `trace` and `split` choose and check targets in `src/cmd/fixup.rs` and `src/cmd/fixup/split.rs`, and which tests cover them, then fill Understand.
+**Resume at:** Write `probe.py`: in throwaway repos on `target/debug/gir` built from this branch, repeat `p1-picker-lists-merges`, observe c1 (autosquash of a `fixup!` of a merge and of a side-branch commit), and observe what `gir fixup` does today for a staged line blamed on a conflict-resolving merge.
 
 **Open obligations:** (1) `p1-picker-lists-merges` repeated on this branch — blocks `INVESTIGATE` exit.
 (2) Whether side-branch commits are also left out (`--first-parent`) — blocks `DECIDE`; settled from the evidence of `c1-autosquash-behaviour`.
