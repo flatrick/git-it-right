@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Write Learn and Retention and promotion, then the terminal checkpoint with the five Knowledge files.
+**Resume at:** `NONE`
 
-**Open obligations:** Learn and Retention and promotion recorded — blocks the LEARN gate. Five Knowledge files and their index entries — terminal checkpoint.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -24,7 +24,7 @@
 
 - Current contract: `NONE` — gir installs no `reference-transaction` hook; no requirement covers it.
 - Proposed delta: `NONE`
-- Terminal publication: `PENDING`
+- Terminal publication: `NONE` — no specification delta. Knowledge published: `framework:knowledge/ref-transaction-veto-ff-merge.md#ref-transaction-veto-ff-merge`, `framework:knowledge/ref-transaction-veto-commit.md#ref-transaction-veto-commit`, `framework:knowledge/ref-transaction-veto-merge-commit.md#ref-transaction-veto-merge-commit`, `framework:knowledge/ref-transaction-veto-pull.md#ref-transaction-veto-pull`, `framework:knowledge/ref-transaction-veto-rebase.md#ref-transaction-veto-rebase`
 
 ## Define
 
@@ -340,3 +340,17 @@ Every Verification below rests on `logs/probe-veto-20261003-1945.log` (git 2.56.
 -   Claim: [`p1-veto-leaves-staged`](#p1-veto-leaves-staged).
 -   Will this Claim's validity outlive this Task and inform a future decision? `no`: f1 states it in full.
 -   Disposition: not promoted — covered by f1.
+
+## Archive readiness
+
+The bundle is self-contained: `ledger.md` carries the phase-0 finding with an inline repro, and the probe and every cited log are inside it. Specification and Knowledge references use `framework:`; the removed `.agents/` memo is not relied on. The Knowledge files' evidence anchors name this bundle's archived paths.
+
+## Terminal record
+
+### Summary
+
+Five Knowledge files under `knowledge/` record what a `prepared`-phase `reference-transaction` veto of the checked-out branch leaves behind for `git merge --ff-only`, `git commit`, `git merge --no-ff`, a fast-forward `git pull` and `git rebase`, and what the usual recoveries then do, under a hook that refuses every update and one that refuses only moves.
+
+### Gate basis
+
+k1–k5, f1–f5 and `p1-veto-leaves-staged` are `VERIFIED` (Verify); k1–k5 through their publication in this checkpoint, which `check-capsule` validates: it reported `capsule is consistent` with the five files, and when one file's Claim was altered (`exits 128` changed to `exits 1`) it failed with `CLAIM_BASIS: settled Basis must resolve to an explicit Verification conclusion`, then passed again once restored. No deferred verification remains.

@@ -17,8 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [ref-transaction-veto-knowledge](tasks/ref-transaction-veto-knowledge/TASK.md) -
-  record what a reference-transaction veto leaves behind. State: `LEARN`.
+`NONE`.
 
 ## Ledger
 
@@ -61,7 +60,20 @@ is available through its archived bundle, not through this index.
 
 ## Knowledge
 
-`NONE`. No Knowledge has been promoted yet.
+What git 2.56.0 leaves behind when a `reference-transaction` hook refuses, in
+`prepared`, the update of the checked-out branch, and what the usual recoveries
+then do. gir installs no such hook today.
+
+- [ref-transaction-veto-ff-merge](knowledge/ref-transaction-veto-ff-merge.md) -
+  `git merge --ff-only`.
+- [ref-transaction-veto-commit](knowledge/ref-transaction-veto-commit.md) -
+  `git commit`.
+- [ref-transaction-veto-merge-commit](knowledge/ref-transaction-veto-merge-commit.md) -
+  `git merge --no-ff`.
+- [ref-transaction-veto-pull](knowledge/ref-transaction-veto-pull.md) - a
+  fast-forward `git pull`.
+- [ref-transaction-veto-rebase](knowledge/ref-transaction-veto-rebase.md) -
+  `git rebase`.
 
 ## Open Claims
 
