@@ -79,7 +79,7 @@ pub fn run(mode: Mode, target: Option<String>, opts: Options) -> Result<i32, Str
                 None => return Ok(cancelled()),
             }
         }
-        None => match trace(base.as_deref(), opts.split)? {
+        None => match trace(mode, base.as_deref(), opts.split)? {
             trace if opts.split => return split::split(mode, trace, base.as_deref(), opts.dry_run, ask),
             Trace { untraced, .. } if !untraced.is_empty() => {
                 let reason = &untraced[0].reason;
@@ -135,7 +135,21 @@ fn explicit_target(t: &str, base: Option<&str>) -> Result<String, String> {
     if base.is_some_and(|b| git::run(&["merge-base", "--is-ancestor", &sha, b]).is_ok()) {
         return Err(format!("`{t}` is already on the base branch"));
     }
+    if merges([&sha]).contains(&sha) {
+        return Err(format!("`{t}` is a merge commit, which a rebase drops; pass the commit the change belongs to"));
+    }
     Ok(sha)
+}
+
+/// The given commits that are merges, which a plain `git rebase` drops from its todo.
+fn merges<'a>(shas: impl IntoIterator<Item = &'a String>) -> HashSet<String> {
+    let ids: String = shas.into_iter().map(|sha| format!("{sha}\n")).collect();
+    if ids.is_empty() {
+        return HashSet::new();
+    }
+    git::run_with_stdin(&["rev-list", "--merges", "--no-walk", "--stdin"], &ids)
+        .map(|out| out.lines().map(str::to_string).collect())
+        .unwrap_or_default()
 }
 
 fn commit(mode: Mode, sha: &str) -> Result<(), String> {
@@ -159,7 +173,7 @@ fn cancelled() -> i32 {
 /// `None` means the user cancelled.
 fn pick_branch_commit(question: &str, base: Option<&str>) -> Result<Option<String>, String> {
     let range = base.map_or("HEAD".to_string(), |b| format!("{b}..HEAD"));
-    let shas: Vec<String> = git::run(&["rev-list", "--max-count=20", &range])?.lines().map(str::to_string).collect();
+    let shas: Vec<String> = git::run(&["rev-list", "--no-merges", "--max-count=20", &range])?.lines().map(str::to_string).collect();
     if shas.is_empty() {
         return Err("this branch has no commits after its base to pick from".into());
     }
@@ -254,7 +268,7 @@ fn targets(hunks: &[Traced]) -> BTreeMap<String, Vec<String>> {
 
 /// With `all`, every staged file is traced or listed as untraced; without it, tracing stops
 /// at the first file it cannot trace, as only that one is reported.
-fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
+fn trace(mode: Mode, base: Option<&str>, all: bool) -> Result<Trace, String> {
     let diff = git::run_raw(&[
         "-c",
         "core.quotePath=false",
@@ -304,9 +318,11 @@ fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
         None => None,
     };
 
+    let blames: Vec<BTreeSet<String>> = hunks.iter().map(|h| blame(&h.path, &h.lines)).collect();
+    let merges = merges(blames.iter().flatten().collect::<BTreeSet<_>>());
+
     let mut out = Vec::new();
-    for hunk in hunks {
-        let blamed = blame(&hunk.path, &hunk.lines);
+    for (hunk, blamed) in hunks.into_iter().zip(blames) {
         let place = hunk.place();
         if blamed.is_empty() {
             untraced.push(Untraced { path: hunk.path.clone(), reason: format!("cannot tell which commit {place} belongs to") });
@@ -323,7 +339,15 @@ fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
                 &outside[..10]
             ));
         }
-        out.push(Traced { hunk, shas: in_range });
+        let (merged, eligible): (BTreeSet<String>, BTreeSet<String>) = in_range.into_iter().partition(|s| merges.contains(s));
+        if let Some(merge) = merged.first().filter(|_| eligible.is_empty() || !hunk.insertion) {
+            return Err(format!(
+                "{place} was last changed by the merge {}, which a rebase drops; commit it normally, or pass one: gir {} <commit>",
+                &merge[..10],
+                mode.name()
+            ));
+        }
+        out.push(Traced { hunk, shas: eligible });
     }
     let unblamed: BTreeSet<Vec<u8>> = untraced.iter().map(|u| u.path.clone()).collect();
     out.retain(|t| !unblamed.contains(&t.hunk.path));

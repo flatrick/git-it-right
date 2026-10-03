@@ -381,3 +381,123 @@ fn quoted_file_names_are_traced_and_split() {
         trace_and_split_two_commits_in(name);
     }
 }
+
+/// `topic_repo` plus `feat: side` from a branch forked at `main`, merged with `--no-ff`, then
+/// `feat: add b`. Returns the side commit and the merge.
+fn merged_side_repo() -> (Repo, String, String) {
+    let repo = topic_repo();
+    repo.git(&["switch", "-q", "-c", "side", "main"]);
+    repo.commit_file("s.txt", "s\n", "feat: side");
+    let side = repo.git(&["rev-parse", "HEAD"]);
+    repo.git(&["switch", "-q", "topic"]);
+    repo.git(&["merge", "-q", "--no-ff", "--no-edit", "side"]);
+    let merge = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file("b.txt", "b\n", "feat: add b");
+    (repo, side, merge)
+}
+
+/// `f.txt` changed on `topic` (lines 2 and 3, `feat: topic`) and on `side` (line 2), merged
+/// with line 2 resolved to `two-merged`, so `git blame` names the merge for line 2 only.
+fn conflict_merge_repo() -> (Repo, String, String) {
+    let repo = Repo::new();
+    repo.commit_file("f.txt", "one\ntwo\nthree\n", "chore: base");
+    repo.git(&["switch", "-q", "-c", "topic"]);
+    repo.commit_file("f.txt", "one\ntwo-topic\nthree-topic\n", "feat: topic");
+    let topic = repo.git(&["rev-parse", "HEAD"]);
+    repo.git(&["switch", "-q", "-c", "side", "main"]);
+    repo.commit_file("f.txt", "one\ntwo-side\nthree\n", "feat: side");
+    repo.git(&["switch", "-q", "topic"]);
+    let _ = repo.git_out(&["merge", "-q", "--no-ff", "--no-edit", "side"]);
+    repo.write("f.txt", "one\ntwo-merged\nthree-topic\n");
+    repo.git(&["add", "f.txt"]);
+    repo.git(&["commit", "-q", "--no-verify", "--no-edit"]);
+    let merge = repo.git(&["rev-parse", "HEAD"]);
+    (repo, topic, merge)
+}
+
+#[test]
+fn picker_leaves_out_merge_commits_but_keeps_side_branch_commits() {
+    let (repo, side, merge) = merged_side_repo();
+    stage(&repo, "new.txt", "new\n");
+    let head = repo.git(&["rev-parse", "HEAD"]);
+    let out = repo.gir_with(&["fixup"], &[("GIR_INTERACTIVE", "1")], "\n");
+    let err = stderr(&out);
+    assert_eq!(out.status.code(), Some(1), "{err}");
+    assert!(!err.contains(&merge[..10]), "a merge is never offered: {err}");
+    assert!(err.contains(&format!("{} feat: side", &side[..10])), "{err}");
+    assert!(err.contains("pick [1-3, q]: "), "{err}");
+    assert_eq!(repo.git(&["rev-parse", "HEAD"]), head);
+}
+
+#[test]
+fn explicit_merge_target_is_refused_by_every_subcommand() {
+    let (repo, _, merge) = merged_side_repo();
+    stage(&repo, "a.txt", "one\nTWO\nthree\n");
+    let head = repo.git(&["rev-parse", "HEAD"]);
+    for sub in ["fixup", "amend", "squash", "reword"] {
+        let out = repo.gir_with(&[sub, &merge], &[("GIT_EDITOR", "true")], "");
+        assert_eq!(out.status.code(), Some(2), "{sub}: {}", stderr(&out));
+        assert_eq!(
+            stderr(&out),
+            format!("gir: `{merge}` is a merge commit, which a rebase drops; pass the commit the change belongs to\n"),
+            "{sub}"
+        );
+        assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{sub}: refusal must create no commit");
+    }
+}
+
+#[test]
+fn explicit_side_branch_target_is_accepted() {
+    let (repo, side, _) = merged_side_repo();
+    stage(&repo, "s.txt", "S\n");
+    let out = repo.gir(&["fixup", &side]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(repo.git(&["log", "-1", "--format=%s"]), "fixup! feat: side");
+}
+
+#[test]
+fn line_last_changed_by_a_merge_is_refused() {
+    let (repo, _, merge) = conflict_merge_repo();
+    stage(&repo, "f.txt", "one\nTWO\nthree-topic\n");
+    let head = repo.git(&["rev-parse", "HEAD"]);
+    for (args, sub) in [(vec!["fixup"], "fixup"), (vec!["fixup", "--split"], "fixup"), (vec!["amend"], "amend")] {
+        let out = repo.gir(&args);
+        assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
+        assert_eq!(
+            stderr(&out),
+            format!(
+                "gir: f.txt:2 was last changed by the merge {}, which a rebase drops; commit it normally, or pass one: gir {sub} <commit>\n",
+                &merge[..10]
+            ),
+            "{args:?}"
+        );
+        assert_eq!(repo.git(&["rev-parse", "HEAD"]), head, "{args:?}: refusal must create no commit");
+    }
+}
+
+#[test]
+fn hunk_with_one_line_from_a_merge_is_refused() {
+    let (repo, _, merge) = conflict_merge_repo();
+    stage(&repo, "f.txt", "one\nTWO\nTHREE\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert!(stderr(&out).contains(&format!("last changed by the merge {}", &merge[..10])), "{}", stderr(&out));
+}
+
+#[test]
+fn insertion_next_to_a_merge_line_targets_the_other_neighbour() {
+    let (repo, topic, _) = conflict_merge_repo();
+    stage(&repo, "f.txt", "one\ntwo-merged\ninserted\nthree-topic\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert_eq!(String::from_utf8_lossy(&out.stdout), format!("{} feat: topic\n", &topic[..10]));
+}
+
+#[test]
+fn insertion_between_base_and_merge_lines_is_refused() {
+    let (repo, _, merge) = conflict_merge_repo();
+    stage(&repo, "f.txt", "one\ninserted\ntwo-merged\nthree-topic\n");
+    let out = repo.gir(&["fixup", "--dry-run"]);
+    assert_eq!(out.status.code(), Some(2), "{}", stderr(&out));
+    assert!(stderr(&out).contains(&format!("last changed by the merge {}", &merge[..10])), "{}", stderr(&out));
+}
