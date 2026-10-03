@@ -1,0 +1,59 @@
+git version 2.56.0
+
+## foldable fixup!
+before: ['feat: add a', 'feat: add b', 'fixup! feat: add a']
+gir:    ['gir: 2f495745f1 rejected [fixup-unsquashed] `fixup!` commit must be squashed before pushing']
+try:    ['git rebase --autosquash f2d64d2535']
+ran:    git rebase --autosquash f2d64d2535 -> exit 0 Rebasing (2/3)
+Rebasing (3/3)
+Successfully rebased and updated refs/heads/main.
+after:  ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: PASS
+
+## unmatched fixup! with its target in the range
+before: ['feat: add a', 'feat: add b', 'fixup! wip']
+gir:    ['gir: 6e267db8af rejected [fixup-unmatched] `fixup!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i f2d64d2535: move it below ec0328eac9 feat: add a, change pick to fixup']
+ran:    git rebase -i f2d64d2535 -> exit 0 Rebasing (2/3)
+Rebasing (3/3)
+Successfully rebased and updated refs/heads/main.
+after:  ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: PASS
+
+## unmatched squash! with its target in the range
+before: ['feat: add a', 'feat: add b', 'squash! wip']
+gir:    ['gir: 074f17b0a8 rejected [fixup-unmatched] `squash!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i f2d64d2535: move it below ec0328eac9 feat: add a, change pick to squash']
+ran:    git rebase -i f2d64d2535 -> exit 0 Rebasing (2/3)
+Rebasing (3/3)
+Successfully rebased and updated refs/heads/main.
+after:  ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: PASS
+
+## unmatched amend! with its target in the range
+before: ['feat: add a', 'feat: add b', 'amend! wip']
+gir:    ['gir: cf79ff11af rejected [fixup-unmatched] `amend!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i f2d64d2535: move it below ec0328eac9 feat: add a, change pick to fixup -C']
+ran:    git rebase -i f2d64d2535 -> exit 0 Rebasing (2/3)
+Rebasing (3/3)
+Successfully rebased and updated refs/heads/main.
+after:  ['feat: add b']; tree unchanged: True
+RESULT: PASS
+
+Traceback (most recent call last):
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/acceptance.py", line 137, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/acceptance.py", line 129, in main
+    follow("unmatched fixup! with a published target", published),
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/acceptance.py", line 57, in follow
+    build(repo)
+    ~~~~~^^^^^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/acceptance.py", line 103, in published
+    git(repo, "branch", "-f", "main")
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/acceptance.py", line 25, in git
+    raise RuntimeError(f"git {' '.join(args)}: {r.stderr}")
+RuntimeError: git branch -f main: fatal: cannot force update the branch 'main' used by worktree at '/tmp/tmp66zsf2ty'
+

@@ -23,6 +23,10 @@
 -   `probe-advice.py` - Probe: whether blame names an unmatched commit's target, and whether advice built from it leaves no autosquash commit.
 -   `logs/probe-advice-20261003-1420.log` - Evidence: the first run, which crashed in the probe's todo editor on the reword case.
 -   `logs/probe-advice-20261003-1424.log` - Evidence: the run of the current `probe-advice.py`.
+-   `acceptance.py` - Probe and acceptance: runs `gir lint --range`, follows its `try:` hint literally, and checks the resulting subjects and tree (c1, c2).
+-   `logs/acceptance-20261003-1530.log` - Evidence: first run; its subject check missed an empty message, and one fixture was broken (see Implement).
+-   `logs/acceptance-20261003-1540.log`, `logs/acceptance-20261003-1545.log` - Evidence: runs with exact subject checks, before and after fixing the script's own subject parsing; the second shows the `amend!` defect.
+-   `logs/acceptance-20261003-1557.log` - Evidence: the run on `eb6fdce`, 7/7.
 
 ## Specification impact
 
@@ -198,6 +202,27 @@ Operator choices: `ledger.md` Q8–Q11.
 ### DECIDE gate
 
 `ESTABLISHED`: the approach follows from the Investigate results and the operator's choices, each part is feasible with git commands gir already runs, and every success criterion has a named check.
+
+## Implement
+
+Commit `eb6fdce`.
+
+-   `lint::lint_recorded` (`src/cmd/lint.rs`) replaces the per-commit `reject_recorded`; `gir lint --range` and `hook::pre_push` both call it with their commit list, so the fold check, `fixup-unmatched`, the blame step and the concrete base live in one place. `reject_recorded` had no other caller and is gone.
+-   `fixup::parse_hunks`, `Hunk` (`path`, `lines`) and a new `fixup::blame_at(rev, ..)` are crate-visible; `blame` delegates to `blame_at("HEAD", ..)`, so `gir fixup` is unchanged.
+-   `src/explain.md`: a new `fixup-unmatched` page; the `fixup-unsquashed` page names both cases and what to do (c3).
+-   Tests: `tests/lint.rs` gains five range tests and the existing unsquashed test now has its target in the range with a concrete base (Decide, Consequences); `tests/cli.rs` gains a pre-push test for a published target.
+
+Deviations from Decide:
+
+-   Found by `acceptance.py` (`logs/acceptance-20261003-1545.log`): following `change pick to fixup -C` for an `amend!` with no message after its title left the target with an empty message. The hint now says `fixup -C` only when the `amend!` carries a message, and `fixup` otherwise; `tests/lint.rs` covers both.
+-   The blame step uses `gir fixup`'s hunk parsing as it is, so a pure insertion is blamed on the lines around it, not only removed or changed lines.
+-   `lint::commits` now passes `--topo-order`, so in a list with merges an older commit is never listed before a newer one; for linear history the order is unchanged.
+
+Checkpoint on `eb6fdce`: `cargo test --no-fail-fast` passed (16 test binaries), `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` clean, `acceptance.py` 7/7. Logs for the record are taken again in VERIFY.
+
+### IMPLEMENT gate
+
+`ESTABLISHED`: the change exists in `eb6fdce` and passes its tests and acceptance, so it can be evaluated.
 
 ## Verify
 
