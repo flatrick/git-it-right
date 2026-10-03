@@ -17,7 +17,8 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [autosquash-review-fixes](tasks/autosquash-review-fixes/TASK.md) -
+  fixup-unmatched agrees with git on the review's cases. State: `DEFINE`.
 
 ## Ledger
 
