@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Run `cargo test --no-fail-fast`, clippy, `cargo fmt --check` and `acceptance.py` on the final tree into `logs/`, then write a Verification for each of c1–c4.
+**Resume at:** Write Learn and Retention and promotion, then the terminal checkpoint with the spec delta.
 
-**Open obligations:** A Verification for each of c1–c4 — blocks the VERIFY gate. The spec delta written into `spec/` — terminal checkpoint.
+**Open obligations:** Learn and Retention and promotion recorded — blocks the LEARN gate. The spec delta written into `spec/` — terminal checkpoint.
 
 ## Owned artifacts
 
