@@ -1,4 +1,20 @@
 # Changelog
+## v0.3.0 - 2026-10-03
+
+### Bug Fixes
+
+- **explain:** Say fixup -C only for an amend! with a new message
+- **lint:** Predict autosquash folding as git does
+- **explain:** Cover a fixup target before the linted range
+- **fixup:** Never target a merge commit that autosquash drops
+
+### Documentation
+
+- Break lines at sentence ends in three Markdown files
+
+### Features
+
+- **lint:** Report autosquash commits that will not fold
 ## v0.2.1 - 2026-10-02
 
 ### CI
