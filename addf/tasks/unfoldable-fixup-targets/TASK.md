@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Ask the operator how to settle the Windows half of `c5-no-regression` (push for hosted CI, a manual Windows run, or another decision).
+**Resume at:** Once the operator has the branch pushed and a PR opened, read the hosted CI run and settle `c5-no-regression` (Understand, Deferred verification).
 
-**Open obligations:** (1) The Windows half of `c5-no-regression`: hosted CI needs a push, which needs the operator — blocks `VERIFY` exit unless the operator decides otherwise.
+**Open obligations:** (1) The Windows and macOS half of `c5-no-regression`, deferred to the PR's CI run — blocks `VERIFY` exit.
 
 ## Owned artifacts
 
@@ -153,7 +153,7 @@ Tests: `tests/fixup.rs` (targets, base, trace, split), `tests/fixup_modes.rs` (m
 
 ### Deferred verification
 
--   `NONE`.
+-   `c5-no-regression` on Windows (and macOS): CI runs only on `main` and on pull requests, and the operator chose on 2026-10-03 to deal with failures once the PR exists and CI has run (`ledger.md` Q10). Earliest checkpoint: the hosted CI run on this branch's PR. Settling observation: the `test` job passes on `windows-latest` and `macos-latest`. Consequence if false: the change breaks another OS. Blocked work: `VERIFY -> LEARN`.
 
 ## Investigate
 

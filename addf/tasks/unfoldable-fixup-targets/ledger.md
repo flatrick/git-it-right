@@ -32,3 +32,5 @@ Entry Q7 of `ledger/fixup-review-20261002.md`, copied unchanged.
   An insertion is refused only when every neighbouring line was last changed by a merge; `--split` refuses the same way.
 - Q9: Are commits already cherry-picked onto the base branch in scope?
 - A9: No, chosen by the operator on 2026-10-03: recorded as Q17 of the thread `fixup-review-20261002` instead.
+- Q10: How is the Windows half of `c5-no-regression` settled, given that CI runs only on `main` and on pull requests?
+- A10: By the PR's CI run, decided by the operator on 2026-10-03: any failures are dealt with after the PR is created and CI has run.
