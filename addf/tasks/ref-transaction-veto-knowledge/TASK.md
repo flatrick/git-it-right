@@ -15,6 +15,10 @@
 ## Owned artifacts
 
 -   `ledger.md` - the finding this Task records, the operator's answers, and its DEFINE dialogue.
+-   `probe-veto.py` - Probe: each operation under two hook designs, with the recoveries.
+-   `logs/probe-veto-20261003-1925.log` - Evidence: first run, one hook, `git reset --hard HEAD` only.
+-   `logs/probe-veto-20261003-1935.log` - Evidence: both hooks, `merge --abort` and `rebase --abort` added.
+-   `logs/probe-veto-20261003-1945.log` - Evidence: the run of the current `probe-veto.py`, with the hook's input logged and `rebase --quit` added.
 
 ## Specification impact
 
@@ -95,3 +99,63 @@ Each criterion: a Knowledge file under `knowledge/`, `VERIFIED` with its Basis i
 -   Scope: Linux, git 2.56.0, a shell hook.
 -   Consequence if false: there is nothing to record, or a different behaviour to record.
 -   Basis: the phase-0 probe (`ledger.md` A1), whose logs were not kept; to be re-run as a Probe owned by this Task.
+
+The findings below were added in UNDERSTAND from `probe-veto.py`; each is the Claim a Knowledge file will carry, word for word, because a promoted Knowledge Claim must match the Task Claim its Verification established.
+
+<a id="f1-ff-merge-veto"></a>
+#### `f1-ff-merge-veto`
+
+-   Claim: When a `reference-transaction` hook exits non-zero in the `prepared` state for the update of the checked-out branch, `git merge --ff-only` exits `128` with the branch unmoved, but the index and working tree already hold the incoming commits' changes, staged, beside any uncommitted edits made before; `git reset --hard HEAD` then returns the index and tracked files to the branch's commit, discarding those earlier tracked edits and keeping untracked files, and when the hook also refuses an update that leaves the branch where it is, the reset still does this but exits `128`.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook in `.git/hooks`.
+-   Consequence if false: a guard design misjudges what a refused fast-forward leaves behind.
+-   Basis: pending; observed in `logs/probe-veto-20261003-1945.log`.
+
+<a id="f2-commit-veto"></a>
+#### `f2-commit-veto`
+
+-   Claim: When a `reference-transaction` hook exits non-zero in the `prepared` state for the update of the checked-out branch, `git commit` exits `128` with the branch unmoved and the index and working tree unchanged, so the changes stay staged; `git reset --hard HEAD` then returns the index and tracked files to the branch's commit, discarding the staged and the unstaged tracked changes and keeping untracked files, and when the hook also refuses an update that leaves the branch where it is, the reset still does this but exits `128`.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook in `.git/hooks`.
+-   Consequence if false: a guard design misjudges what a refused commit leaves behind.
+-   Basis: pending; observed in `logs/probe-veto-20261003-1945.log`.
+
+<a id="f3-merge-commit-veto"></a>
+#### `f3-merge-commit-veto`
+
+-   Claim: When a `reference-transaction` hook exits non-zero in the `prepared` state for the update of the checked-out branch, `git merge --no-ff` exits `128` with the branch unmoved, the merged changes staged beside any earlier uncommitted edits, and `MERGE_HEAD` left, so a merge stays in progress; when the hook accepts an update that leaves the branch where it is, `git merge --abort` ends the merge and restores the branch's tree while keeping the earlier uncommitted edits, and `git reset --hard HEAD` ends it while discarding them; when the hook refuses every update of the branch, `git merge --abort` exits `128` and changes nothing, and `git reset --hard HEAD` exits `128` after resetting the files, leaving `MERGE_HEAD` in place.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook in `.git/hooks`.
+-   Consequence if false: a guard design misjudges what a refused merge leaves behind.
+-   Basis: pending; observed in `logs/probe-veto-20261003-1945.log`.
+
+<a id="f4-pull-veto"></a>
+#### `f4-pull-veto`
+
+-   Claim: When a `reference-transaction` hook exits non-zero in the `prepared` state for the update of the checked-out branch, a fast-forward `git pull` exits `128` with the branch unmoved, but the index and working tree already hold the pulled changes, staged, beside any uncommitted edits made before; `git reset --hard HEAD` then returns the index and tracked files to the branch's commit, discarding those earlier tracked edits and keeping untracked files, and when the hook also refuses an update that leaves the branch where it is, the reset still does this but exits `128`.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook in `.git/hooks`.
+-   Consequence if false: a guard design misjudges what a refused pull leaves behind.
+-   Basis: pending; observed in `logs/probe-veto-20261003-1945.log`.
+
+<a id="f5-rebase-veto"></a>
+#### `f5-rebase-veto`
+
+-   Claim: When a `reference-transaction` hook exits non-zero in the `prepared` state for the update of the checked-out branch, `git rebase` exits `128` with the branch unmoved, `HEAD` detached at the rebased commit and the rebase still in progress; `git rebase --abort` then exits `128` and leaves the rebase in progress, because it updates the branch with an all-zero old value, which a hook comparing old and new values treats as a change; `git reset --hard HEAD` leaves `HEAD` detached and the rebase in progress; `git rebase --quit` ends the rebase with `HEAD` still detached and moves an `--autostash` stash into the stash list.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook in `.git/hooks`.
+-   Consequence if false: a guard design misjudges what a refused rebase leaves behind.
+-   Basis: pending; observed in `logs/probe-veto-20261003-1945.log`.
+
+## Understand
+
+### Relevant context
+
+-   git 2.56.0's `githooks` documentation: the hook runs for `preparing`, `prepared`, `committed` and `aborted`; a non-zero exit in `preparing` or `prepared` aborts the transaction; each update arrives on stdin as `<old> <new> <ref>`, with an all-zero `<old>` for a forced update. It says nothing about the working tree or index.
+-   `probe-veto.py` (`logs/probe-veto-20261003-1945.log`, 20 cases) runs each operation from `main` with a pre-existing tracked edit (`notes.txt`) and an untracked file (`scratch.txt`), under two hooks: `any` refuses every update of `refs/heads/main`; `moves` refuses only when old and new differ. Earlier runs: `-1925.log` (one hook, `reset --hard` only), `-1935.log` (both hooks, no logged hook input, no `--quit`).
+-   Observed: f1–f5 above; the phase-0 result `p1-veto-leaves-staged` reproduces in the `k1` cases.
+-   Not covered: Windows, a hook outside `.git/hooks` (`core.hooksPath`), a hook that compares `new` with the ref's current value rather than with `old`, and `git switch main` after `rebase --quit`.
+
+### UNDERSTAND gate
+
+`ESTABLISHED`: the hook's documented contract is recorded, and the probe observed every operation in scope under both hook designs with the agreed recoveries. No open question remains for INVESTIGATE.

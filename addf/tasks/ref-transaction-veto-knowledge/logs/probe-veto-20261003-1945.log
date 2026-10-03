@@ -1,0 +1,478 @@
+git version 2.56.0
+
+## k1: git merge --ff-only [hook: any] then git reset --hard HEAD
+  before: main=1f6b130 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --ff-only feature -> exit 128
+    | Updating 1f6b130..1354d81
+    | Fast-forward
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb 1354d81cce25afbdc11d79e7d72e016e97dfe9f2 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=1f6b130 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 128
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb 1f6b130d61da9e8b44813cac87c82ef326de80bb refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=1f6b130 HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k2: git commit [hook: any] then git reset --hard HEAD
+  before: main=1f6b130 HEAD=refs/heads/main
+    status: A  new.txt |  M notes.txt | ?? scratch.txt
+    files: ['new.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git commit -q -m feat: new -> exit 128
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb dbb84a04daf54feece49241424632aa99a32235f refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=1f6b130 HEAD=refs/heads/main
+    status: A  new.txt |  M notes.txt | ?? scratch.txt
+    files: ['new.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 128
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb 1f6b130d61da9e8b44813cac87c82ef326de80bb refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=1f6b130 HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k3: git merge --no-ff [hook: any] then git reset --hard HEAD
+  before: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --no-ff --no-edit feature -> exit 128
+    | Merge made by the 'ort' strategy.
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 75b7c31ce8a1614b0c41cffd07e9af06705bc7a6 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 128
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 638449584ddc4194e51a108df0ef34af68a39155 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=6384495 HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k3: git merge --no-ff [hook: any] then git merge --abort
+  before: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --no-ff --no-edit feature -> exit 128
+    | Merge made by the 'ort' strategy.
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 75b7c31ce8a1614b0c41cffd07e9af06705bc7a6 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --abort -> exit 128
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 638449584ddc4194e51a108df0ef34af68a39155 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+
+## k4: git pull (fast-forward) [hook: any] then git reset --hard HEAD
+  before: main=1f6b130 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git pull --ff-only -q -> exit 128
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb 1354d81cce25afbdc11d79e7d72e016e97dfe9f2 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=1f6b130 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 128
+    | hook: veto 1f6b130d61da9e8b44813cac87c82ef326de80bb 1f6b130d61da9e8b44813cac87c82ef326de80bb refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=1f6b130 HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase, clean tree [hook: any] then git reset --hard HEAD
+  before: main=6384495 HEAD=refs/heads/main
+    status: (clean)
+    files: ['local.txt', 'notes.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase feature -> exit 128
+    | Rebasing (1/1)
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 b86d81952b6d50a9086ba0f9b41a215b3ba594de refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=detached at b86d819
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at b86d819 feat: local
+  after recovery: main=6384495 HEAD=detached at b86d819
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+
+## k5: git rebase, clean tree [hook: any] then git rebase --abort
+  before: main=6384495 HEAD=refs/heads/main
+    status: (clean)
+    files: ['local.txt', 'notes.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase feature -> exit 128
+    | Rebasing (1/1)
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 b86d81952b6d50a9086ba0f9b41a215b3ba594de refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=detached at b86d819
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase --abort -> exit 128
+    | hook: veto 0000000000000000000000000000000000000000 638449584ddc4194e51a108df0ef34af68a39155 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=6384495 HEAD=detached at b86d819
+    status: D  incoming.txt
+    files: ['local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+
+## k5: git rebase --autostash, dirty tree [hook: any] then git reset --hard HEAD
+  before: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: be2ca6b
+    | Rebasing (1/1)
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 b86d81952b6d50a9086ba0f9b41a215b3ba594de refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=detached at b86d819
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at b86d819 feat: local
+  after recovery: main=6384495 HEAD=detached at b86d819
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase --autostash, dirty tree [hook: any] then git rebase --abort
+  before: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: be2ca6b
+    | Rebasing (1/1)
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 b86d81952b6d50a9086ba0f9b41a215b3ba594de refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=detached at b86d819
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git rebase --abort -> exit 128
+    | hook: veto 0000000000000000000000000000000000000000 638449584ddc4194e51a108df0ef34af68a39155 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=6384495 HEAD=detached at b86d819
+    status: D  incoming.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase --autostash, dirty tree [hook: any] then git rebase --quit
+  before: main=6384495 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: 7ebf32b
+    | Rebasing (1/1)
+    | hook: veto 638449584ddc4194e51a108df0ef34af68a39155 78f615e79936e56a45d83af06487c9e6058dc7fd refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=6384495 HEAD=detached at 78f615e
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git rebase --quit -> exit 0
+    | Autostash exists; creating a new stash entry.
+    | Your changes are safe in the stash.
+    | You can run "git stash pop" or "git stash drop" at any time.
+  after recovery: main=6384495 HEAD=detached at 78f615e
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['AUTO_MERGE', 'ORIG_HEAD']; stash: stash@{0}: autostash
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k1: git merge --ff-only [hook: moves] then git reset --hard HEAD
+  before: main=067881e HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --ff-only feature -> exit 128
+    | Updating 067881e..81af6bf
+    | Fast-forward
+    | hook: veto 067881ed49059dd3248a6925cb3ace6808cea12f 81af6bf5e6945fbaeb0c393626511b4b2dd2a8e3 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=067881e HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 067881e chore: init
+  after recovery: main=067881e HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k2: git commit [hook: moves] then git reset --hard HEAD
+  before: main=067881e HEAD=refs/heads/main
+    status: A  new.txt |  M notes.txt | ?? scratch.txt
+    files: ['new.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git commit -q -m feat: new -> exit 128
+    | hook: veto 067881ed49059dd3248a6925cb3ace6808cea12f 1ce34945b5cae68508f79b6eafc62e71e7c3ed98 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=067881e HEAD=refs/heads/main
+    status: A  new.txt |  M notes.txt | ?? scratch.txt
+    files: ['new.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 067881e chore: init
+  after recovery: main=067881e HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k3: git merge --no-ff [hook: moves] then git reset --hard HEAD
+  before: main=768f327 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --no-ff --no-edit feature -> exit 128
+    | Merge made by the 'ort' strategy.
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 039eb8edfe9df0eb8eee5ec9311848af5a4a6d46 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 768f327 feat: local
+  after recovery: main=768f327 HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k3: git merge --no-ff [hook: moves] then git merge --abort
+  before: main=768f327 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --no-ff --no-edit feature -> exit 128
+    | Merge made by the 'ort' strategy.
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 039eb8edfe9df0eb8eee5ec9311848af5a4a6d46 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['MERGE_HEAD', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git merge --abort -> exit 0
+  after recovery: main=768f327 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+
+## k4: git pull (fast-forward) [hook: moves] then git reset --hard HEAD
+  before: main=067881e HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git pull --ff-only -q -> exit 128
+    | hook: veto 067881ed49059dd3248a6925cb3ace6808cea12f 81af6bf5e6945fbaeb0c393626511b4b2dd2a8e3 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=067881e HEAD=refs/heads/main
+    status: A  incoming.txt |  M notes.txt | ?? scratch.txt
+    files: ['incoming.txt', 'notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 067881e chore: init
+  after recovery: main=067881e HEAD=refs/heads/main
+    status: ?? scratch.txt
+    files: ['notes.txt', 'scratch.txt']
+    state files: ['ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase, clean tree [hook: moves] then git reset --hard HEAD
+  before: main=768f327 HEAD=refs/heads/main
+    status: (clean)
+    files: ['local.txt', 'notes.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase feature -> exit 128
+    | Rebasing (1/1)
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 878e7ca915d5e96a09608eb8df6586e542729c12 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=detached at 878e7ca
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 878e7ca feat: local
+  after recovery: main=768f327 HEAD=detached at 878e7ca
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+
+## k5: git rebase, clean tree [hook: moves] then git rebase --abort
+  before: main=768f327 HEAD=refs/heads/main
+    status: (clean)
+    files: ['local.txt', 'notes.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase feature -> exit 128
+    | Rebasing (1/1)
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 878e7ca915d5e96a09608eb8df6586e542729c12 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=detached at 878e7ca
+    status: (clean)
+    files: ['incoming.txt', 'local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+  $ git rebase --abort -> exit 128
+    | hook: veto 0000000000000000000000000000000000000000 768f327a66ebe6b423012dfe101b08562582fd91 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=768f327 HEAD=detached at 878e7ca
+    status: D  incoming.txt
+    files: ['local.txt', 'notes.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: False
+
+## k5: git rebase --autostash, dirty tree [hook: moves] then git reset --hard HEAD
+  before: main=768f327 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: c3def4c
+    | Rebasing (1/1)
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 878e7ca915d5e96a09608eb8df6586e542729c12 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=detached at 878e7ca
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git reset --hard HEAD -> exit 0
+    | HEAD is now at 878e7ca feat: local
+  after recovery: main=768f327 HEAD=detached at 878e7ca
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase --autostash, dirty tree [hook: moves] then git rebase --abort
+  before: main=768f327 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: c3def4c
+    | Rebasing (1/1)
+    | hook: veto 768f327a66ebe6b423012dfe101b08562582fd91 596031354cd727e1feb479853a1ba83947f297a1 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=768f327 HEAD=detached at 5960313
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git rebase --abort -> exit 128
+    | hook: veto 0000000000000000000000000000000000000000 768f327a66ebe6b423012dfe101b08562582fd91 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after recovery: main=768f327 HEAD=detached at 5960313
+    status: D  incoming.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+
+## k5: git rebase --autostash, dirty tree [hook: moves] then git rebase --quit
+  before: main=3ecc860 HEAD=refs/heads/main
+    status: M notes.txt | ?? scratch.txt
+    files: ['local.txt', 'notes.txt', 'scratch.txt']
+    state files: []; stash: (none)
+    notes.txt: 'notes edited before the operation'; scratch.txt exists: True
+  $ git rebase --autostash feature -> exit 128
+    | Created autostash: ee2f691
+    | Rebasing (1/1)
+    | hook: veto 3ecc8604de590aae367d46eea6fa1fa037de4983 2b5dd92e45afadd2f9ca408214b4a661744a25d5 refs/heads/main
+    | fatal: in 'prepared' phase, update aborted by the reference-transaction hook
+  after veto: main=3ecc860 HEAD=detached at 2b5dd92
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['rebase-merge', 'AUTO_MERGE', 'ORIG_HEAD']; stash: (none)
+    notes.txt: 'notes'; scratch.txt exists: True
+  $ git rebase --quit -> exit 0
+    | Autostash exists; creating a new stash entry.
+    | Your changes are safe in the stash.
+    | You can run "git stash pop" or "git stash drop" at any time.
+  after recovery: main=3ecc860 HEAD=detached at 2b5dd92
+    status: ?? scratch.txt
+    files: ['incoming.txt', 'local.txt', 'notes.txt', 'scratch.txt']
+    state files: ['AUTO_MERGE', 'ORIG_HEAD']; stash: stash@{0}: autostash
+    notes.txt: 'notes'; scratch.txt exists: True
+
