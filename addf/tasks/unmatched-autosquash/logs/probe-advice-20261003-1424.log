@@ -1,0 +1,38 @@
+git version 2.56.0
+
+## target reworded by an earlier rebase
+before: ['feat: introduce a', 'feat: add b', 'fixup! feat: add a']
+blame:  {'a5b5e1d791': 'feat: introduce a'}; on base: []
+advice: move; rebase exit 0 
+after:  ['feat: introduce a', 'feat: add b']; tree unchanged: True
+RESULT: no autosquash commit left
+
+## hand-written squash! wip changing a line of feat: add a
+before: ['feat: add a', 'squash! wip']
+blame:  {'b6c716c236': 'feat: add a'}; on base: []
+advice: move; rebase exit 0 
+after:  ['feat: add a']; tree unchanged: True
+RESULT: no autosquash commit left
+
+## target already on the base branch: move is impossible
+before: ['fixup! feat: add a']
+blame:  {'f8b6f48b0f': 'feat: add a'}; on base: ['f8b6f48b0f']
+advice: none applicable
+
+## target already on the base branch: reword into a real commit
+before: ['fixup! feat: add a']
+blame:  {'f8b6f48b0f': 'feat: add a'}; on base: ['f8b6f48b0f']
+advice: reword; rebase exit 0 
+after:  ['fix: correct a']; tree unchanged: True
+RESULT: no autosquash commit left
+
+## fixup only adds a new file
+before: ['feat: add a', 'fixup! feat: gone']
+blame:  no target found; on base: []
+advice: none applicable
+
+## fixup changes lines of two commits
+before: ['feat: add a', 'feat: add c', 'fixup! feat: gone']
+blame:  {'7d7dd0cb72': 'feat: add c', 'f8b6f48b0f': 'feat: add a'}; on base: []
+advice: none applicable
+

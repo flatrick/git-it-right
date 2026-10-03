@@ -17,7 +17,12 @@
 -   `ledger.md` - the thread entries this Task took (Q1–Q3, from `ledger/unmatched-autosquash-20261003.md`), and its DEFINE dialogue.
 -   `probe-matching.py` - Probe: which autosquash subjects `git rebase --autosquash <base>` folds.
 -   `logs/probe-matching-20261003-1354.log` - Evidence: the first run, whose reword cases reworded to a title the old one is a prefix of (see Understand).
--   `logs/probe-matching-20261003-1400-reword-fixed.log` - Evidence: the run of the current `probe-matching.py`.
+-   `logs/probe-matching-20261003-1400-reword-fixed.log` - Evidence: the run after rewording to an unrelated title.
+-   `logs/probe-matching-20261003-1412-edges.log`, `logs/probe-matching-20261003-1428-chains.log` - Evidence: runs with added edge and chain cases, before the leftover-classifier fix (see Investigate).
+-   `logs/probe-matching-20261003-1431.log` - Evidence: the run of the current `probe-matching.py`.
+-   `probe-advice.py` - Probe: whether blame names an unmatched commit's target, and whether advice built from it leaves no autosquash commit.
+-   `logs/probe-advice-20261003-1420.log` - Evidence: the first run, which crashed in the probe's todo editor on the reword case.
+-   `logs/probe-advice-20261003-1424.log` - Evidence: the run of the current `probe-advice.py`.
 
 ## Specification impact
 
@@ -122,6 +127,31 @@ DEFINE gate: `ESTABLISHED` — the operator agreed to the objective, scope and s
 
 `ESTABLISHED`: the premise reproduces in a Probe this Task owns, git 2.56.0's matching behaviour is mapped for every case listed above, and the code paths that produce `fixup-unsquashed` and the ranges each caller has are known.
 The two unverified assumptions and the open questions are carried into INVESTIGATE.
+
+## Investigate
+
+Probes: `probe-matching.py` (final run `logs/probe-matching-20261003-1431.log`) and `probe-advice.py` (`logs/probe-advice-20261003-1424.log`), git 2.56.0, Linux.
+Superseded runs are kept as owned Evidence: `logs/probe-matching-20261003-1412-edges.log` and `-1428-chains.log` predate a classifier fix that missed a leftover `fixup!feat: add a`; `logs/probe-advice-20261003-1420.log` crashed in the probe's own todo editor on the reword case.
+
+-   **Matching rules (assumption 1 and the faithfulness question): resolved.**
+    Every case fits one rule: after stripping any chain of `fixup! `, `squash! ` and `amend! ` prefixes (mixed chains fold too), a commit folds if and only if some *earlier* commit in the rebased range matches the rest as an exact title, as a hash or rev expression that resolves to it (only when the rest has no space: `feature~1 x` is left), or as a plain string prefix of its title.
+    Because all three forms only consider earlier commits in the range, the order git tries them in cannot change whether a commit folds; only which commit it folds into (an exact title only on a later commit still folds into an earlier prefix match).
+    `fixup!feat: add a` (no space) is not an autosquash commit for git either, which matches gir's `structure::parse`.
+    A rev is resolved when the rebase starts; `fixup! HEAD` resolves to the fixup itself and is left.
+-   **pre-push range as the todo (assumption 2): accepted residual.**
+    A target outside the pushed commits is on the remote already (or on the base for a new branch), so folding into it rewrites published history; `ledger.md` A5 and A6 make that a rejection with a reason either way.
+    A user who rebases onto a base older than the remote tip could fold it, so the message must not say it is impossible, only that the target is published.
+-   **Advice that works (c1): resolved.** Blaming, at the commit's parent, the lines the unmatched commit removes or changes names its intended target when those lines come from one commit:
+    -   Target in the range (a reworded target; a hand-written `squash! wip` changing its lines): `git rebase -i <base>`, move the commit below the target and change `pick` to `fixup`; afterwards no autosquash commit is left and the tree is unchanged.
+    -   Target on the base branch: no move is possible; rewording the commit into a normal Conventional Commit (`reword` in `git rebase -i <base>`) leaves no autosquash commit and the tree unchanged.
+    -   No target found (the commit only adds files) or several (it changes lines of two commits): blame cannot name one; the advice has to stay generic (move it below the commit it belongs to, or reword it into a normal commit).
+-   **Surviving a reword (c4): resolved as not possible without rewriting commits.**
+    git reads only the title; after an out-of-band reword neither the title form nor the hash form folds (`logs/probe-matching-20261003-1431.log`), and a `git patch-id` trailer would stop matching as soon as an earlier fixup folds into the target.
+    What gir can do instead is name the target by blame in its advice, as above.
+
+### INVESTIGATE gate
+
+`ESTABLISHED`: every Understand assumption and open question has a disposition above — three resolved, one accepted as residual with the message constraint it implies.
 
 ## Verify
 

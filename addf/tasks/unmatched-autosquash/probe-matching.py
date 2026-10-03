@@ -47,7 +47,7 @@ class Repo:
         return r.returncode, (r.stdout + r.stderr).strip().replace("\n", " | ")
 
 
-def case(name: str, build) -> None:
+def case(name: str, build, detail: bool = False) -> None:
     with tempfile.TemporaryDirectory() as d:
         repo = Repo(Path(d))
         repo.commit("chore: init")
@@ -56,11 +56,14 @@ def case(name: str, build) -> None:
         before = repo.subjects()
         code, out = repo.autosquash()
         after = repo.subjects()
-        left = [s for s in after if s.split(" ", 1)[0] in ("fixup!", "squash!", "amend!")]
+        left = [s for s in after if s.startswith(("fixup!", "squash!", "amend!"))]
         print(f"## {name}")
         print(f"before: {before}")
         print(f"rebase: exit {code}: {out}")
         print(f"after:  {after}")
+        if detail:
+            print("files:  " + git(repo.path, "log", "--reverse", "--format=%s:", "--name-only", "main..HEAD")
+                  .replace("\n\n", " | ").replace("\n", " "))
         print(f"RESULT: {'LEFT ' + str(left) if left else 'folded'}\n")
 
 
@@ -111,6 +114,21 @@ def main() -> int:
     case("target reworded by an earlier rebase (subject form)", reword_target_then_fixup_left)
     case("target reworded by an earlier rebase (hash form)", hash_subject_then_reword)
     case("subject with trailing space after prefix only", lambda r: (r.commit("feat: a"), r.commit("fixup! ")))
+    case("ref expression followed by a space and text",
+         lambda r: (r.commit("feat: add a"), r.commit("feat: add b"), r.commit("fixup! feature~1 x")))
+    case("no-space specifier that is not a rev, used as a title prefix",
+         lambda r: (r.commit("feat: add a"), r.commit("fixup! feat:")))
+    case("exact title only on a later commit, prefix on an earlier one",
+         lambda r: (r.commit("feat: add a thing"), r.commit("fixup! feat: add a"), r.commit("feat: add a")),
+         detail=True)
+    case("mixed chained prefixes: squash! fixup!",
+         lambda r: (r.commit("feat: add a"), r.commit("squash! fixup! feat: add a")))
+    case("mixed chained prefixes: amend! fixup!",
+         lambda r: (r.commit("feat: add a"), r.commit("amend! fixup! feat: add a", "feat: add a")))
+    case("prefix without its space: fixup!feat",
+         lambda r: (r.commit("feat: add a"), r.commit("fixup!feat: add a")))
+    case("abbreviated hash of a commit outside the range",
+         lambda r: (r.commit("feat: add a"), r.commit("fixup! " + git(r.path, "rev-parse", "--short", "main"))))
     return 0
 
 

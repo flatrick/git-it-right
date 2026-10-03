@@ -1,0 +1,48 @@
+git version 2.56.0
+
+## target reworded by an earlier rebase
+before: ['feat: introduce a', 'feat: add b', 'fixup! feat: add a']
+blame:  {'cba8c3d886': 'feat: introduce a'}; on base: []
+advice: move; rebase exit 0 
+after:  ['feat: introduce a', 'feat: add b']; tree unchanged: True
+RESULT: no autosquash commit left
+
+## hand-written squash! wip changing a line of feat: add a
+before: ['feat: add a', 'squash! wip']
+blame:  {'c53c016067': 'feat: add a'}; on base: []
+advice: move; rebase exit 0 
+after:  ['feat: add a']; tree unchanged: True
+RESULT: no autosquash commit left
+
+## target already on the base branch: move is impossible
+before: ['fixup! feat: add a']
+blame:  {'c53c016067': 'feat: add a'}; on base: ['c53c016067']
+advice: none applicable
+
+## target already on the base branch: reword into a real commit
+before: ['fixup! feat: add a']
+blame:  {'c53c016067': 'feat: add a'}; on base: ['c53c016067']
+advice: reword; rebase exit 1 Traceback (most recent call last):
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/probe-advice.py", line 153, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/probe-advice.py", line 140, in main
+    edit_todo(todo, mover, target, action)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/probe-advice.py", line 32, in edit_todo
+    at = next(i for i, l in enumerate(lines) if l.split()[1:2] and target.startswith(l.split()[1]))
+StopIteration
+error: there was a problem with the editor '/usr/bin/python3 /home/flatrick/src/github/flatrick/git-it-right/.worktrees/fix-unmatched-autosquash/addf/tasks/unmatched-autosquash/probe-advice.py --edit c97df27f727ed4e70af84ec3d03da04bf92c1038 c97df27f727ed4e70af84ec3d03da04bf92c1038 reword'
+after:  ['fixup! feat: add a']; tree unchanged: True
+RESULT: LEFT ['fixup! feat: add a']
+
+## fixup only adds a new file
+before: ['feat: add a', 'fixup! feat: gone']
+blame:  no target found; on base: []
+advice: none applicable
+
+## fixup changes lines of two commits
+before: ['feat: add a', 'feat: add c', 'fixup! feat: gone']
+blame:  {'76cb1102f0': 'feat: add a', '6915f2b22e': 'feat: add c'}; on base: []
+advice: none applicable
+
