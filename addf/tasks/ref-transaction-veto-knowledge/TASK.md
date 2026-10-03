@@ -8,9 +8,9 @@
 
 **State path:** `DEFINE`
 
-**Resume at:** DEFINE dialogue with the operator: the claim's scope (which git operations), and agreement on the objective and success criterion.
+**Resume at:** Commit the DEFINE record, then move to UNDERSTAND.
 
-**Open obligations:** Objective, scope and success criterion agreed with the operator — blocks the DEFINE gate.
+**Open obligations:** `NONE` in DEFINE; the gate is established.
 
 ## Owned artifacts
 
@@ -28,20 +28,56 @@
 
 `A future decision about guarding a branch with a reference-transaction hook can rely on a verified Knowledge file stating what git leaves behind when such a hook vetoes an update.`
 
-Draft; not yet agreed with the operator.
+DEFINE gate: `ESTABLISHED` — the operator agreed to the objective and success criteria k1–k5 (`ledger.md` Q7, A7).
 
 ### Success criteria
 
-Draft; not yet agreed with the operator.
+Each criterion: a Knowledge file under `knowledge/`, `VERIFIED` with its Basis in this Task's Verification and evidence anchors to a probe in this bundle, stating what a `prepared`-phase `reference-transaction` veto of the update of the checked-out branch leaves in the ref, the index and the working tree for one operation, and, as an observation, what `git reset --hard HEAD` then restores and what it does to uncommitted changes that existed before the operation (`ledger.md` A4–A6).
 
-<a id="k1-knowledge-published"></a>
-#### `k1-knowledge-published`
+<a id="k1-ff-merge"></a>
+#### `k1-ff-merge`
 
--   Claim: A Knowledge file under `knowledge/` states, as `VERIFIED` with a Basis in this Task's Verification and evidence anchors to a probe in this bundle, what a `prepared`-phase `reference-transaction` veto of a branch update leaves in the working tree, the index and the ref, for the operations agreed in DEFINE.
+-   Claim: The criterion above holds for `git merge --ff-only`.
 -   State: `UNVERIFIED`
--   Scope: Linux, git 2.56.0.
--   Consequence if false: the finding stays only in a removed, uncommitted memo.
--   Basis: none yet; Task in DEFINE.
+-   Scope: Linux, git 2.56.0, a shell hook.
+-   Consequence if false: the finding that started this Task stays unrecorded.
+-   Basis: none yet; pending.
+
+<a id="k2-commit"></a>
+#### `k2-commit`
+
+-   Claim: The criterion above holds for a direct `git commit`.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook.
+-   Consequence if false: a guard design misjudges vetoed commits.
+-   Basis: none yet; pending.
+
+<a id="k3-merge-commit"></a>
+#### `k3-merge-commit`
+
+-   Claim: The criterion above holds for `git merge --no-ff`.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook.
+-   Consequence if false: a guard design misjudges vetoed merges.
+-   Basis: none yet; pending.
+
+<a id="k4-pull"></a>
+#### `k4-pull`
+
+-   Claim: The criterion above holds for `git pull` from a remote whose branch is ahead.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook.
+-   Consequence if false: a guard design misjudges vetoed pulls.
+-   Basis: none yet; pending.
+
+<a id="k5-rebase"></a>
+#### `k5-rebase`
+
+-   Claim: The criterion above holds for `git rebase` of the checked-out branch.
+-   State: `UNVERIFIED`
+-   Scope: Linux, git 2.56.0, a shell hook.
+-   Consequence if false: a guard design misjudges vetoed rebases.
+-   Basis: none yet; pending.
 
 ### Constraints
 
