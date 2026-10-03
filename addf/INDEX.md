@@ -17,15 +17,13 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [unmatched-autosquash](tasks/unmatched-autosquash/TASK.md) - an
+  unmatched autosquash commit gets advice that works. State: `DEFINE`.
 
 ## Ledger
 
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
   in `gir fixup`, `--split` and `gir doctor`; four open (Q7, Q9, Q10, Q12).
-- [unmatched-autosquash-20261003](ledger/unmatched-autosquash-20261003.md) -
-  the `fixup-unsquashed` hint loops when an autosquash commit matches no
-  target; two open (Q2, Q3).
 
 ## Skills
 
