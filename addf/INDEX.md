@@ -17,7 +17,8 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [ref-transaction-veto-knowledge](tasks/ref-transaction-veto-knowledge/TASK.md) -
+  record what a reference-transaction veto leaves behind. State: `DEFINE`.
 
 ## Ledger
 
