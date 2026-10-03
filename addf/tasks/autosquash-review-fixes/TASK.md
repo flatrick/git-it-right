@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Write the failing tests for r1–r7 in `tests/lint.rs` and `tests/cli.rs`, see them fail, then change `src/cmd/lint.rs` and `src/cmd/fixup.rs`.
+**Resume at:** Run the final checks into `logs/` and write a Verification for each of r1–r7 and the premise.
 
-**Open obligations:** The change exists and can be evaluated — blocks the IMPLEMENT gate.
+**Open obligations:** A Verification for each of r1–r7 — blocks the VERIFY gate. The spec delta written into `spec/` — terminal checkpoint.
 
 ## Owned artifacts
 
