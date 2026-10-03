@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Ask the operator to agree that the Objective, Success criteria and Constraints below are viable and desirable (DEFINE gate).
+**Resume at:** Read how `find_base`, `pick_branch_commit`, `explicit_target`, `trace` and `split` choose and check targets in `src/cmd/fixup.rs` and `src/cmd/fixup/split.rs`, and which tests cover them, then fill Understand.
 
-**Open obligations:** (1) DEFINE gate: operator agreement on objective, scope and success criteria — blocks `DEFINE -> UNDERSTAND`.
+**Open obligations:** (1) `p1-picker-lists-merges` repeated on this branch — blocks `INVESTIGATE` exit.
 (2) Whether side-branch commits are also left out (`--first-parent`) — blocks `DECIDE`; settled from the evidence of `c1-autosquash-behaviour`.
 (3) How automatic selection treats a staged line last changed by a merge commit (untraced, refused, or traced past the merge) — blocks `DECIDE`.
 
