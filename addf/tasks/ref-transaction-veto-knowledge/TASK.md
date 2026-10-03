@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> VERIFY`
 
-**Resume at:** Record the Knowledge files' names, content and verification under Decide.
+**Resume at:** Write a Verification for `p1-veto-leaves-staged`, f1–f5 and k1–k5.
 
-**Open obligations:** The publication plan recorded — blocks the DECIDE gate.
+**Open obligations:** Verifications recorded — blocks the VERIFY gate. Five Knowledge files and their index entries — terminal checkpoint.
 
 ## Owned artifacts
 
@@ -176,3 +176,7 @@ INVESTIGATE gate: `NOT_APPLICABLE` — skipped. The probe ran in UNDERSTAND and 
 ### DECIDE gate
 
 `ESTABLISHED`: the plan follows the operator's answers and addf's Knowledge contract, and each criterion has a check.
+
+## Implement
+
+IMPLEMENT gate: `NOT_APPLICABLE` — skipped. The deliverable is five Knowledge files, which Stewardship publishes only in the terminal checkpoint; nothing else in the repository changes.
