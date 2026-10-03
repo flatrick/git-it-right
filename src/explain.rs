@@ -55,7 +55,8 @@ mod tests {
     fn every_rule_and_type_has_a_page() {
         let cfg = Config::default();
         let types = DEFAULT_TYPES.iter().map(|(t, _)| t);
-        let extra = ["fixup-unsquashed", "fix-pending", "fixup", "breaking", "scopes", "config", "hooks", "doctor", "types"];
+        let extra =
+            ["fixup-unsquashed", "fixup-unmatched", "fix-pending", "fixup", "breaking", "scopes", "config", "hooks", "doctor", "types"];
         for topic in RULES.iter().chain(types).chain(&extra) {
             let p = page(topic, &cfg).unwrap_or_else(|| panic!("no page for {topic}"));
             assert!(!p.is_empty() && !p.contains("\n## "), "{topic}");

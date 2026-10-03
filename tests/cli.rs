@@ -63,6 +63,56 @@ fn pre_push_rejects_unsquashed_fixups_and_no_verify_commits() {
 }
 
 #[test]
+fn pre_push_names_a_root_target_on_a_first_push() {
+    let repo = Repo::new();
+    let remote = repo.dir.parent().unwrap().join("remote.git");
+    repo.git(&["init", "-q", "--bare", remote.to_str().unwrap()]);
+    repo.git(&["remote", "add", "origin", remote.to_str().unwrap()]);
+    assert!(repo.gir(&["init"]).status.success());
+    repo.write("a.txt", "1\nA\n3\n");
+    repo.git(&["add", "a.txt"]);
+    repo.git(&["commit", "-q", "-m", "feat: one"]);
+    let root = repo.git(&["rev-parse", "HEAD"]);
+    repo.commit_file("a.txt", "1\nAA\n3\n", "fixup! wip");
+    let push = repo.git_out(&["push", "-q", "origin", "main"]);
+    assert!(!push.status.success());
+    let err = stderr(&push);
+    assert!(err.contains(&format!("  try: git rebase -i --root: move it below {} feat: one, change pick to fixup", &root[..10])), "{err}");
+}
+
+#[test]
+fn pre_push_rejects_a_fixup_of_a_pushed_commit_and_names_no_verify() {
+    let repo = Repo::new();
+    let remote = repo.dir.parent().unwrap().join("remote.git");
+    repo.git(&["init", "-q", "--bare", remote.to_str().unwrap()]);
+    repo.git(&["remote", "add", "origin", remote.to_str().unwrap()]);
+    assert!(repo.gir(&["init"]).status.success());
+    repo.git(&["commit", "-q", "-m", "chore: add gir setup"]);
+    repo.commit_file("a.txt", "1\nA\n3\n", "feat: add a");
+    repo.git(&["push", "-q", "origin", "main"]);
+    let pushed = repo.git(&["rev-parse", "HEAD"]);
+
+    repo.commit_file("a.txt", "1\nAA\n3\n", "fixup! feat: add a");
+    let push = repo.git_out(&["push", "-q", "origin", "main"]);
+    assert!(!push.status.success());
+    let err = stderr(&push);
+    assert!(
+        err.contains(&format!(
+            "push rejected [fixup-unmatched] `fixup!` commit's target {} feat: add a is already published",
+            &pushed[..10]
+        )),
+        "{err}"
+    );
+    assert!(
+        err.contains(&format!(
+            "  try: git rebase -i {}: reword it into a normal commit, or push it as is: git push --no-verify",
+            &pushed[..10]
+        )),
+        "{err}"
+    );
+}
+
+#[test]
 fn fixup_finds_the_target_from_staged_lines_and_autosquash_folds_it() {
     let repo = Repo::new();
     repo.commit_file("base.txt", "base\n", "chore: base");

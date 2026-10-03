@@ -24,7 +24,7 @@
 **type-examples-valid.** Every example listed on a default type's page SHALL pass `gir lint` with no fixes and start with that type, and each default type's page SHALL list at least two.
 
 <a id="req-explain-known-pages"></a>
-**known-pages.** `gir explain <topic>` SHALL provide a nonempty page for each default type, lint rule, and the topics `fixup-unsquashed`, `fix-pending`, `fixup`, `breaking`, `scopes`, `config`, `hooks`, `doctor`, and `types`.
+**known-pages.** `gir explain <topic>` SHALL provide a nonempty page for each default type, lint rule, and the topics `fixup-unsquashed`, `fixup-unmatched`, `fix-pending`, `fixup`, `breaking`, `scopes`, `config`, `hooks`, `doctor`, and `types`.
 
 <a id="req-explain-single-section"></a>
 **single-section.** A topic page other than `types` SHALL print the text below its matching `## ` heading, omit that heading and subsequent sections, and end with one newline.

@@ -1,0 +1,59 @@
+git version 2.56.0
+
+## foldable fixup!
+before: ['feat: add a', 'feat: add b', 'fixup! feat: add a', '']
+gir:    ['gir: ed9fe73b02 rejected [fixup-unsquashed] `fixup!` commit must be squashed before pushing']
+try:    ['git rebase --autosquash af5683bdef']
+ran:    git rebase --autosquash af5683bdef -> exit 0 'Rebasing (2/3)\nRebasing (3/3)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['feat: add a', 'feat: add b', '']; expected: ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched fixup! with its target in the range
+before: ['feat: add a', 'feat: add b', 'fixup! wip', '']
+gir:    ['gir: 0c09f88e50 rejected [fixup-unmatched] `fixup!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i 610348205a: move it below 29c4e4f22b feat: add a, change pick to fixup']
+ran:    git rebase -i 610348205a -> exit 0 'Rebasing (2/3)\nRebasing (3/3)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['feat: add a', 'feat: add b', '']; expected: ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched squash! with its target in the range
+before: ['feat: add a', 'feat: add b', 'squash! wip', '']
+gir:    ['gir: ed61a54b6f rejected [fixup-unmatched] `squash!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i 610348205a: move it below 29c4e4f22b feat: add a, change pick to squash']
+ran:    git rebase -i 610348205a -> exit 0 'Rebasing (2/3)\nRebasing (3/3)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['feat: add a', 'feat: add b', '']; expected: ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched amend! with a new message, target in the range
+before: ['feat: add a', 'feat: add b', 'amend! wip', '']
+gir:    ['gir: ab8f7eab3a rejected [fixup-unmatched] `amend!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i 610348205a: move it below 29c4e4f22b feat: add a, change pick to fixup -C']
+ran:    git rebase -i 610348205a -> exit 0 'Rebasing (2/3)\nRebasing (3/3)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['feat: add alpha', 'feat: add b', '']; expected: ['feat: add alpha', 'feat: add b']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched amend! without a new message, target in the range
+before: ['feat: add a', 'feat: add b', 'amend! wip', '']
+gir:    ['gir: 7a7878549c rejected [fixup-unmatched] `amend!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i 610348205a: move it below 29c4e4f22b feat: add a, change pick to fixup -C']
+ran:    git rebase -i 610348205a -> exit 0 'Rebasing (2/3)\nRebasing (3/3)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['', 'feat: add b', '']; expected: ['feat: add a', 'feat: add b']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched fixup! with a published target
+before: ['fixup! feat: add a', '']
+gir:    ["gir: 66abc7b93e rejected [fixup-unmatched] `fixup!` commit's target 29c4e4f22b feat: add a is already published"]
+try:    ['git rebase -i 29c4e4f22b: reword it into a normal commit']
+ran:    git rebase -i 29c4e4f22b -> exit 0 'Rebasing (1/1)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['fix: correct a', '']; expected: ['fix: correct a']; tree unchanged: True
+RESULT: FAIL
+
+## unmatched fixup! that only adds a file (generic advice)
+before: ['feat: add a', 'fixup! wip', '']
+gir:    ['gir: 92d9234e32 rejected [fixup-unmatched] `fixup!` commit matches no earlier commit, so git rebase --autosquash leaves it']
+try:    ['git rebase -i 610348205a: move it below the commit it belongs to and change pick to fixup, or reword it into a normal commit']
+ran:    git rebase -i 610348205a -> exit 0 'Rebasing (2/2)\nSuccessfully rebased and updated refs/heads/main.'
+after:  ['feat: add a', 'fix: correct a', '']; expected: ['feat: add a', 'fix: correct a']; tree unchanged: True
+RESULT: FAIL
+
+0/7 passed

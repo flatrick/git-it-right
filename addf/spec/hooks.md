@@ -27,7 +27,7 @@
 **pre-push-deletes.** A line whose local SHA is all zeros (a branch deletion) SHALL be skipped.
 
 <a id="req-hooks-pre-push-rejects"></a>
-**pre-push-rejects.** It SHALL reject commits with any lint rejection, unsquashed `fixup! `, `squash! ` or `amend! ` commits with rule `fixup-unsquashed`, and commits a safe fix would change with rule `fix-pending`, with label `push rejected` preceded by the short SHA, and exit `1` so `git push` aborts; it SHALL NOT modify any commit.
+**pre-push-rejects.** It SHALL reject commits with any lint rejection, unsquashed `fixup! `, `squash! ` or `amend! ` commits with rule `fixup-unsquashed`, such commits that would not fold with rule `fixup-unmatched` as [range-unmatched](lint.md#req-lint-range-unmatched) describes, except that a target outside the pushed commits is named as already published and its hint also offers `git push --no-verify`, and commits a safe fix would change with rule `fix-pending`, with label `push rejected` preceded by the short SHA, and exit `1` so `git push` aborts; it SHALL NOT modify any commit.
 
 ## Installed hook scripts
 

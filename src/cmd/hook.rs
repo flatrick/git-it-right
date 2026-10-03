@@ -2,7 +2,6 @@ use std::io::BufRead;
 use std::path::Path;
 
 use super::lint::{self, Options};
-use crate::cc;
 use crate::config::Config;
 
 pub fn commit_msg(path: &str, cfg: &Config) -> Result<i32, String> {
@@ -26,11 +25,7 @@ pub fn pre_push(remote: &str, cfg: &Config) -> Result<i32, String> {
         } else {
             lint::commits(&[&range]).or_else(|_| lint::commits(&[local_sha, "--not", &not_remote]))?
         };
-        for (sha, body) in commits {
-            let mut outcome = cc::check(&body, cfg);
-            lint::reject_recorded(&mut outcome);
-            outcomes.push((Some(sha), outcome));
-        }
+        outcomes.extend(lint::lint_recorded(&commits, cfg, true));
     }
     Ok(lint::emit(&outcomes, &Options { fix: false, json: false }, "push rejected"))
 }

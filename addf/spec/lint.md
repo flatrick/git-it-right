@@ -123,7 +123,10 @@ When an allowed type is within edit distance 2 of it, and that distance is less 
 **range-no-fix.** `gir lint --range REV --fix` SHALL print `gir: gir lint --range cannot --fix recorded commits` on stderr and exit `2`, linting nothing.
 
 <a id="req-lint-range-unsquashed"></a>
-**range-unsquashed.** `gir lint --range` SHALL reject a commit whose subject starts with `fixup! `, `squash! ` or `amend! ` with rule `fixup-unsquashed` and a hint `git rebase --autosquash <base>`.
+**range-unsquashed.** `gir lint --range` SHALL reject a commit whose subject starts with `fixup! `, `squash! ` or `amend! ` and that `git rebase --autosquash` would fold into an older commit in the range with rule `fixup-unsquashed` and a hint `git rebase --autosquash <base>`, where `<base>` is the 10-character ID of the first parent of the oldest commit linted, or `--root` when it has none.
+
+<a id="req-lint-range-unmatched"></a>
+**range-unmatched.** `gir lint --range` SHALL reject such a commit that no older non-merge commit in the range matches with rule `fixup-unmatched`. Subjects SHALL be read as git reads them: the first paragraph, its lines joined with one space. The specifier is the subject after its chain of `fixup!`, `squash!` and `amend!` prefixes, each followed by one or more spaces; it matches an older subject that equals or starts with it, or, when it has no space, a revision that resolves to that commit, with a leading `HEAD` or `@` taken as the newest commit linted. When blaming the lines it changes names exactly one commit in the range, the hint SHALL name that commit and say to move it below it in `git rebase -i <base>`; when that commit is outside the range, the message SHALL say it is before the range and the hint SHALL say to reword it into a normal commit; otherwise the hint SHALL say to move it below the commit it belongs to or reword it into a normal commit.
 
 <a id="req-lint-range-fix-pending"></a>
 **range-fix-pending.** `gir lint --range` SHALL reject a commit whose message a safe fix would change with rule `fix-pending`, a message naming the rule id of every pending fix, and a hint showing the fixed subject line.

@@ -1,0 +1,149 @@
+[detached HEAD 92a09c4] feat: introduce a
+ Date: Sat Oct 3 13:58:57 2026 +0200
+ 1 file changed, 1 insertion(+)
+ create mode 100644 f2
+[detached HEAD 92a09c4] feat: introduce a
+ Date: Sat Oct 3 13:58:57 2026 +0200
+ 1 file changed, 1 insertion(+)
+ create mode 100644 f2
+git version 2.56.0
+
+## p1: squash! with no matching subject
+before: ['feat: add a', 'squash! wip', 'squash! wip']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'squash! wip', 'squash! wip']
+RESULT: LEFT ['squash! wip', 'squash! wip']
+
+## exact subject
+before: ['feat: add a', 'fixup! feat: add a']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## subject prefix
+before: ['feat: add a thing', 'fixup! feat: add a']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a thing']
+RESULT: folded
+
+## prefix is a whole-word prefix only?
+before: ['feat: add alpha', 'fixup! feat: add al']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add alpha']
+RESULT: folded
+
+## full hash
+before: ['feat: add a', 'fixup! a33318eb253ee536de3484558424865f7469cbdd']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## 7-char hash
+before: ['feat: add a', 'fixup! a33318e']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## ref name HEAD
+before: ['feat: add a', 'fixup! HEAD']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'fixup! HEAD']
+RESULT: LEFT ['fixup! HEAD']
+
+## ref name feature~1
+before: ['feat: add a', 'feat: add b', 'fixup! feature~1']
+rebase: exit 0: Rebasing (3/3) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'feat: add b']
+RESULT: folded
+
+## chained prefixes (git commit --fixup on a fixup)
+before: ['feat: add a', 'fixup! feat: add a', 'fixup! fixup! feat: add a']
+rebase: exit 0: Rebasing (2/3) | Rebasing (3/3) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## amend! and fixup! of the same target in one rebase
+before: ['feat: add a', 'amend! feat: add a', 'fixup! feat: add a']
+rebase: exit 0: Rebasing (2/3) | Rebasing (3/3) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add alpha']
+RESULT: folded
+
+## target is on the base branch, outside main..HEAD
+before: ['fixup! feat: on main']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['fixup! feat: on main']
+RESULT: LEFT ['fixup! feat: on main']
+
+## fixup older than its target subject
+before: ['fixup! feat: later', 'feat: later']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['fixup! feat: later', 'feat: later']
+RESULT: LEFT ['fixup! feat: later']
+
+## two commits share the target subject
+before: ['feat: dup', 'feat: dup', 'fixup! feat: dup']
+rebase: exit 0: Rebasing (2/3) | Rebasing (3/3) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: dup', 'feat: dup']
+RESULT: folded
+
+## target reworded by an earlier rebase (subject form)
+before: ['feat: introduce a', 'feat: add b', 'fixup! feat: add a']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: introduce a', 'feat: add b', 'fixup! feat: add a']
+RESULT: LEFT ['fixup! feat: add a']
+
+## target reworded by an earlier rebase (hash form)
+before: ['feat: introduce a', 'fixup! f466de0f37e163ce344f250150b12617cd022ee6']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: introduce a', 'fixup! f466de0f37e163ce344f250150b12617cd022ee6']
+RESULT: LEFT ['fixup! f466de0f37e163ce344f250150b12617cd022ee6']
+
+## subject with trailing space after prefix only
+before: ['feat: a', 'fixup!']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: a', 'fixup!']
+RESULT: LEFT ['fixup!']
+
+## ref expression followed by a space and text
+before: ['feat: add a', 'feat: add b', 'fixup! feature~1 x']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'feat: add b', 'fixup! feature~1 x']
+RESULT: LEFT ['fixup! feature~1 x']
+
+## no-space specifier that is not a rev, used as a title prefix
+before: ['feat: add a', 'fixup! feat:']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## exact title only on a later commit, prefix on an earlier one
+before: ['feat: add a thing', 'fixup! feat: add a', 'feat: add a']
+rebase: exit 0: Rebasing (2/3) | Rebasing (3/3) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a thing', 'feat: add a']
+files:  feat: add a thing: | f2 f3 feat: add a: | f4
+RESULT: folded
+
+## mixed chained prefixes: squash! fixup!
+before: ['feat: add a', 'squash! fixup! feat: add a']
+rebase: exit 0: [detached HEAD c77b54f] feat: add a |  Date: Sat Oct 3 13:58:57 2026 +0200 |  2 files changed, 2 insertions(+) |  create mode 100644 f2 |  create mode 100644 f3 | Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## mixed chained prefixes: amend! fixup!
+before: ['feat: add a', 'amend! fixup! feat: add a']
+rebase: exit 0: Rebasing (2/2) | Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a']
+RESULT: folded
+
+## prefix without its space: fixup!feat
+before: ['feat: add a', 'fixup!feat: add a']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'fixup!feat: add a']
+RESULT: LEFT ['fixup!feat: add a']
+
+## abbreviated hash of a commit outside the range
+before: ['feat: add a', 'fixup! 2e0cb01']
+rebase: exit 0: Successfully rebased and updated refs/heads/feature.
+after:  ['feat: add a', 'fixup! 2e0cb01']
+RESULT: LEFT ['fixup! 2e0cb01']
+

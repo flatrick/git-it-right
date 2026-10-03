@@ -202,9 +202,9 @@ fn find_base() -> Option<String> {
 }
 
 #[derive(Debug)]
-struct Hunk {
-    path: Vec<u8>,
-    lines: Vec<u32>,
+pub(crate) struct Hunk {
+    pub(crate) path: Vec<u8>,
+    pub(crate) lines: Vec<u32>,
     insertion: bool,
     /// The file's `diff --git` header lines, for rebuilding a patch.
     header: Vec<u8>,
@@ -332,7 +332,7 @@ fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
 
 /// Lines in the HEAD version each hunk touches. A pure insertion has no old
 /// lines, so the lines around it stand in for it. A new file has no such lines and no hunks.
-fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
+pub(crate) fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
     let mut hunks: Vec<Hunk> = Vec::new();
     let mut path: Option<Vec<u8>> = None;
     let mut header = Vec::new();
@@ -450,6 +450,20 @@ fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
         }
     }
     shas
+}
+
+/// The commits that last changed `lines` at `rev`, from one `git blame` over their span;
+/// `--root` prints a root commit's full ID instead of a `^`-marked short one.
+pub(crate) fn blame_range(rev: &str, path: &[u8], lines: &[u32]) -> BTreeSet<String> {
+    let (Some(first), Some(last)) = (lines.iter().min(), lines.iter().max()) else { return BTreeSet::new() };
+    let range = format!("{first},{last}");
+    let path = git::os_path(path);
+    let args = ["blame", "--root", "-l", "-s", "-L", &range, rev, "--"].map(OsStr::new);
+    let Ok(out) = git::run_raw(&[&args[..], &[path.as_os_str()]].concat()) else { return BTreeSet::new() };
+    out.split(|&b| b == b'\n')
+        .filter_map(|line| line.split(u8::is_ascii_whitespace).next().filter(|s| !s.is_empty()))
+        .map(|sha| String::from_utf8_lossy(sha).to_string())
+        .collect()
 }
 
 #[cfg(test)]
