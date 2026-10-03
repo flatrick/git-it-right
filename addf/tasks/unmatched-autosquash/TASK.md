@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Settle with the operator the rule ids, whether advice names the target found by blame, how the published-target message words pushing anyway, and the base shown in hints; then write the proposed spec delta.
+**Resume at:** Add the fold check and `fixup-unmatched` to the range lint and pre-push (`src/cmd/lint.rs`, `src/cmd/hook.rs`), with end-to-end tests first.
 
-**Open obligations:** The selected approach, its spec delta and its verification strategy recorded under Decide — blocks the DECIDE gate.
+**Open obligations:** The change exists and can be evaluated — blocks the IMPLEMENT gate. `acceptance.py` written and run — blocks the VERIFY gate.
 
 ## Owned artifacts
 
