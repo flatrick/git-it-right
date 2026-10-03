@@ -277,3 +277,35 @@ All runs below are on the tree committed as `48bfb47`, Linux, git 2.56.0.
 ### VERIFY gate
 
 `ESTABLISHED`: c1–c4 are `VERIFIED` through the Verifications above; `cargo clippy --all-targets -- -D warnings` (`logs/clippy-20261003-1615.log`) and `cargo fmt --check` (`logs/fmt-20261003-1615.log`) are clean on the same tree. The spec delta is published in the terminal checkpoint.
+
+## Learn
+
+### Technical
+
+-   git 2.56.0's autosquash folds a commit if and only if an older commit in the rebased range matches the rest of its title (after any chain of prefixes) as a title, a title prefix, or, without a space, a revision; when that fails it reports success anyway. This now lives in `lint::folds` and the `tests/lint.rs` cases, which will fail if gir and git drift apart on the forms tested.
+-   `fixup -C` takes the `amend!` commit's message without its title; an `amend!` with nothing after its title empties its target's message.
+
+### Process
+
+-   Twice in this Task a check that looked only for the bad marker passed a bad result: the matching probe's classifier missed `fixup!feat` because it split on a space, and `acceptance.py` passed an `amend!` result whose message was empty because it only checked that no prefix was left. Comparing the exact expected end state (the subject list) caught the real defect. Disposition: no permanent change; `acceptance.py` keeps the exact-state check, and the existing practice of asserting the required result already covers it.
+-   The undocumented `INDEX.md` State form recurred: `SELF-IMPROVEMENT/20261003T121151Z-index-state-form-recurred.md`.
+
+### LEARN gate
+
+`ESTABLISHED`: the learnings above are recorded with their dispositions.
+
+## Retention and promotion
+
+### Promotion: `p1-unmatched-survives`
+
+-   Claim: [`p1-unmatched-survives`](#p1-unmatched-survives).
+-   Will this Claim's validity outlive this Task and inform a future decision? `no`: it is the problem this Task fixed, and its behaviour is now encoded in `tests/lint.rs`, which a git change would break.
+-   Disposition: not promoted — Task-scoped only.
+
+### Promotion: `c4-survives-reword`
+
+-   Claim: [`c4-survives-reword`](#c4-survives-reword).
+-   Will this Claim's validity outlive this Task and inform a future decision? `yes`, but only as rationale: anyone proposing to make `gir fixup` survive a reword would need it, and the `fixup-unmatched` explain page already states the consequence for users.
+-   Disposition: not promoted — the archived Verification and the explain page carry it; no Knowledge file.
+
+No Learning is promoted beyond the self-improvement entry.
