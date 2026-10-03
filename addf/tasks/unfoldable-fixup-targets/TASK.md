@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Move to `LEARN`.
+**Resume at:** Write Learn, then the terminal checkpoint: promote c1 to Knowledge (operator, 2026-10-03), publish the `spec/fixup.md` delta, and archive.
 
 **Open obligations:** (1) Publish the `spec/fixup.md` delta (c6) — terminal checkpoint.
 
