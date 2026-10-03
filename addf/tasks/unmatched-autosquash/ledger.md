@@ -29,3 +29,17 @@ Its script and log are local only and not shared, so the repro is copied in A1.
   - `gir lint --range` and pre-push detect an unmatched autosquash commit and reject it with a distinct rule id and its own instructions.
   - Make `gir fixup`, `amend` and `squash` produce subjects that survive a reword. Git's autosquash also matches a commit hash after the prefix, but whether git 2.56.0 accepts that form needs a probe.
   - Explain text for `fixup-unsquashed` says that an unmatched commit survives the rebase, and how to point it at its target.
+
+DEFINE dialogue with the operator, 2026-10-03.
+
+- Q4: Which parts are in scope: detection at pre-push and `gir lint --range`, the `gir explain fixup-unsquashed` page, fixups made by gir that survive a reword of their target, or a warning at commit time?
+- A4: The first three are in scope.
+  A warning at commit time is out of scope.
+- Q5: When the target is already on the remote or the base branch, so autosquash can never fold the commit without rewriting published history, what should gir advise?
+- A5: "if the user knows what they are doing, it is not gir's job to block them. Warn, but comply to the command."
+  Which command this governs (pre-push, `gir lint --range`, or both) is asked in Q6.
+- Q6: Does "warn, but comply" mean pre-push lets the commit through, both pre-push and `gir lint --range` let it through, or both still reject with a message that says why?
+- A6: Both still reject, and the message says why.
+  "Comply" means gir does not try to stop a user who pushes it anyway, for example with `git push --no-verify`.
+- Q7: Are the objective, scope and success criteria c1–c4 in `TASK.md` viable, actionable and the outcome the operator wants?
+- A7: Yes: "Agreed, proceed to UNDERSTAND".
