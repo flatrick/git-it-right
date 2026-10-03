@@ -202,9 +202,9 @@ fn find_base() -> Option<String> {
 }
 
 #[derive(Debug)]
-struct Hunk {
-    path: Vec<u8>,
-    lines: Vec<u32>,
+pub(crate) struct Hunk {
+    pub(crate) path: Vec<u8>,
+    pub(crate) lines: Vec<u32>,
     insertion: bool,
     /// The file's `diff --git` header lines, for rebuilding a patch.
     header: Vec<u8>,
@@ -332,7 +332,7 @@ fn trace(base: Option<&str>, all: bool) -> Result<Trace, String> {
 
 /// Lines in the HEAD version each hunk touches. A pure insertion has no old
 /// lines, so the lines around it stand in for it. A new file has no such lines and no hunks.
-fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
+pub(crate) fn parse_hunks(diff: &[u8]) -> Vec<Hunk> {
     let mut hunks: Vec<Hunk> = Vec::new();
     let mut path: Option<Vec<u8>> = None;
     let mut header = Vec::new();
@@ -438,11 +438,15 @@ fn range(r: &str) -> (u32, u32) {
 }
 
 fn blame(path: &[u8], lines: &[u32]) -> BTreeSet<String> {
+    blame_at("HEAD", path, lines)
+}
+
+pub(crate) fn blame_at(rev: &str, path: &[u8], lines: &[u32]) -> BTreeSet<String> {
     let path = git::os_path(path);
     let mut shas = BTreeSet::new();
     for line in lines {
         let range = format!("{line},{line}");
-        let args = ["blame", "-l", "-s", "-L", &range, "HEAD", "--"].map(OsStr::new);
+        let args = ["blame", "-l", "-s", "-L", &range, rev, "--"].map(OsStr::new);
         if let Ok(out) = git::run_raw(&[&args[..], &[path.as_os_str()]].concat())
             && let Some(sha) = out.split(u8::is_ascii_whitespace).next().filter(|s| !s.is_empty())
         {

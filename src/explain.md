@@ -92,7 +92,15 @@ Reword it: `revert: <original description>`, and keep the `This reverts commit <
 ## fixup-unsquashed
 A `fixup!`, `squash!` or `amend!` commit is about to be pushed.
 Fold it into its target first: `git rebase --autosquash <base>`, then push again.
+A commit that matches no earlier commit, or whose target is already published, is reported as `fixup-unmatched` instead: move it below its target in `git rebase -i <base>`, or reword it into a normal commit (`gir explain fixup-unmatched`).
 The whole workflow: `gir explain fixup`.
+
+## fixup-unmatched
+A `fixup!`, `squash!` or `amend!` commit matches no earlier commit among those being pushed or linted, so `git rebase --autosquash` reports success and leaves it where it is.
+git matches the text after the prefix against the title of an earlier commit (all of it, or its start), or resolves it as a commit ID; a fixup made before its target was reworded no longer matches.
+When gir can tell which commit the change belongs to, `try:` names it: in `git rebase -i <base>`, move the line below that commit and change `pick` to `fixup` (`squash` for `squash!`, `fixup -C` for `amend!`).
+When that commit is already published, folding into it rewrites published history: reword the commit into a normal Conventional Commit instead (`reword` in `git rebase -i <base>`).
+Pushing it as it is stays your call: `git push --no-verify` skips the `pre-push` check.
 
 ## fix-pending
 A recorded commit has a message the `commit-msg` hook would have fixed, so it was made with `--no-verify` or without the hook installed.

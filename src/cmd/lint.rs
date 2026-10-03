@@ -1,6 +1,8 @@
+use std::collections::BTreeSet;
 use std::io::Read;
 use std::path::Path;
 
+use super::fixup;
 use crate::cc::{self, Kind, Outcome, Violation};
 use crate::config::Config;
 use crate::{git, message, report};
@@ -31,15 +33,7 @@ pub fn lint(source: Source, opts: Options, cfg: &Config) -> Result<i32, String> 
         }
         Source::Range(range) => {
             let commits = commits(&[&range])?;
-            let outcomes: Vec<_> = commits
-                .into_iter()
-                .map(|(sha, body)| {
-                    let mut outcome = cc::check(&body, cfg);
-                    reject_recorded(&mut outcome);
-                    (Some(sha), outcome)
-                })
-                .collect();
-            Ok(emit(&outcomes, &opts, "rejected"))
+            Ok(emit(&lint_recorded(&commits, cfg, false), &opts, "rejected"))
         }
     }
 }
@@ -78,7 +72,7 @@ pub fn emit(outcomes: &[(Option<String>, Outcome)], opts: &Options, label: &str)
 
 /// `(sha, message)` for each commit selected by `git log <args>`.
 pub fn commits(args: &[&str]) -> Result<Vec<(String, String)>, String> {
-    let mut full = vec!["log", "--format=%H%x1f%B%x1e"];
+    let mut full = vec!["log", "--topo-order", "--format=%H%x1f%B%x1e"];
     full.extend_from_slice(args);
     let out = git::run(&full)?;
     Ok(out
@@ -90,15 +84,115 @@ pub fn commits(args: &[&str]) -> Result<Vec<(String, String)>, String> {
         .collect())
 }
 
-/// Rejections for commits already recorded, which the commit-msg hook can no longer fix.
-pub fn reject_recorded(outcome: &mut Outcome) {
-    if let Kind::Autosquash(prefix) = &outcome.kind {
-        outcome.violations.push(Violation {
-            rule: "fixup-unsquashed",
-            message: format!("`{prefix}` commit must be squashed before pushing"),
-            hint: Some("git rebase --autosquash <base>".into()),
-        });
+/// Lints commits already recorded, newest first as `commits` lists them, which the commit-msg
+/// hook can no longer fix. An autosquash commit is judged against the older commits in the
+/// list, as `git rebase --autosquash` would; `pushing` adds `git push --no-verify` to the
+/// advice for a target that is already published.
+pub fn lint_recorded(commits: &[(String, String)], cfg: &Config, pushing: bool) -> Vec<(Option<String>, Outcome)> {
+    let base = commits
+        .last()
+        .and_then(|(oldest, _)| git::run(&["rev-parse", "--verify", "--quiet", &format!("{oldest}^")]).ok())
+        .map_or_else(|| "<base>".to_string(), |b| b[..10].to_string());
+    commits
+        .iter()
+        .enumerate()
+        .map(|(i, (sha, body))| {
+            let mut outcome = cc::check(body, cfg);
+            if let Kind::Autosquash(prefix) = &outcome.kind {
+                let older = &commits[i + 1..];
+                let violation = if folds(body, older) {
+                    Violation {
+                        rule: "fixup-unsquashed",
+                        message: format!("`{prefix}` commit must be squashed before pushing"),
+                        hint: Some(format!("git rebase --autosquash {base}")),
+                    }
+                } else {
+                    unmatched(prefix, sha, body, older, &base, pushing)
+                };
+                outcome.violations.push(violation);
+            }
+            reject_pending(&mut outcome);
+            (Some(sha.clone()), outcome)
+        })
+        .collect()
+}
+
+fn title(body: &str) -> &str {
+    body.lines().next().unwrap_or("")
+}
+
+/// Whether `git rebase --autosquash` finds a target among `older`: after the chain of
+/// prefixes, an older title equal to or starting with the rest, or, when the rest has no
+/// space, a revision that resolves to an older commit.
+fn folds(body: &str, older: &[(String, String)]) -> bool {
+    let mut rest = title(body);
+    while let Some(r) = ["fixup! ", "squash! ", "amend! "].iter().find_map(|p| rest.strip_prefix(p)) {
+        rest = r;
     }
+    older.iter().any(|(_, b)| title(b).starts_with(rest))
+        || (!rest.contains(' ')
+            && !rest.starts_with('-')
+            && git::run(&["rev-parse", "--verify", "--quiet", &format!("{rest}^{{commit}}")])
+                .is_ok_and(|sha| older.iter().any(|(s, _)| *s == sha)))
+}
+
+/// The commits that last changed, before `sha`, the lines `sha` changes.
+fn blamed(sha: &str) -> BTreeSet<String> {
+    let parent = format!("{sha}^");
+    let args = [
+        "-c",
+        "core.quotePath=false",
+        "diff",
+        "-U0",
+        "--no-color",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--no-renames",
+        "--src-prefix=a/",
+        "--dst-prefix=b/",
+        &parent,
+        sha,
+    ];
+    let Ok(diff) = git::run_raw(&args) else { return BTreeSet::new() };
+    fixup::parse_hunks(&diff).iter().flat_map(|h| fixup::blame_at(&parent, &h.path, &h.lines)).collect()
+}
+
+/// `fixup -C` takes the `amend!` commit's message without its title, so an `amend!` with no
+/// message after its title would leave its target with an empty message.
+fn unmatched(prefix: &str, sha: &str, body: &str, older: &[(String, String)], base: &str, pushing: bool) -> Violation {
+    let action = match prefix {
+        "squash!" => "squash",
+        "amend!" if body.lines().skip(1).any(|l| !l.trim().is_empty()) => "fixup -C",
+        _ => "fixup",
+    };
+    let leaves = format!("`{prefix}` commit matches no earlier commit, so git rebase --autosquash leaves it");
+    let targets = blamed(sha);
+    let only = if targets.len() == 1 { targets.first() } else { None };
+    let (message, hint) = match only {
+        Some(t) => match older.iter().find(|(s, _)| s == t) {
+            Some((_, body)) => {
+                (leaves, format!("git rebase -i {base}: move it below {} {}, change pick to {action}", &t[..10], title(body)))
+            }
+            None => {
+                let subject = git::run(&["log", "-1", "--format=%s", t]).unwrap_or_default();
+                let anyway = if pushing { ", or push it as is: git push --no-verify" } else { "" };
+                (
+                    format!("`{prefix}` commit's target {} {subject} is already published", &t[..10]),
+                    format!("git rebase -i {base}: reword it into a normal commit{anyway}"),
+                )
+            }
+        },
+        None => (
+            leaves,
+            format!(
+                "git rebase -i {base}: move it below the commit it belongs to and change pick to {action}, or reword it into a normal commit"
+            ),
+        ),
+    };
+    Violation { rule: "fixup-unmatched", message, hint: Some(hint) }
+}
+
+fn reject_pending(outcome: &mut Outcome) {
     if !outcome.fixes.is_empty() {
         let rules: Vec<&str> = outcome.fixes.iter().map(|f| f.rule).collect();
         outcome.violations.push(Violation {
