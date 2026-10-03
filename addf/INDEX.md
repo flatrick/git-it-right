@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [unfoldable-fixup-targets](tasks/unfoldable-fixup-targets/TASK.md) -
-  gir never targets a commit that autosquash cannot fold. State: `INVESTIGATE`.
+  gir never targets a commit that autosquash cannot fold. State: `DECIDE`.
 
 ## Ledger
 

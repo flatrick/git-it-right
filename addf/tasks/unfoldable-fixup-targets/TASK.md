@@ -4,15 +4,14 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Write `probe.py`: in throwaway repos on `target/debug/gir` built from this branch, repeat `p1-picker-lists-merges`, observe c1 (autosquash of a `fixup!` of a merge and of a side-branch commit), and observe what `gir fixup` does today for a staged line blamed on a conflict-resolving merge.
+**Resume at:** Ask the operator how automatic selection treats a line blamed on a merge, and whether commits already cherry-picked to the base branch are in scope; then write Decide.
 
-**Open obligations:** (1) `p1-picker-lists-merges` repeated on this branch — blocks `INVESTIGATE` exit.
-(2) Whether side-branch commits are also left out (`--first-parent`) — blocks `DECIDE`; settled from the evidence of `c1-autosquash-behaviour`.
-(3) How automatic selection treats a staged line last changed by a merge commit (untraced, refused, or traced past the merge) — blocks `DECIDE`.
+**Open obligations:** (1) Whether a commit whose patch is already upstream (cherry-picked) is in scope — blocks `DECIDE`.
+(2) How automatic selection treats a staged line last changed by a merge commit (untraced, refused, or traced past the merge) — blocks `DECIDE`.
 
 ## Owned artifacts
 
