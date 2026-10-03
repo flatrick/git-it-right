@@ -4,14 +4,14 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Write the tests for c2–c4 in `tests/fixup.rs` and `tests/fixup_modes.rs`, and log them failing on the current code.
+**Resume at:** Write a Verification for `p1-picker-lists-merges` and each of c1–c6 from the Implement evidence, and settle each Claim's State.
 
-**Open obligations:** (1) Tests for c2–c4 fail first, then pass — blocks `IMPLEMENT` exit.
-(2) `spec/fixup.md` delta written — blocks `VERIFY` exit (c6).
+**Open obligations:** (1) A Verification for p1 and c1–c6 — blocks `VERIFY` exit.
+(2) The Windows half of `c5-no-regression`: hosted CI needs a push, which needs the operator — blocks `VERIFY` exit unless the operator decides otherwise.
 
 ## Owned artifacts
 
