@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Commit the DEFINE record, then move to UNDERSTAND.
+**Resume at:** Read git 2.56.0's `githooks` documentation for `reference-transaction`, then write the probe for the five operations.
 
-**Open obligations:** `NONE` in DEFINE; the gate is established.
+**Open obligations:** The hook's documented contract and the probe design recorded — blocks the UNDERSTAND gate.
 
 ## Owned artifacts
 
