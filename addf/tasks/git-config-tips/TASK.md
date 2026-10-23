@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `INVESTIGATE`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
 
-**Resume at:** Record the current Git config reference baseline and conduct the broad candidate survey, classifying options by effect, safety, scope, default status, and applicability.
+**Resume at:** Compare the command and catalog structures, then record the selected tip set, ordering, output contract, and specification delta in `decision.md`.
 
-**Open obligations:** Complete and record the config-option survey at INVESTIGATE; select and justify the catalog and specification delta at DECIDE; implement and verify at their named states.
+**Open obligations:** Select and justify the catalog structure and contents at DECIDE; implement and verify at their named states.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -23,6 +23,10 @@ gate was valid. Do not infer State from artifact presence.
 ## Owned artifacts
 
 -   `ledger.md` — user decisions and constraints carried from the exploration thread.
+-   `investigation.md` — screened config settings, candidate effects, and preliminary dispositions.
+-   `evidence/git-config-reference.md` — installed reference baseline and official setting descriptions.
+-   `evidence/git-config-names-2.56.0.txt` — exact output from `git help --config`.
+-   `verifications/git-config-scope.md` — verifies the installed version and config variable count.
 -   `decision.md` — selected tip catalog and rationale, created at DECIDE.
 -   `verification.md` — acceptance evidence, created at VERIFY.
 
@@ -87,10 +91,10 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 #### `git-config-scope`
 
 -   Claim: The installed Git is version 2.56.0 and its `git help --config` output lists 1,012 config variable names.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: The current execution environment.
 -   Consequence if false: The proposed survey baseline may not match this environment.
--   Basis: Observed before Task creation; verify again during INVESTIGATE.
+-   Basis: [Verification](verifications/git-config-scope.md#conclusion).
 
 ## Understand
 
@@ -121,11 +125,18 @@ The CLI parses subcommands and dispatches them in `src/main.rs`. Command impleme
 
 ## Investigate
 
-No investigation has been performed under this Task yet.
+The installed Git is 2.56.0 and lists 1,012 config variables. The full list and official descriptions are recorded in the Evidence files. The survey distinguishes presentation-only settings from changes to Git workflow, refs, and large-repository performance. It excludes specialty, tool-specific, server, and advanced tuning options from the initial audience.
+
+The candidate inventory and preliminary dispositions are in [the survey](investigation.md). The current Git reference confirms the effects and limitations needed to choose a useful catalog.
+
+### INVESTIGATE exit claim
+
+-   Every decision-relevant uncertainty has a disposition: `ESTABLISHED`.
+-   Basis: The complete installed variable list was retained and screened. The candidate settings' effects, defaults, scope, and material caveats were checked against Git's current manual. The remaining questions concern product choices about the curated subset and its grouping; DECIDE owns those choices.
 
 ## Decide
 
-Pending the current config-option survey.
+Select and justify the catalog and output contract here.
 
 ## Implement
 
