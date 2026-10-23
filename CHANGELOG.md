@@ -1,4 +1,13 @@
 # Changelog
+## v0.4.0 - 2026-10-23
+
+### Features
+
+- **init:** Generate SourceGit commit types
+
+### Miscellaneous
+
+- **git:** Add conventional-commits.json
 ## v0.3.0 - 2026-10-03
 
 ### Bug Fixes
