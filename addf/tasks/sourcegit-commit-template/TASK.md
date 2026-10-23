@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** implement the template, init integration, docs, and behavior tests from `decision.md`.
+**Resume at:** record the final verification for `sourcegit-template-conformance` against commit `6e1d4f4`.
 
 **Open obligations:** SourceGit template and init conformance — VERIFY.
 
@@ -110,6 +110,8 @@ Added the root JSON template in gir's built-in order, embedded it with `include_
 The first configured-types-file test used a relative path in local Git config, which resolves from `.git`. Replaced it with `.girconfig`'s repository-root-relative path; the corrected test passes.
 
 Implementation checks so far: `cargo test` passed all suites; `cargo fmt -- --check`, `git diff --check`, and `cargo package --list --allow-dirty` passed, with the package list including `conventional-commits.json`. Final success claim remains `UNVERIFIED` until VERIFY records direct artifact evidence.
+
+IMPLEMENT gate: `ESTABLISHED` — the selected behavior and documentation changes are implemented in commit `6e1d4f4`; verification remains the next state.
 
 ## Verify
 
