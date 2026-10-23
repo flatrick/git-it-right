@@ -18,7 +18,7 @@ Read the installed Git version, count the saved `git help --config` output, and 
 ### `current-git-config-list`
 
 -   Fact: Git reports version `2.56.0`; the saved list has 1,012 lines; `cmp` reports no difference between the saved list and fresh `git help --config` output.
--   Source and method: `git --version`; `wc -l < addf/tasks/git-config-tips/evidence/git-config-names-2.56.0.txt`; `cmp` against fresh `git help --config` output.
+-   Source and method: `git --version`; `wc -l < ../evidence/git-config-names-2.56.0.txt`; `cmp` against fresh `git help --config` output.
 -   Context: Linux, worktree `.worktrees/git-config-tips`, observed 2026-10-23.
 -   Limitations: This verifies the installed environment only. It does not establish the config variable list for other Git releases.
 

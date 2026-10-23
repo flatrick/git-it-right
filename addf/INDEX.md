@@ -13,11 +13,11 @@ is available through its archived bundle, not through this index.
 ## Specification
 
 - [Current specification](SPEC.md) - the root of this repository's completed,
-  accepted product contract, with eight child modules under `spec/`.
+  accepted product contract, with nine child modules under `spec/`.
 
 ## Active Tasks
 
-- [git-config-tips](tasks/git-config-tips/TASK.md) - survey Git settings and add a curated tips command (`LEARN`).
+`NONE`.
 
 ## Ledger
 

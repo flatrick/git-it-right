@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** Record the learning disposition, then publish the verified CLI and doctor specifications and terminalize the Task.
+**Resume at:** `NONE`
 
-**Open obligations:** Record learning and promotion decisions; publish the verified specification delta and terminalize the Task.
+**Open obligations:** `NONE`
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -29,7 +29,10 @@ gate was valid. Do not infer State from artifact presence.
 -   `evidence/git-config-names-2.56.0.txt` — exact output from `git help --config`.
 -   `verifications/git-config-scope.md` — verifies the installed version and config variable count.
 -   `decision.md` — selected tip catalog and rationale, created at DECIDE.
--   `verification.md` — acceptance evidence, created at VERIFY.
+-   `verification.md` — summary of the verification run.
+-   `verifications/tips-catalog.md` — verifies catalog order and explanations.
+-   `verifications/tips-read-only.md` — verifies repository-independent, read-only behavior.
+-   `verifications/doctor-diff-color-moved.md` — verifies recommendation, fix, and preservation behavior.
 -   `process/architect-todo.md` — pstack architect phases and feature throughput checkpoint.
 -   `process/arena-todo.md` — design comparison, cross-judge, and synthesis record.
 
@@ -37,7 +40,7 @@ gate was valid. Do not infer State from artifact presence.
 
 - Current contract: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/doctor.md`
 - Proposed delta: Add `gir tips` as a read-only, repository-independent command that lists curated Git settings with presentation settings first and states each behavior effect and useful situation. Add a tips child specification and list it in `SPEC.md`. Add `diff.colorMoved=plain` to the repo-local Git recommendations checked and fixed by `gir doctor`.
-- Terminal publication: `PENDING`
+- Terminal publication: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/doctor.md`; `framework:spec/tips.md`
 
 ## Define
 
@@ -54,7 +57,7 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 -   State: `VERIFIED`
 -   Scope: The implemented CLI and its user-facing documentation.
 -   Consequence if false: Developers may apply a setting without understanding its effect or find the catalog hard to use.
--   Basis: [Catalog conclusion](verification.md#catalog-conclusion).
+-   Basis: [Catalog conclusion](verifications/tips-catalog.md#conclusion).
 
 <a id="doctor-diff-color-moved"></a>
 #### `doctor-diff-color-moved`
@@ -63,7 +66,7 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 -   State: `VERIFIED`
 -   Scope: Doctor behavior in a Git repository.
 -   Consequence if false: The confirmed doctor recommendation is absent or overwrites user config.
--   Basis: [Doctor conclusion](verification.md#doctor-conclusion).
+-   Basis: [Doctor conclusion](verifications/doctor-diff-color-moved.md#conclusion).
 
 <a id="tips-read-only"></a>
 #### `tips-read-only`
@@ -72,7 +75,7 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 -   State: `VERIFIED`
 -   Scope: The `gir tips` command.
 -   Consequence if false: A discovery command changes a developer's Git behavior without consent.
--   Basis: [Read-only conclusion](verification.md#read-only-conclusion).
+-   Basis: [Read-only conclusion](verifications/tips-read-only.md#conclusion).
 
 ### Constraints
 
@@ -211,8 +214,20 @@ The bundle is self-contained: its Ledger, survey, grounding, evidence, decision,
 
 ## Terminal record
 
-Not terminal.
+### Summary
+
+Added the read-only `gir tips` catalog with presentation settings first and
+explicit effect and use-case text for behavior changes. Added
+`diff.colorMoved=plain` to doctor's local recommendations. Published the
+verified CLI, tips, and doctor contracts.
+
+### Gate basis
+
+-   `git-config-catalog`: `VERIFIED`; see [catalog conclusion](verifications/tips-catalog.md#conclusion).
+-   `tips-read-only`: `VERIFIED`; see [read-only conclusion](verifications/tips-read-only.md#conclusion).
+-   `doctor-diff-color-moved`: `VERIFIED`; see [doctor conclusion](verifications/doctor-diff-color-moved.md#conclusion).
+-   No deferred verification obligations remain. Windows and macOS were unavailable, but the catalog code contains no platform-specific behavior.
 
 ## Stop record
 
-Not stopped.
+Not applicable for `COMPLETED`.

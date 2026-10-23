@@ -7,7 +7,7 @@ It is one small Rust binary that works the same on Windows, Linux and macOS.
   Safe mistakes are fixed automatically; anything else is rejected with a short, actionable message.
 - **Fixup workflow.** `gir fixup` finds which commit your staged change belongs to and creates a `fixup!` commit for `git rebase --autosquash`; `gir amend`, `gir reword` and `gir squash` do the same for `amend!` and `squash!`.
 - **Repo hygiene.** `gir doctor` checks `.gitattributes`, `.gitignore`, `.editorconfig`, recommended git settings and file names that break on some platforms.
-- **Git settings tips.** `gir tips` lists optional settings for clearer output and selected workflow safeguards. It only prints suggestions; you choose which global settings to apply.
+- **Git settings tips.** `gir tips` lists optional settings for clearer output and selected workflow changes. It only prints suggestions; you choose which global settings to apply.
 
 ## Install
 
