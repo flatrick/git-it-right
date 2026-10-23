@@ -7,6 +7,7 @@ It is one small Rust binary that works the same on Windows, Linux and macOS.
   Safe mistakes are fixed automatically; anything else is rejected with a short, actionable message.
 - **Fixup workflow.** `gir fixup` finds which commit your staged change belongs to and creates a `fixup!` commit for `git rebase --autosquash`; `gir amend`, `gir reword` and `gir squash` do the same for `amend!` and `squash!`.
 - **Repo hygiene.** `gir doctor` checks `.gitattributes`, `.gitignore`, `.editorconfig`, recommended git settings and file names that break on some platforms.
+- **Git settings tips.** `gir tips` lists optional settings for clearer output and selected workflow safeguards. It only prints suggestions; you choose which global settings to apply.
 
 ## Install
 
@@ -148,6 +149,7 @@ If you use a git client such as Visual Studio, VS Code, SourceGit or SourceTree,
 | `gir squash [<commit>] [--dry-run] [--split]` | Like `fixup`, and combine the messages (`squash!`). |
 | `gir reword [<commit>] [--dry-run]` | Replace only the commit's message (`amend!`, staged changes ignored). |
 | `gir doctor [--fix]` | Check repo hygiene; `--fix` applies repo-local fixes only and never touches global git config. |
+| `gir tips` | List optional Git settings, with display preferences first and behavior changes explained. It does not change config. |
 | `gir explain [<topic>]` | Explain a rule, `types`, `config`, `fixup`, `hooks` or `doctor`. |
 
 Exit codes: `0` success, `1` rejected message or doctor warnings, `2` usage or runtime error.

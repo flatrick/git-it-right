@@ -42,6 +42,7 @@ These include the hooks, `.girconfig` and `conventional-commits.json`.
 Write messages as `<type>[(scope)][!]: <description>`, for example `fix(api): return 404 for unknown users`.
 
 - `gir explain types` lists the types this repository allows (they are set in `.girconfig`).
+- `gir tips` lists optional Git settings; it only prints suggestions for you to choose from.
 - When a commit is rejected, the message names a rule in brackets, such as `[type-unknown]`; `gir explain <rule>` explains it.
 - `gir fixup` and `gir explain fixup` cover fixing an earlier commit on your branch.
 

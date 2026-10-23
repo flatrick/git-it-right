@@ -9,6 +9,6 @@
 ## Feature throughput checkpoint
 
 - [x] Blocking first steps — task state, investigation, and architecture decision complete before implementation.
-- [ ] Independent workstreams — CLI/catalog/doctor source implementation is code-coupled; docs and tests will follow the selected contract.
-- [ ] Shared mutable state — writers use separate worktrees under `.worktrees/`; lifecycle state and specification publication remain serialized.
-- [ ] Smallest safe decomposition — one implementation owner keeps the cross-file CLI and doctor contracts coherent; architecture candidates and cross-judge were independent and read-only.
+- [x] Independent workstreams — one implementation owner has CLI/catalog/doctor/test files in a separate worktree; this worktree owns README and generated onboarding text.
+- [x] Shared mutable state — writers use separate worktrees under `.worktrees/`; lifecycle state and specification publication remain serialized.
+- [x] Smallest safe decomposition — one implementation owner keeps the code-coupled CLI and doctor contracts coherent; prose changes use disjoint files.
