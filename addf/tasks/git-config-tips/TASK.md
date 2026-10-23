@@ -50,28 +50,28 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 #### `git-config-catalog`
 
 -   Claim: `gir tips` presents curated, broadly useful developer settings, lists settings that only affect presentation or readability first, and explains the effect and use case for every setting that changes Git behavior.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: The implemented CLI and its user-facing documentation.
 -   Consequence if false: Developers may apply a setting without understanding its effect or find the catalog hard to use.
--   Basis: Pending implementation and CLI verification.
+-   Basis: [Catalog conclusion](verification.md#catalog-conclusion).
 
 <a id="doctor-diff-color-moved"></a>
 #### `doctor-diff-color-moved`
 
 -   Claim: `gir doctor` recommends `diff.colorMoved=plain` and `gir doctor --fix` sets it in local repository config when unset, while preserving an existing value.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: Doctor behavior in a Git repository.
 -   Consequence if false: The confirmed doctor recommendation is absent or overwrites user config.
--   Basis: Pending implementation and doctor verification.
+-   Basis: [Doctor conclusion](verification.md#doctor-conclusion).
 
 <a id="tips-read-only"></a>
 #### `tips-read-only`
 
 -   Claim: Running `gir tips` does not modify global or repository Git config.
--   State: `UNVERIFIED`
+-   State: `VERIFIED`
 -   Scope: The `gir tips` command.
 -   Consequence if false: A discovery command changes a developer's Git behavior without consent.
--   Basis: Pending implementation and CLI verification.
+-   Basis: [Read-only conclusion](verification.md#read-only-conclusion).
 
 ### Constraints
 
@@ -158,7 +158,10 @@ The candidate inventory and preliminary dispositions are in [the survey](investi
 
 ## Verify
 
-Not started.
+### VERIFY exit claim
+
+-   Evidence establishes whether completion is justified: `ESTABLISHED`.
+-   Basis: [`verification.md`](verification.md) evaluates all three success claims against the integrated CLI tests and Clippy run. The catalog and read-only tests exercise actual command behavior. The doctor tests verify setting, fix, and preserve paths. No contradictory results appeared in the tested Linux scope.
 
 ## Learn
 
