@@ -147,19 +147,31 @@ VERIFY gate: `ESTABLISHED` — the success criteria are supported by integration
 
 ### Technical
 
-Pending.
+No new reusable technical fact emerged. The work confirmed the existing contract that relative `gir.typesFile` paths in `.girconfig` resolve from the repository root; the configuration spec and existing tests already cover that behavior.
 
 ### Process
 
-Pending.
+The managed workspace denied the first write to Git metadata, then allowed it after explicit escalation. The friction is recorded in `addf/SELF-IMPROVEMENT/20261023T175956Z-git-metadata-write-access.md`. No framework change is justified by this environment-specific event.
 
 ## Retention and promotion
 
-No Task-scoped Claim is expected to outlive this Task; assess again before terminalization.
+### Promotion: sourcegit-template-conformance
+
+- Claim: [SourceGit template and init conformance](TASK.md#sourcegit-template-conformance)
+- Will this Claim's validity outlive this Task and inform a future decision? `no`; the accepted behavior now lives in the current init specification and tests.
+- Disposition: not promoted — Task-scoped only.
+
+### Promotion: existing-template-state
+
+- Claim: [Existing template and parser contract](TASK.md#existing-template-state)
+- Will this Claim's validity outlive this Task and inform a future decision? `no`; it describes the initial untracked file and the parser behavior already documented in current source and tests.
+- Disposition: not promoted — Task-scoped only.
+
+No additional Learning artifact qualifies for promotion. The path-resolution fact was already covered by the configuration contract. The managed-workspace friction is recorded in the addf self-improvement log, with no broader rule proposed.
 
 ## Archive readiness
 
-Pending.
+The bundle contains its Ledger handoff and implementation decision. Its internal link to `decision.md` is relative and remains valid after archival. The SourceGit README and current framework specifications are supplemental references; the Task's decision, tests, and verification record preserve the basis for its outcome. No current consumer depends on the Task directory.
 
 ## Terminal record
 
