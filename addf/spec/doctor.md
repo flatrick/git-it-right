@@ -33,7 +33,7 @@
 **hooks-path.** If `.githooks` exists and `core.hooksPath` is not `.githooks`, `gir doctor` SHALL warn that hooks are inactive; `--fix` SHALL set local `core.hooksPath` to `.githooks`.
 
 <a id="req-doctor-recommended-config"></a>
-**recommended-config.** For each unset setting in `pull.ff=only`, `fetch.prune=true`, `push.autoSetupRemote=true`, `rerere.enabled=true`, `merge.conflictStyle=zdiff3`, `diff.algorithm=histogram`, `rebase.autoStash=true`, and `rebase.updateRefs=true`, `gir doctor` SHALL print a `warn ` line and `--fix` SHALL set that value in local Git config.
+**recommended-config.** For each unset setting in `pull.ff=only`, `fetch.prune=true`, `push.autoSetupRemote=true`, `rerere.enabled=true`, `merge.conflictStyle=zdiff3`, `diff.algorithm=histogram`, `diff.colorMoved=plain`, `rebase.autoStash=true`, and `rebase.updateRefs=true`, `gir doctor` SHALL print a `warn ` line and `--fix` SHALL set that value in local Git config.
 
 <a id="req-doctor-autosquash"></a>
 **autosquash.** When `rebase.autoSquash` is unset, `gir doctor` SHALL print a warning naming it and `--fix` SHALL set local `rebase.autoSquash=true`.

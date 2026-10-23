@@ -15,13 +15,13 @@ implementation conforms. Use Knowledge and Verification for observed facts.
 ## Purpose
 
 `gir` is a single cross-platform CLI binary (Windows, Linux, macOS) that keeps
-git usage honest for humans and coding agents alike. It lints commit messages
-against Conventional Commits 1.0.0, fixing safe mistakes automatically and
-rejecting the rest with actionable messages (`lint`, `hook`); creates
-`fixup!`, `amend!` and `squash!` commits for `git rebase --autosquash`
-(`fixup`, `amend`, `reword`, `squash`); checks repository
-hygiene (`doctor`); sets up hooks and configuration (`init`); and explains its
-rules (`explain`).
+git usage honest for humans and coding agents alike. It teaches optional Git
+settings (`tips`). It lints commit messages against Conventional Commits
+1.0.0, fixing safe mistakes automatically and rejecting the rest with
+actionable messages (`lint`, `hook`). It creates `fixup!`, `amend!` and
+`squash!` commits for `git rebase --autosquash` (`fixup`, `amend`, `reword`,
+`squash`). It checks repository hygiene (`doctor`), sets up hooks and
+configuration (`init`), and explains its rules (`explain`).
 
 ## Boundaries
 
@@ -41,6 +41,7 @@ file contains the complete specification.
 6. [Doctor](spec/doctor.md) - repository hygiene checks and fixes.
 7. [Init](spec/init.md) - generated files and git setup.
 8. [Explain](spec/explain.md) - topics and pages.
+9. [Tips](spec/tips.md) - optional Git settings and their effects.
 
 ## Change contract
 

@@ -30,6 +30,8 @@ fn help_flags_print_usage_for_every_subcommand() {
         vec!["fixup", "--help"],
         vec!["doctor", "-h"],
         vec!["doctor", "--help"],
+        vec!["tips", "-h"],
+        vec!["tips", "--help"],
         vec!["explain", "-h"],
         vec!["explain", "--help"],
         vec!["hook", "-h"],
@@ -55,6 +57,7 @@ fn usage_lists_commands_with_their_arguments_and_flags() {
         "gir lint --range <A..B> [--json]",
         "gir fixup [<commit>] [--dry-run]",
         "gir doctor [--fix]",
+        "gir tips",
         "gir explain [<topic>]",
         "gir hook commit-msg <file>",
         "gir hook pre-push <remote> <url>",
@@ -66,9 +69,15 @@ fn usage_lists_commands_with_their_arguments_and_flags() {
 #[test]
 fn unaccepted_long_flags_report_the_command_and_exit_two() {
     let repo = Repo::new();
-    for (command, flag) in
-        [("init", "--json"), ("lint", "--force"), ("fixup", "--fix"), ("doctor", "--dry-run"), ("explain", "--json"), ("hook", "--force")]
-    {
+    for (command, flag) in [
+        ("init", "--json"),
+        ("lint", "--force"),
+        ("fixup", "--fix"),
+        ("doctor", "--dry-run"),
+        ("tips", "--fix"),
+        ("explain", "--json"),
+        ("hook", "--force"),
+    ] {
         let out = repo.gir(&[command, flag]);
         assert_eq!(out.status.code(), Some(2), "{command} {flag}: {}", stderr(&out));
         assert!(stderr(&out).starts_with(&format!("gir: unknown option {flag} for `gir {command}`")), "{}", stderr(&out));
@@ -80,7 +89,7 @@ fn unaccepted_long_flags_report_the_command_and_exit_two() {
 fn range_is_rejected_outside_lint_and_accepted_by_lint() {
     let repo = Repo::new();
     repo.commit_file("base.txt", "base\n", "chore: base");
-    for command in ["init", "fixup", "doctor", "explain", "hook"] {
+    for command in ["init", "fixup", "doctor", "tips", "explain", "hook"] {
         let out = repo.gir(&[command, "--range", "HEAD..HEAD"]);
         assert_eq!(out.status.code(), Some(2), "{command}: {}", stderr(&out));
         assert!(stderr(&out).starts_with(&format!("gir: unknown option --range for `gir {command}`")), "{}", stderr(&out));
@@ -121,7 +130,7 @@ fn unknown_short_flags_and_bad_arguments_exit_two() {
     assert_eq!(sub.status.code(), Some(2), "{}", stderr(&sub));
     assert_eq!(stderr(&sub), "gir: unknown option -x\n");
 
-    for args in [vec!["nope"], vec!["fixup", "a", "b"], vec!["doctor", "a"], vec!["explain", "a", "b"]] {
+    for args in [vec!["nope"], vec!["fixup", "a", "b"], vec!["doctor", "a"], vec!["tips", "workflow"], vec!["explain", "a", "b"]] {
         let out = repo.gir(&args);
         assert_eq!(out.status.code(), Some(2), "{args:?}: {}", stderr(&out));
         assert!(stderr(&out).starts_with(&format!("gir: bad arguments for `{}`\n", args[0])), "{}", stderr(&out));
@@ -209,12 +218,13 @@ fn closed_stdout_exits_141_without_output() {
     repo.commit_file("a.txt", "a\n", "feat: add a");
     repo.write("a.txt", "b\n");
     repo.git(&["add", "a.txt"]);
-    let cases: [(&[&str], &str); 8] = [
+    let cases: [(&[&str], &str); 9] = [
         (&["--version"], ""),
         (&["--help"], ""),
         (&["explain"], ""),
         (&["explain", "doctor"], ""),
         (&["doctor"], ""),
+        (&["tips"], ""),
         (&["lint", "--json", "-"], "feat: x\n"),
         (&["lint", "--fix", "-"], "Feat: x"),
         (&["fixup", "--dry-run"], ""),

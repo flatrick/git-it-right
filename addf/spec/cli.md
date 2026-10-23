@@ -13,13 +13,13 @@
 **help.** `gir` with no arguments, `gir -h`, `gir --help`, and `-h` or `--help` after any subcommand SHALL print the usage text on stdout and exit `0`, ignoring any other arguments except an unknown short flag before it, which fails as below.
 
 <a id="req-cli-usage-lists-commands"></a>
-**usage-lists-commands.** The usage text SHALL list `init`, `lint`, `fixup`, `amend`, `squash`, `reword`, `doctor`, `explain` and `hook` with their accepted arguments and flags.
+**usage-lists-commands.** The usage text SHALL list `init`, `lint`, `fixup`, `amend`, `squash`, `reword`, `doctor`, `tips`, `explain` and `hook` with their accepted arguments and flags.
 
 ## Argument errors
 
 <a id="req-cli-unknown-long-option"></a>
 **unknown-long-option.** A long flag the subcommand does not accept SHALL print `gir: unknown option --FLAG for` followed by the subcommand on stderr and exit `2`.
-The accepted flags are `init --force --optional`, `lint --fix --json --range`, `fixup --dry-run --split`, `amend --dry-run --split`, `squash --dry-run --split`, `reword --dry-run` and `doctor --fix`.
+The accepted flags are `init --force --optional`, `lint --fix --json --range`, `fixup --dry-run --split`, `amend --dry-run --split`, `squash --dry-run --split`, `reword --dry-run` and `doctor --fix`. `gir tips` accepts no flags.
 
 <a id="req-cli-range-lint-only"></a>
 **range-lint-only.** `--range` SHALL be accepted only by `gir lint`; any other subcommand given `--range` SHALL fail as an unknown option with exit `2`.

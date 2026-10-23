@@ -41,7 +41,7 @@ fn doctor_reports_check_lines_and_summary_counts() {
         *summary,
         format!(
             "gir doctor: 1 ok, {warnings} warnings, {} fixable with: gir doctor --fix   more: gir explain doctor",
-            if cfg!(windows) { 13 } else { 12 }
+            if cfg!(windows) { 14 } else { 13 }
         )
     );
     let fixed = repo.gir(&["doctor", "--fix"]);
@@ -94,6 +94,7 @@ fn doctor_recommends_and_sets_each_unset_git_setting() {
         ("rerere.enabled", "true"),
         ("merge.conflictStyle", "zdiff3"),
         ("diff.algorithm", "histogram"),
+        ("diff.colorMoved", "plain"),
         ("rebase.autoStash", "true"),
         ("rebase.updateRefs", "true"),
     ];
@@ -118,11 +119,27 @@ fn doctor_recommends_and_sets_each_unset_git_setting() {
 fn doctor_preserves_nonempty_existing_recommendations() {
     let repo = Repo::new();
     repo.git(&["config", "--local", "fetch.prune", "false"]);
+    repo.git(&["config", "--local", "diff.colorMoved", "zebra"]);
     let report = stdout(&repo.gir(&["doctor"]));
     assert!(report.contains("info  fetch.prune: is `false`; `true` recommended"), "{report}");
+    assert!(report.contains("info  diff.colorMoved: is `zebra`; `plain` recommended"), "{report}");
     let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
     assert!(fixed.contains("info  fetch.prune: is `false`; `true` recommended"), "{fixed}");
+    assert!(fixed.contains("info  diff.colorMoved: is `zebra`; `plain` recommended"), "{fixed}");
     assert_eq!(local_value(&repo, "fetch.prune").as_deref(), Some("false"));
+    assert_eq!(local_value(&repo, "diff.colorMoved").as_deref(), Some("zebra"));
+}
+
+#[test]
+fn doctor_respects_inherited_diff_color_moved_without_local_copy() {
+    let repo = Repo::new();
+    repo.git(&["config", "--global", "diff.colorMoved", "zebra"]);
+    let report = stdout(&repo.gir(&["doctor"]));
+    assert!(report.contains("info  diff.colorMoved: is `zebra`; `plain` recommended"), "{report}");
+    let fixed = stdout(&repo.gir(&["doctor", "--fix"]));
+    assert!(fixed.contains("info  diff.colorMoved: is `zebra`; `plain` recommended"), "{fixed}");
+    assert_eq!(local_value(&repo, "diff.colorMoved"), None);
+    assert_eq!(repo.git(&["config", "--global", "--get", "diff.colorMoved"]), "zebra");
 }
 
 #[test]
