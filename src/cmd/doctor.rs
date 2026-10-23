@@ -44,6 +44,7 @@ const LOCAL_CONFIG: &[(&str, &str, &str)] = &[
     ("rerere.enabled", "true", "git remembers conflict resolutions"),
     ("merge.conflictStyle", "zdiff3", "conflict markers show the common ancestor"),
     ("diff.algorithm", "histogram", "more readable diffs"),
+    ("diff.colorMoved", "plain", "moved lines stand out in diffs"),
     ("rebase.autoSquash", "true", "fixup!/squash! commits fold in on rebase"),
     ("rebase.autoStash", "true", "rebase works with a dirty tree"),
     ("rebase.updateRefs", "true", "stacked branches follow a rebase"),

@@ -1,5 +1,5 @@
 use gir::cmd::fixup::{self, Mode};
-use gir::cmd::{doctor, hook, init, lint};
+use gir::cmd::{doctor, hook, init, lint, tips};
 use gir::config::Config;
 use gir::explain;
 use lexopt::prelude::*;
@@ -16,6 +16,7 @@ usage:
   gir squash [<commit>] [--dry-run] [--split] squash!: like fixup, and combine the messages
   gir reword [<commit>] [--dry-run]           amend! that replaces only the message
   gir doctor [--fix]              check .gitattributes, .gitignore, git config, index
+  gir tips                        browse optional Git settings and their effects
   gir explain [<topic>]           rule details; `gir explain` lists topics
   gir hook commit-msg <file>      (called by .githooks)
   gir hook pre-push <remote> <url>";
@@ -78,6 +79,10 @@ fn run() -> Result<i32, String> {
     match (sub.as_str(), positional.as_slice()) {
         ("init", []) => init::init(flag("force"), flag("optional")),
         ("doctor", []) => doctor::doctor(flag("fix")),
+        ("tips", []) => {
+            gir::outln!("{}", tips::page());
+            Ok(0)
+        }
         ("fixup" | "amend" | "reword" | "squash", [] | [_]) => {
             let mode = match sub.as_str() {
                 "amend" => Mode::Amend,
