@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** record DEFINE gate and transition to UNDERSTAND.
+**Resume at:** finish mapping init's template ownership and existing types-file behavior.
 
 **Open obligations:** `NONE`.
 
@@ -40,6 +40,8 @@ Align the existing SourceGit-format `conventional-commits.json` with gir's built
 - Consequence if false: Human-facing GUI commit helpers can suggest messages that do not match gir's default accepted types, or repositories will not receive the helper template during setup.
 - Basis: Pending implementation and verification.
 
+DEFINE gate: `ESTABLISHED` — the user explicitly approved the objective, built-in-only behavior, and implementation in an isolated worktree.
+
 ### Constraints
 
 - Implement in worktree `/tmp/gir-sourcegit-commit-template` on branch `task/sourcegit-commit-template`; leave the original checkout's untracked `conventional-commits.json` untouched.
@@ -56,13 +58,13 @@ Align the existing SourceGit-format `conventional-commits.json` with gir's built
 - State: `UNVERIFIED`
 - Scope: Source checkout at `d487b8078eed99aeae7614e62f4f4287dd4208f0` and current source files inspected during DEFINE.
 - Consequence if false: The implementation baseline or proposed output shape may be incomplete.
-- Basis: Pending recorded verification in UNDERSTAND.
+- Basis: Source checkout inspection and `src/config.rs`; confirm while mapping implementation in UNDERSTAND.
 
 ## Understand
 
 ### Relevant context
 
-`gir init` uses a generic idempotent file writer for required and optional outputs. `Config::DEFAULT_TYPES` is the built-in ordered type source. The SourceGit reader requires `Type`, `Name`, and `Description`; the GUI-facing JSON may additionally have optional `PrefillShortDesc`.
+`gir init` creates repository-level files through `src/cmd/init.rs`'s generic idempotent `write` helper. `Config::DEFAULT_TYPES` supplies the built-in order. `src/config.rs` accepts SourceGit arrays with string `Type`, `Name`, and `Description` fields; `PrefillShortDesc` is ignored by gir and optional in SourceGit's documented example.
 
 ### Assumptions
 
@@ -83,7 +85,7 @@ No additional probe is required unless implementation evidence contradicts the a
 
 ## Decide
 
-Pending investigation of the smallest template ownership shape. The generated JSON must be exactly the same content as the checked-in template and must remain independent from custom configured types.
+Pending completion of the subsystem map and selection of the smallest template ownership shape. The generated JSON must be exactly the same content as the checked-in template and must remain independent from custom configured types.
 
 ## Implement
 
