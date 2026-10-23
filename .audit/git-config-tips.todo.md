@@ -3,8 +3,8 @@
 - [x] Ground — explain the current command and config-check architecture.
 - [x] Sketch — compare at least two structurally distinct command/catalog designs and screen each for design red flags.
 - [x] Agree — select the design; no human checkpoint was requested.
-- [ ] Implement — fill in code against the selected sketch and reconcile deviations.
-- [ ] Scrap — watch for repeated structural friction; redesign if the sketch is wrong.
+- [x] Implement — fill in code against the selected sketch and reconcile deviations.
+- [x] Scrap — watch for repeated structural friction; redesign if the sketch is wrong. No repeated structural friction appeared; the implementation kept the selected private catalog and dispatcher boundary.
 
 ## Feature throughput checkpoint
 

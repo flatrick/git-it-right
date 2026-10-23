@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `IMPLEMENT`
+**State:** `VERIFY`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
 
-**Resume at:** Implement the zero-argument `gir tips` command and the `diff.colorMoved=plain` doctor recommendation using the selected design in `decision.md`.
+**Resume at:** Verify the read-only tips catalog and doctor recommendation in the integrated feature branch; record observations and settle the success claims in `verification.md`.
 
-**Open obligations:** Implement and verify the selected catalog, doctor behavior, and documentation at their named states.
+**Open obligations:** Verify the catalog, read-only behavior, doctor fix and preservation behavior, and CLI contract; publish the verified specification delta at terminalization.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -145,7 +145,16 @@ The candidate inventory and preliminary dispositions are in [the survey](investi
 
 ## Implement
 
-The selected design is in [decision.md](decision.md). Add a private typed catalog with explicit presentation and behavior groups. Wire the zero-argument dispatcher, add the doctor recommendation through its existing local config path, update README and command help, and implement the planned behavior checks.
+### IMPLEMENT exit claim
+
+-   The intended change exists and can be evaluated: `ESTABLISHED`.
+-   Basis: The integrated feature branch contains the private twelve-entry catalog, zero-argument `gir tips` dispatch and usage, `diff.colorMoved=plain` in doctor's local recommendations, tests for catalog and doctor behavior, and README/onboarding documentation. The changes follow the selected ownership and ordering in [decision.md](decision.md). The implementation commit is `3e4a0b2`; the separate documentation commit is `0617c7e`.
+
+### Implementation reconciliation
+
+-   The implementation follows Candidate 1's data shape and boundary. `page()` builds the output from two static slices, with all entries carrying both explanatory fields. The dispatcher writes the returned page and never loads config or enters a repository on the `tips` path.
+-   The behavior copy adds the surveyed `remote.<name>.skipFetchAll` exception to `fetch.all` and explicitly says `push.followTags` excludes lightweight tags. These details sharpen the approved effects without changing the catalog selection.
+-   README and the generated contributor guide present `gir tips` as optional advice. Neither `gir init` nor `gir doctor --fix` applies the global examples.
 
 ## Verify
 
