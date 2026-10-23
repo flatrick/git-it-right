@@ -17,7 +17,7 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-- [git-config-tips](tasks/git-config-tips/TASK.md) - survey Git settings and add a curated tips command (`DECIDE`).
+- [git-config-tips](tasks/git-config-tips/TASK.md) - survey Git settings and add a curated tips command (`IMPLEMENT`).
 
 ## Ledger
 

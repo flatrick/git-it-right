@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT`
 
-**Resume at:** Compare the command and catalog structures, then record the selected tip set, ordering, output contract, and specification delta in `decision.md`.
+**Resume at:** Implement the zero-argument `gir tips` command and the `diff.colorMoved=plain` doctor recommendation using the selected design in `decision.md`.
 
-**Open obligations:** Select and justify the catalog structure and contents at DECIDE; implement and verify at their named states.
+**Open obligations:** Implement and verify the selected catalog, doctor behavior, and documentation at their named states.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -24,16 +24,18 @@ gate was valid. Do not infer State from artifact presence.
 
 -   `ledger.md` — user decisions and constraints carried from the exploration thread.
 -   `investigation.md` — screened config settings, candidate effects, and preliminary dispositions.
+-   `grounding.md` — existing CLI, doctor, and explain architecture.
 -   `evidence/git-config-reference.md` — installed reference baseline and official setting descriptions.
 -   `evidence/git-config-names-2.56.0.txt` — exact output from `git help --config`.
 -   `verifications/git-config-scope.md` — verifies the installed version and config variable count.
 -   `decision.md` — selected tip catalog and rationale, created at DECIDE.
 -   `verification.md` — acceptance evidence, created at VERIFY.
+-   `.audit/git-config-tips.todo.md` — pstack architect phases and feature throughput checkpoint, local to this worktree.
 
 ## Specification impact
 
-- Current contract: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/config.md`; `framework:spec/doctor.md`; `framework:spec/explain.md`
-- Proposed delta: Add `gir tips` as a read-only command that lists curated Git settings with safe settings first and states behavioral effects and use cases. Add `diff.colorMoved=plain` to the repo-local Git recommendations checked and fixed by `gir doctor`.
+- Current contract: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/doctor.md`
+- Proposed delta: Add `gir tips` as a read-only, repository-independent command that lists curated Git settings with presentation settings first and states each behavior effect and useful situation. Add a tips child specification and list it in `SPEC.md`. Add `diff.colorMoved=plain` to the repo-local Git recommendations checked and fixed by `gir doctor`.
 - Terminal publication: `PENDING`
 
 ## Define
@@ -136,11 +138,14 @@ The candidate inventory and preliminary dispositions are in [the survey](investi
 
 ## Decide
 
-Select and justify the catalog and output contract here.
+### DECIDE exit claim
+
+-   The selected approach resolves the material product and architecture choices: `ESTABLISHED`.
+-   Basis: The survey separates presentation settings from workflow, ref, and performance behavior. Three structurally distinct designs were compared against the task's contract and screened for design red flags. The cross-judge recommends Candidate 1 (25/25); [decision.md](decision.md) records the selected structure, twelve settings, disclosures, exclusions, output contract, specification delta, rejected alternatives, and verification plan.
 
 ## Implement
 
-Not started.
+The selected design is in [decision.md](decision.md). Add a private typed catalog with explicit presentation and behavior groups. Wire the zero-argument dispatcher, add the doctor recommendation through its existing local config path, update README and command help, and implement the planned behavior checks.
 
 ## Verify
 
