@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DEFINE`
+**State:** `UNDERSTAND`
 
-**State path:** `DEFINE`
+**State path:** `DEFINE -> UNDERSTAND`
 
-**Resume at:** Read the CLI, Doctor, and Explain specifications, then define the candidate-screening criteria and catalog contents from the current Git config reference.
+**Resume at:** Inspect the current CLI, doctor, explain, and Git config recommendation implementation to establish the command and catalog boundaries.
 
-**Open obligations:** Screen current Git configuration options and classify candidates at INVESTIGATE; settle the tip catalog and specification delta at DECIDE; implement and verify at their named states.
+**Open obligations:** Establish implementation boundaries at UNDERSTAND; screen current Git configuration options and classify candidates at INVESTIGATE; settle the tip catalog and specification delta at DECIDE; implement and verify at their named states.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -28,7 +28,7 @@ gate was valid. Do not infer State from artifact presence.
 
 ## Specification impact
 
-- Current contract: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/doctor.md`; `framework:spec/explain.md`
+- Current contract: `framework:SPEC.md`; `framework:spec/cli.md`; `framework:spec/config.md`; `framework:spec/doctor.md`; `framework:spec/explain.md`
 - Proposed delta: Add `gir tips` as a read-only command that lists curated Git settings with safe settings first and states behavioral effects and use cases. Add `diff.colorMoved=plain` to the repo-local Git recommendations checked and fixed by `gir doctor`.
 - Terminal publication: `PENDING`
 
@@ -75,6 +75,11 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 -   List settings that only affect presentation or readability before settings that change behavior.
 -   For behavior-changing settings, state the effect and when a developer might want them.
 -   Follow `addf/CORE.md` and record every lifecycle transition in its own commit.
+
+### DEFINE exit claim
+
+-   Outcome and bounds can guide investigation and verification: `ESTABLISHED`.
+-   Basis: The operator explicitly said “Implement the plan” after reviewing the proposed scope, including the Git settings survey, `gir tips`, `diff.colorMoved=plain`, behavior disclosures, and validation criteria. The current CLI, configuration, doctor, and explain specs were read. The worktree and branch constraints are recorded above.
 
 ### Material empirical premises
 
