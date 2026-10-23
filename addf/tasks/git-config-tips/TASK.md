@@ -165,15 +165,48 @@ The candidate inventory and preliminary dispositions are in [the survey](investi
 
 ## Learn
 
-Not started.
+### LEARN exit claim
+
+-   Material learning and its disposition were considered: `ESTABLISHED`.
+-   Basis: The typed two-group catalog, explicit behavior copy, and read-only CLI contract are recorded in this Task and proposed for the current specs. No unresolved technical or process lesson requires a separate current artifact.
+
+### Technical
+
+No material technical learning needs a permanent artifact. The ordered static groups and separate doctor config policy are specific to this catalog and are preserved in the Task bundle and current specs.
+
+### Process
+
+No material process learning needs a permanent artifact. The isolated feature worktree and the nested implementation worktree both stayed beneath `.worktrees/`, and the addf transitions each have their own commit.
 
 ## Retention and promotion
 
-No claims have been considered for promotion yet.
+### Promotion: `git-config-catalog`
+
+-   Claim: [Catalog claim](#git-config-catalog).
+-   Will this Claim's validity outlive this Task and inform a future decision? `NO`; the catalog contract is published in the current tips specification, while this Verification establishes only the current implementation.
+-   Disposition: Not promoted; Task-scoped verification.
+
+### Promotion: `doctor-diff-color-moved`
+
+-   Claim: [Doctor claim](#doctor-diff-color-moved).
+-   Will this Claim's validity outlive this Task and inform a future decision? `NO`; the doctor contract is published in its current specification, while this Verification establishes only the current implementation.
+-   Disposition: Not promoted; Task-scoped verification.
+
+### Promotion: `tips-read-only`
+
+-   Claim: [Read-only claim](#tips-read-only).
+-   Will this Claim's validity outlive this Task and inform a future decision? `NO`; the user-facing requirement is published in the tips specification, while this Verification establishes only the current implementation.
+-   Disposition: Not promoted; Task-scoped verification.
+
+### Promotion: `git-config-scope`
+
+-   Claim: [Git config scope premise](#git-config-scope).
+-   Will this Claim's validity outlive this Task and inform a future decision? `NO`; the installed version and option count describe the investigation environment only.
+-   Disposition: Not promoted; Task-scoped observation.
 
 ## Archive readiness
 
-Pending completion.
+The bundle is self-contained: its Ledger, survey, grounding, evidence, decision, and verification artifacts are included. Task-internal links are ordinary relative links. Git manuals and articles are supplemental evidence. No current specification or consumer depends on the Task bundle after publication.
 
 ## Terminal record
 
