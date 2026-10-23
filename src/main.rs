@@ -8,7 +8,7 @@ const USAGE: &str = "\
 gir: keeps git usage honest (Conventional Commits, fixups, repo hygiene)
 
 usage:
-  gir init [--force] [--optional] install hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
+  gir init [--force] [--optional] install hooks, .girconfig, conventional-commits.json, cliff.toml, GIT-IT-RIGHT.md; set core.hooksPath
   gir lint [<file>|-] [--fix] [--json]
   gir lint --range <A..B> [--json]
   gir fixup [<commit>] [--dry-run] [--split]  fixup! for the commit the staged lines belong to

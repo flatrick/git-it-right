@@ -9,7 +9,7 @@ repository = "https://github.com/flatrick/git-it-right"
 readme = "README.md"
 keywords = ["git", "conventional-commits", "commit-msg", "lint", "fixup"]
 categories = ["command-line-utilities", "development-tools"]
-include = ["/src/**", "/CHEATSHEET.md", "/README.md", "/CHANGELOG.md", "/LICENSE-*"]
+include = ["/src/**", "/CHEATSHEET.md", "/README.md", "/CHANGELOG.md", "/LICENSE-*", "/conventional-commits.json"]
 
 [dependencies]
 git-conventional = "1.1"

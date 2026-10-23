@@ -105,7 +105,11 @@ UNDERSTAND gate: `ESTABLISHED` — the init write path, template owner, type sou
 
 ## Implement
 
-Pending.
+Added the root JSON template in gir's built-in order, embedded it with `include_str!`, included it in Cargo packages, and made init write it as a required file before loading config. Updated init specs, CLI usage, README, and generated onboarding docs. Added init behavior coverage for type order and fields, configured `typesFile` loading, keep/force behavior, CRLF reruns, and restoration after adoption.
+
+The first configured-types-file test used a relative path in local Git config, which resolves from `.git`. Replaced it with `.girconfig`'s repository-root-relative path; the corrected test passes.
+
+Implementation checks so far: `cargo test` passed all suites; `cargo fmt -- --check`, `git diff --check`, and `cargo package --list --allow-dirty` passed, with the package list including `conventional-commits.json`. Final success claim remains `UNVERIFIED` until VERIFY records direct artifact evidence.
 
 ## Verify
 

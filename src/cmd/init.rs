@@ -24,6 +24,7 @@ pub fn init(force: bool, optional: bool) -> Result<i32, String> {
     }
     let girconfig = config::default_file(config::types_file_in_git_config(&root));
     conflicts += i32::from(write(&root, config::FILE, &girconfig, force)? == WriteOutcome::Kept);
+    conflicts += i32::from(write(&root, "conventional-commits.json", templates::CONVENTIONAL_COMMITS_JSON, force)? == WriteOutcome::Kept);
     let cfg = Config::load_at(&root)?;
     for w in &cfg.warnings {
         eprintln!("gir: warning: {w}");

@@ -26,7 +26,7 @@ fn init_creates_files_and_reports_each_write() {
     assert!(out.status.success(), "fresh init succeeds");
     assert!(out.stdout.is_empty(), "successful init prints no stdout");
     assert!(stderr(&out).contains("gir: next: gir doctor"), "successful init prints the next step");
-    for path in [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "cliff.toml"] {
+    for path in [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "conventional-commits.json", "cliff.toml"] {
         assert!(stderr(&out).contains(&format!("gir: wrote {path}")), "init reports writing {path}");
     }
     for path in [".githooks/commit-msg", ".githooks/pre-push"] {
@@ -54,6 +54,38 @@ fn init_creates_files_and_reports_each_write() {
     }
     assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "init sets the local hook path");
     assert!(stderr(&out).contains("gir: set core.hooksPath=.githooks (this clone)"), "init reports setting the hook path");
+}
+
+#[test]
+fn init_generates_sourcegit_types_in_gir_default_order() {
+    let repo = Repo::new();
+    let out = repo.gir(&["init"]);
+    assert!(out.status.success(), "{}", stderr(&out));
+    let json = content(&repo, "conventional-commits.json");
+    assert_eq!(json, include_str!("../conventional-commits.json"), "init writes the canonical template");
+    let definitions: serde_json::Value = serde_json::from_str(&json).unwrap();
+    let types: Vec<&str> = definitions
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|entry| {
+            assert!(entry["Name"].as_str().is_some(), "each SourceGit entry has a string Name");
+            assert!(entry["Description"].as_str().is_some(), "each SourceGit entry has a string Description");
+            assert!(entry.get("PrefillShortDesc").is_none(), "the template has no placeholder prefill");
+            entry["Type"].as_str().unwrap()
+        })
+        .collect();
+    assert_eq!(types, ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"]);
+}
+
+#[test]
+fn init_writes_sourcegit_types_before_loading_a_configured_types_file() {
+    let repo = Repo::new();
+    repo.write(".girconfig", "[gir]\n typesFile = conventional-commits.json\n");
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(1), "init keeps the custom config and loads the generated types file: {}", stderr(&out));
+    assert!(repo.dir.join("conventional-commits.json").is_file());
+    assert!(content(&repo, "cliff.toml").contains("message = \"^feat("), "init loaded the generated type file");
 }
 
 #[test]
@@ -102,6 +134,11 @@ fn init_uses_kept_config_for_cliff_parsers() {
     let out = repo.gir(&["init"]);
     assert_eq!(out.status.code(), Some(1), "kept custom config gives conflict status");
     assert_eq!(content(&repo, ".girconfig"), "[gir]\n types = feat custom\n", "custom config remains unchanged");
+    assert_eq!(
+        content(&repo, "conventional-commits.json"),
+        include_str!("../conventional-commits.json"),
+        "SourceGit template stays on gir's built-in types"
+    );
     let cliff = content(&repo, "cliff.toml");
     assert!(cliff.contains("message = \"^custom("), "custom type gets a parser");
     assert!(cliff.contains("group = \"Custom\""), "custom type gets a capitalized group");
@@ -113,11 +150,13 @@ fn init_keeps_differing_files_and_processes_the_rest() {
     let repo = Repo::new();
     repo.write(".githooks/commit-msg", "custom hook\n");
     repo.write(".girconfig", "[gir]\n types = feat\n");
+    repo.write("conventional-commits.json", "custom types\n");
     let out = repo.gir(&["init"]);
     assert_eq!(out.status.code(), Some(1), "kept differences exit 1");
     assert_eq!(content(&repo, ".githooks/commit-msg"), "custom hook\n", "init keeps a changed hook");
     assert_eq!(content(&repo, ".girconfig"), "[gir]\n types = feat\n", "init keeps a changed config");
-    for path in [".githooks/commit-msg", ".girconfig"] {
+    assert_eq!(content(&repo, "conventional-commits.json"), "custom types\n", "init keeps an edited SourceGit file");
+    for path in [".githooks/commit-msg", ".girconfig", "conventional-commits.json"] {
         assert!(
             stderr(&out).contains(&format!("gir: kept {path} (differs from the template; --force overwrites)")),
             "init reports keeping {path}"
@@ -134,12 +173,18 @@ fn force_replaces_differing_files() {
     repo.write(".girconfig", "changed\n");
     repo.write("cliff.toml", "changed\n");
     repo.write(".githooks/pre-push", "changed\n");
+    repo.write("conventional-commits.json", "changed\n");
     let out = repo.gir(&["init", "--force"]);
     assert_eq!(out.status.code(), Some(0), "--force is accepted and succeeds");
     assert!(content(&repo, ".girconfig").contains("subjectMax = 72"), "--force restores the config template");
     assert!(content(&repo, "cliff.toml").contains("[changelog]"), "--force restores the cliff template");
     assert!(content(&repo, ".githooks/pre-push").starts_with("#!/bin/sh\n"), "--force restores the hook template");
-    for path in [".girconfig", "cliff.toml", ".githooks/pre-push"] {
+    assert_eq!(
+        content(&repo, "conventional-commits.json"),
+        include_str!("../conventional-commits.json"),
+        "--force restores the SourceGit template"
+    );
+    for path in [".girconfig", "cliff.toml", ".githooks/pre-push", "conventional-commits.json"] {
         assert!(stderr(&out).contains(&format!("gir: wrote {path}")), "--force reports replacing {path}");
     }
 }
@@ -148,7 +193,7 @@ fn force_replaces_differing_files() {
 fn identical_crlf_files_are_left_unchanged() {
     let repo = Repo::new();
     assert!(repo.gir(&["init"]).status.success());
-    let files: Vec<_> = [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "cliff.toml"]
+    let files: Vec<_> = [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "conventional-commits.json", "cliff.toml"]
         .into_iter()
         .map(|path| (path, content(&repo, path).replace('\n', "\r\n")))
         .collect();
@@ -260,7 +305,7 @@ fn init_writes_files_at_the_repository_root_from_a_subdirectory() {
     fs::create_dir(&sub).unwrap();
     let out = repo.cmd(env!("CARGO_BIN_EXE_gir")).current_dir(&sub).arg("init").output().unwrap();
     assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
-    for path in [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "cliff.toml"] {
+    for path in [".githooks/commit-msg", ".githooks/pre-push", ".girconfig", "conventional-commits.json", "cliff.toml"] {
         assert!(repo.dir.join(path).is_file(), "{path} is at the repository root");
         assert!(!sub.join(path).exists(), "{path} is absent from the current subdirectory");
     }
@@ -312,6 +357,7 @@ fn git_it_right_md_is_static_and_covers_onboarding() {
     for item in ["Conventional Commits", "gir init", "gir explain", "cliff.toml", "git-cliff", "gir lint --range"] {
         assert!(text.contains(item), "GIT-IT-RIGHT.md mentions {item}");
     }
+    assert!(text.contains("conventional-commits.json"), "GIT-IT-RIGHT.md explains the SourceGit helper file");
 }
 
 #[test]
@@ -343,6 +389,17 @@ fn adopted_init_restores_missing_required_files() {
         "restored hook is staged executable"
     );
     assert_eq!(repo.git(&["config", "--local", "--get", "core.hooksPath"]), ".githooks", "adopted init sets the hook path");
+}
+
+#[test]
+fn adopted_init_restores_a_missing_sourcegit_template() {
+    let repo = Repo::new();
+    adopt(&repo);
+    fs::remove_file(repo.dir.join("conventional-commits.json")).unwrap();
+    let out = repo.gir(&["init"]);
+    assert_eq!(out.status.code(), Some(0), "{}", stderr(&out));
+    assert!(stderr(&out).contains("gir: wrote conventional-commits.json"));
+    assert_eq!(content(&repo, "conventional-commits.json"), include_str!("../conventional-commits.json"));
 }
 
 #[test]

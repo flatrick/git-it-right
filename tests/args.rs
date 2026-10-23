@@ -50,6 +50,7 @@ fn usage_lists_commands_with_their_arguments_and_flags() {
     let usage = String::from_utf8_lossy(&out.stdout);
     for line in [
         "gir init [--force] [--optional]",
+        "conventional-commits.json",
         "gir lint [<file>|-] [--fix] [--json]",
         "gir lint --range <A..B> [--json]",
         "gir fixup [<commit>] [--dry-run]",

@@ -37,7 +37,7 @@ Rebuild with the same `cargo install` command after pulling changes; the hooks a
 ## Set up a repository
 
 ```sh
-gir init      # hooks, .girconfig, cliff.toml, GIT-IT-RIGHT.md, core.hooksPath
+gir init      # hooks, .girconfig, conventional-commits.json, cliff.toml, GIT-IT-RIGHT.md, core.hooksPath
 gir doctor    # report what else is missing
 gir doctor --fix
 ```
@@ -49,11 +49,13 @@ gir doctor --fix
 | `.githooks/commit-msg` | Lints and fixes each commit message. |
 | `.githooks/pre-push` | Blocks unsquashed `fixup!` commits and messages that skipped the hook. |
 | `.girconfig` | Project settings (types, scopes, limits). |
+| `conventional-commits.json` | SourceGit commit helper types that match gir's built-in types. |
 | `cliff.toml` | Optional. [git-cliff](https://git-cliff.org) changelog config that matches your types. |
 | `GIT-IT-RIGHT.md` | Optional. Explains gir to new contributors and maintainers. |
 
 Commit these files.
 `gir init` stages the hooks as executable and sets `core.hooksPath=.githooks` for your clone.
+To use the types in SourceGit, set its `Conventional Commit Types` repository setting to `conventional-commits.json`.
 
 gir works without the optional files; delete one and commit the deletion if you do not want it.
 Once `.girconfig` is tracked, `gir init` does not add a missing optional file back.

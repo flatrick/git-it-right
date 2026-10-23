@@ -27,7 +27,7 @@
 ## Generated files
 
 <a id="req-init-file-kinds"></a>
-**file-kinds.** The required files are `.githooks/commit-msg`, `.githooks/pre-push` and `.girconfig`.
+**file-kinds.** The required files are `.githooks/commit-msg`, `.githooks/pre-push`, `.girconfig` and `conventional-commits.json`.
 The optional files are `cliff.toml` and `GIT-IT-RIGHT.md`.
 
 <a id="req-init-adopted"></a>
@@ -49,6 +49,12 @@ Otherwise it SHALL leave the file absent and print nothing about it.
 <a id="req-init-config-file"></a>
 **config-file.** `gir init` SHALL create `.girconfig` with `[gir]` entries `types = feat fix docs style refactor perf test build ci chore revert` and `subjectMax = 72`, a `[gir "alias"]` section with `feature = feat` and `bugfix = fix`, and commented examples for `scopes`, `scopeRequired`, `descCase`, and `hookMissing`.
 When git config already names a types file (see the config module), the `types` entry SHALL be written commented out.
+
+<a id="req-init-sourcegit-file"></a>
+**sourcegit-file.** `gir init` SHALL create `conventional-commits.json` as a JSON array of objects with string `Name`, `Type` and `Description` fields. Its `Type` values SHALL match the 11 built-in types in this order: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. The file SHALL be independent of repository-specific configured types and SHALL omit `PrefillShortDesc`.
+
+<a id="req-init-sourcegit-before-config"></a>
+**sourcegit-before-config.** `gir init` SHALL create or preserve `conventional-commits.json` before loading its effective config, so a `gir.typesFile` setting that names this file can load it during initialization.
 
 <a id="req-init-cliff-file"></a>
 **cliff-file.** When [optional-files](#req-init-optional-files) permits, `gir init` SHALL create `cliff.toml` with `[changelog]` and `[git]` sections, `conventional_commits = true`, `filter_unconventional = true`, `protect_breaking_commits = true`, and `sort_commits = "oldest"`.
