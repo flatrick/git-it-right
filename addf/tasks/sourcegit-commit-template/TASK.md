@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `DECIDE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
 
-**Resume at:** finish mapping init's template ownership and existing types-file behavior.
+**Resume at:** write the implementation decision and verification plan in `decision.md`.
 
 **Open obligations:** `NONE`.
 
@@ -19,7 +19,7 @@
 
 ## Specification impact
 
-- Current contract: `framework:spec/init.md#req-init-file-kinds`, `#req-init-required-files`, `#req-init-identical-files`, `#req-init-keep-edits`, `#req-init-force-overwrite`, and `framework:spec/config.md#req-config-types-file`.
+- Current contract: `framework:spec/init.md#req-init-file-kinds`, `framework:spec/init.md#req-init-required-files`, `framework:spec/init.md#req-init-identical-files`, `framework:spec/init.md#req-init-keep-edits`, `framework:spec/init.md#req-init-force-overwrite`, and `framework:spec/config.md#req-config-types-file`.
 - Proposed delta: require `gir init` to generate `conventional-commits.json` in SourceGit's supported schema, with gir's built-in types and order, independent of project-specific types.
 - Terminal publication: `PENDING`.
 
@@ -35,7 +35,7 @@ Align the existing SourceGit-format `conventional-commits.json` with gir's built
 #### SourceGit template and init conformance
 
 - Claim: The checked-in JSON and the file created by `gir init` use the SourceGit-compatible `Name`, `Type`, and `Description` format and represent gir's 11 built-in types in order, while init follows the existing required-file, idempotence, and edited-file behavior.
-- State: `UNVERIFIED`
+- State: `VERIFIED`
 - Scope: Built-in configuration and `gir init` behavior in this Task's implementation.
 - Consequence if false: Human-facing GUI commit helpers can suggest messages that do not match gir's default accepted types, or repositories will not receive the helper template during setup.
 - Basis: Pending implementation and verification.
@@ -58,13 +58,24 @@ DEFINE gate: `ESTABLISHED` — the user explicitly approved the objective, built
 - State: `UNVERIFIED`
 - Scope: Source checkout at `d487b8078eed99aeae7614e62f4f4287dd4208f0` and current source files inspected during DEFINE.
 - Consequence if false: The implementation baseline or proposed output shape may be incomplete.
-- Basis: Source checkout inspection and `src/config.rs`; confirm while mapping implementation in UNDERSTAND.
+- Basis: `TASK.md#verification-existing-template-state-conclusion`.
 
 ## Understand
 
 ### Relevant context
 
-`gir init` creates repository-level files through `src/cmd/init.rs`'s generic idempotent `write` helper. `Config::DEFAULT_TYPES` supplies the built-in order. `src/config.rs` accepts SourceGit arrays with string `Type`, `Name`, and `Description` fields; `PrefillShortDesc` is ignored by gir and optional in SourceGit's documented example.
+`gir init` writes root-level files with the generic idempotent writer in `src/cmd/init.rs`. Required files are written before `Config::load_at`; optional `cliff.toml` and `GIT-IT-RIGHT.md` are handled after config loads. `src/cmd/templates.rs` owns generated contents. `Config::DEFAULT_TYPES` provides the built-in order, while gir's SourceGit reader requires `Type`, `Name`, and `Description` and ignores optional fields such as `PrefillShortDesc`.
+
+`Cargo.toml` explicitly limits packaged files, so embedding the root JSON with `include_str!` also requires adding that JSON to the package include list.
+
+### Evidence and interpretation
+
+- Observation: The source checkout's JSON parses to 11 entries, starts with `build`, and ends with `test`; gir's `DEFAULT_TYPES` starts with `feat` and ends with `revert`. Its `feat` entry has `PrefillShortDesc: "this is a test"`.
+- Observation: `read_types_file` requires string `Type`, `Name`, and `Description` fields and permits additional JSON fields. The targeted existing test `cargo test --test config types_file_replaces_types_keeps_names_and_drops_aliases_to_left_out_types` passed in this worktree.
+- Observation: `src/cmd/init.rs` writes `.girconfig` before `Config::load_at`. A required `conventional-commits.json` should be written before that load so a configured `gir.typesFile` can refer to the generated path.
+- Observation: `Cargo.toml` has an explicit `include` list that does not currently name the root JSON.
+- SourceGit's documented example uses the same `Name`, `Type`, and `Description` fields; `PrefillShortDesc` is optional. [SourceGit README](https://github.com/sourcegit-scm/sourcegit/blob/master/README.md?plain=1)
+- Interpretation: Keep current human labels and descriptions, reorder entries to `DEFAULT_TYPES`, omit placeholder prefill text, and use the JSON itself as the single canonical template source.
 
 ### Assumptions
 
@@ -81,11 +92,16 @@ DEFINE gate: `ESTABLISHED` — the user explicitly approved the objective, built
 
 ## Investigate
 
-No additional probe is required unless implementation evidence contradicts the accepted design.
+Investigation gate: `NOT_APPLICABLE` — the implementation ownership, schema, built-in order, and package inclusion constraint are established by current source and the existing parser test. No remaining uncertainty could change the selected template shape.
 
 ## Decide
 
-Pending completion of the subsystem map and selection of the smallest template ownership shape. The generated JSON must be exactly the same content as the checked-in template and must remain independent from custom configured types.
+The root JSON is the canonical template. `src/cmd/templates.rs` will expose it with `include_str!("../../conventional-commits.json")`; `Cargo.toml` will package that file. `src/cmd/init.rs` will write it as a required file before loading the effective config, using the existing `write` behavior. The entries use the current labels and descriptions in `Config::DEFAULT_TYPES` order and omit `PrefillShortDesc`.
+
+<a id="verification-existing-template-state-conclusion"></a>
+Verification of `existing-template-state`: `VERIFIED` — source inspection, parsing the untracked file, and the existing gir types-file test established the current field format, type set, ordering mismatch, placeholder, and parser compatibility. Scope is the original checkout's `conventional-commits.json` at the initial source revision and the gir source and test at this Task's UNDERSTAND checkpoint. The SourceGit schema claim is supported by the [SourceGit README](https://github.com/sourcegit-scm/sourcegit/blob/master/README.md?plain=1).
+
+UNDERSTAND gate: `ESTABLISHED` — the init write path, template owner, type source, schema, test coverage pattern, and package file boundary are understood well enough to decide the implementation.
 
 ## Implement
 
