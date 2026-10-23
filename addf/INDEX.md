@@ -21,6 +21,8 @@ is available through its archived bundle, not through this index.
 
 ## Ledger
 
+- [sourcegit-commit-template](ledger/sourcegit-commit-template.md) — aligning
+  the SourceGit commit helper template with gir's built-in types and init.
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
   in `gir fixup`, `--split` and `gir doctor`; three open (Q9, Q12, Q17).
 
