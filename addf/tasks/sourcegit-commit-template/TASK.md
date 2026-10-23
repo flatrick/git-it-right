@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `DECIDE`
+**State:** `IMPLEMENT`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT`
 
-**Resume at:** write the implementation decision and verification plan in `decision.md`.
+**Resume at:** implement the template, init integration, docs, and behavior tests from `decision.md`.
 
-**Open obligations:** `NONE`.
+**Open obligations:** SourceGit template and init conformance — VERIFY.
 
 ## Owned artifacts
 
