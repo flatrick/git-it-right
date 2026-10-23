@@ -96,7 +96,7 @@ Investigation gate: `NOT_APPLICABLE` — the implementation ownership, schema, b
 
 ## Decide
 
-The root JSON is the canonical template. `src/cmd/templates.rs` will expose it with `include_str!("../../conventional-commits.json")`; `Cargo.toml` will package that file. `src/cmd/init.rs` will write it as a required file before loading the effective config, using the existing `write` behavior. The entries use the current labels and descriptions in `Config::DEFAULT_TYPES` order and omit `PrefillShortDesc`.
+See [decision.md](decision.md). The root JSON is the one canonical template; init writes it before config loading through the existing required-file writer.
 
 <a id="verification-existing-template-state-conclusion"></a>
 Verification of `existing-template-state`: `VERIFIED` — source inspection, parsing the untracked file, and the existing gir types-file test established the current field format, type set, ordering mismatch, placeholder, and parser compatibility. Scope is the original checkout's `conventional-commits.json` at the initial source revision and the gir source and test at this Task's UNDERSTAND checkpoint. The SourceGit schema claim is supported by the [SourceGit README](https://github.com/sourcegit-scm/sourcegit/blob/master/README.md?plain=1).
