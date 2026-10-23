@@ -7,4 +7,4 @@
 - [x] Graft — incorporate only coherent, high-value ideas from the other sketches.
 - [x] Verify — check that the synthesized design meets the requirements and red-flag screen.
 
-Selected candidate 1 (25/25); no structural graft was needed. CLI rejection cases and explicit user-selected examples are carried into implementation acceptance. See `addf/tasks/git-config-tips/decision.md`.
+Selected candidate 1 (25/25); no structural graft was needed. CLI rejection cases and explicit user-selected examples are carried into implementation acceptance. See [the decision](../decision.md).

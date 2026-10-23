@@ -30,7 +30,8 @@ gate was valid. Do not infer State from artifact presence.
 -   `verifications/git-config-scope.md` — verifies the installed version and config variable count.
 -   `decision.md` — selected tip catalog and rationale, created at DECIDE.
 -   `verification.md` — acceptance evidence, created at VERIFY.
--   `.audit/git-config-tips.todo.md` — pstack architect phases and feature throughput checkpoint, local to this worktree.
+-   `process/architect-todo.md` — pstack architect phases and feature throughput checkpoint.
+-   `process/arena-todo.md` — design comparison, cross-judge, and synthesis record.
 
 ## Specification impact
 
