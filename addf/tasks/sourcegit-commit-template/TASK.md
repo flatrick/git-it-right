@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `LEARN`
+**State:** `COMPLETED`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN -> COMPLETED`
 
-**Resume at:** record technical and process learning, then prepare the terminal checkpoint.
+**Resume at:** `NONE`
 
 **Open obligations:** `NONE`.
 
@@ -21,7 +21,7 @@
 
 - Current contract: `framework:spec/init.md#req-init-file-kinds`, `framework:spec/init.md#req-init-required-files`, `framework:spec/init.md#req-init-identical-files`, `framework:spec/init.md#req-init-keep-edits`, `framework:spec/init.md#req-init-force-overwrite`, and `framework:spec/config.md#req-config-types-file`.
 - Proposed delta: require `gir init` to generate `conventional-commits.json` in SourceGit's supported schema, with gir's built-in types and order, independent of project-specific types.
-- Terminal publication: `PENDING`.
+- Terminal publication: `framework:spec/init.md#req-init-sourcegit-file`, `framework:spec/init.md#req-init-sourcegit-before-config`.
 
 ## Define
 
@@ -177,11 +177,11 @@ The bundle contains its Ledger handoff and implementation decision. Its internal
 
 ### Summary
 
-Pending.
+Updated the SourceGit JSON template to match gir's built-in types and made `gir init` create it as a required file. Documented the file, added init behavior coverage, and published the completed init contract.
 
 ### Gate basis
 
-Pending.
+The success Claim `sourcegit-template-conformance` and material premise `existing-template-state` are `VERIFIED` through their Task verification anchors. The full Rust suite passed, formatting and whitespace checks passed, Cargo packaging includes the JSON, and the committed JSON was parsed and checked against the expected order. No open obligation or deferred verification remains.
 
 ## Stop record
 
