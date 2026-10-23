@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** Verify the read-only tips catalog and doctor recommendation in the integrated feature branch; record observations and settle the success claims in `verification.md`.
+**Resume at:** Record the learning disposition, then publish the verified CLI and doctor specifications and terminalize the Task.
 
-**Open obligations:** Verify the catalog, read-only behavior, doctor fix and preservation behavior, and CLI contract; publish the verified specification delta at terminalization.
+**Open obligations:** Record learning and promotion decisions; publish the verified specification delta and terminalize the Task.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
