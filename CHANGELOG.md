@@ -1,4 +1,13 @@
 # Changelog
+## v0.5.0 - 2026-10-23
+
+### Documentation
+
+- **tips:** Introduce git config tips
+
+### Features
+
+- Add read-only Git config tips
 ## v0.4.0 - 2026-10-23
 
 ### Features
