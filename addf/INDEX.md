@@ -17,11 +17,10 @@ is available through its archived bundle, not through this index.
 
 ## Active Tasks
 
-`NONE`.
+- [git-config-tips](tasks/git-config-tips/TASK.md) - survey Git settings and add a curated tips command (`DEFINE`).
 
 ## Ledger
 
-- [git-config-tips](ledger/git-config-tips.md) - useful Git settings for gir doctor and a possible tips command.
 - [fixup-review-20261002](ledger/fixup-review-20261002.md) - edge cases
   in `gir fixup`, `--split` and `gir doctor`; three open (Q9, Q12, Q17).
 
