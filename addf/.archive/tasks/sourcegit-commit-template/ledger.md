@@ -1,6 +1,6 @@
 # Ledger handoff
 
-Taken in full from `framework:ledger/sourcegit-commit-template.md`.
+This exploration's complete Q&A was transferred into this Task when it started. The source Ledger thread was then removed from the current Ledger index.
 
 - Q1: Does the existing file need a different JSON format to work with SourceGit?
 - A1: No. The user clarified that its current format is already supported by SourceGit; preserve that format.
