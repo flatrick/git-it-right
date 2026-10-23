@@ -10,7 +10,7 @@
 
 **Resume at:** `NONE`
 
-**Open obligations:** `NONE`.
+**Open obligations:** `NONE`
 
 ## Owned artifacts
 
@@ -38,7 +38,7 @@ Align the existing SourceGit-format `conventional-commits.json` with gir's built
 - State: `VERIFIED`
 - Scope: Built-in configuration and `gir init` behavior in this Task's implementation.
 - Consequence if false: Human-facing GUI commit helpers can suggest messages that do not match gir's default accepted types, or repositories will not receive the helper template during setup.
-- Basis: `TASK.md#verification-sourcegit-template-conformance-conclusion`.
+- Basis: [Verification](TASK.md#verification-sourcegit-template-conformance).
 
 DEFINE gate: `ESTABLISHED` — the user explicitly approved the objective, built-in-only behavior, and implementation in an isolated worktree.
 
@@ -58,7 +58,7 @@ DEFINE gate: `ESTABLISHED` — the user explicitly approved the objective, built
 - State: `VERIFIED`
 - Scope: Source checkout at `d487b8078eed99aeae7614e62f4f4287dd4208f0` and current source files inspected during DEFINE.
 - Consequence if false: The implementation baseline or proposed output shape may be incomplete.
-- Basis: `TASK.md#verification-existing-template-state-conclusion`.
+- Basis: [Verification](TASK.md#verification-existing-template-state).
 
 ## Understand
 
@@ -115,31 +115,23 @@ IMPLEMENT gate: `ESTABLISHED` — the selected behavior and documentation change
 
 ## Verify
 
+<a id="verification-existing-template-state"></a>
+### Verification: existing-template-state
+
+- Claim: [Existing template and parser contract](TASK.md#existing-template-state)
+- Method: Parse the original untracked JSON, compare its type sequence with `Config::DEFAULT_TYPES`, inspect `read_types_file`, and run the existing parser integration test.
+- Evidence considered: The original file had 11 valid entries, the correct SourceGit fields, a different order from gir's built-ins, and placeholder prefill text. The existing parser test passed. The SourceGit README documented the same required fields and treated `PrefillShortDesc` as optional.
+- Conclusion: `VERIFIED` — the original format and mismatch were accurately identified.
+- Limitations: SourceGit itself was not launched; schema compatibility is based on its published example and gir's parser test.
+
+<a id="verification-sourcegit-template-conformance"></a>
 ### Verification: sourcegit-template-conformance
 
-#### Method
-
-Run the full Rust suite, check formatting and whitespace, inspect the package file list, and parse the committed JSON against the expected built-in order and SourceGit fields. Init integration tests exercise the generated file through `gir init` and read its output from temporary repositories.
-
-#### Evidence considered
-
-- `cargo test --quiet` exited `0`; all Rust test suites passed, including the 26 init tests and 12 CLI argument tests.
-- Init tests confirmed exact output equality with the canonical JSON, the built-in type order, required fields, no `PrefillShortDesc`, independence from custom `.girconfig` types, edit preservation, `--force`, CRLF idempotence, adopted-repository restoration, and loading when `.girconfig` names the generated file as `gir.typesFile`.
-- `cargo fmt -- --check` and `git diff --check` exited `0`.
-- `cargo package --list --allow-dirty` included `conventional-commits.json`.
-- A JSON parse of the committed file returned `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert` in order, with string `Name`, `Type`, and `Description` fields and no `PrefillShortDesc`.
-- SourceGit's documented example uses `Name`, `Type`, and `Description`; its example makes `PrefillShortDesc` optional. [SourceGit README](https://github.com/sourcegit-scm/sourcegit/blob/master/README.md?plain=1)
-
-<a id="verification-sourcegit-template-conformance-conclusion"></a>
-#### Conclusion
-
-**Result:** `VERIFIED`
-
-The committed template matches gir's built-in type order and accepted SourceGit type-file schema. `gir init` writes it as a required file and follows the existing edit, force, and rerun behavior. The crate package contains the embedded source file.
-
-#### Remaining uncertainty
-
-The SourceGit application itself was not launched. Compatibility follows SourceGit's published schema example and gir's parser tests. This does not block the claim about the documented JSON format.
+- Claim: [SourceGit template and init conformance](TASK.md#sourcegit-template-conformance)
+- Method: Run the full Rust suite, check formatting and whitespace, inspect the package file list, and parse the committed JSON. Init integration tests exercise the generated file through `gir init` and read its output from temporary repositories.
+- Evidence considered: `cargo test --quiet` exited `0`; all suites passed, including 26 init tests and 12 CLI argument tests. Init tests confirmed exact output equality, built-in type order, required fields, no `PrefillShortDesc`, independence from custom types, edit preservation, `--force`, CRLF idempotence, adopted restoration, and loading as `gir.typesFile`. `cargo fmt -- --check` and `git diff --check` exited `0`. `cargo package --list --allow-dirty` included `conventional-commits.json`. Parsing the committed JSON confirmed the expected order and string fields. SourceGit's documented example uses `Name`, `Type`, and `Description` and treats `PrefillShortDesc` as optional. [SourceGit README](https://github.com/sourcegit-scm/sourcegit/blob/master/README.md?plain=1)
+- Conclusion: `VERIFIED` — the template matches gir's built-in type order and accepted SourceGit schema, init writes it as required and follows existing edit, force, and rerun behavior, and the crate package contains the embedded source file.
+- Limitations: SourceGit itself was not launched. The claim concerns its documented JSON format, which gir's parser and the published example support.
 
 VERIFY gate: `ESTABLISHED` — the success criteria are supported by integration tests, full-suite results, package inclusion, and direct inspection of the committed JSON.
 
