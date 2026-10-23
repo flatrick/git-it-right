@@ -4,13 +4,13 @@
 
 **Contract version:** `2`
 
-**State:** `UNDERSTAND`
+**State:** `INVESTIGATE`
 
-**State path:** `DEFINE -> UNDERSTAND`
+**State path:** `DEFINE -> UNDERSTAND -> INVESTIGATE`
 
-**Resume at:** Inspect the current CLI, doctor, explain, and Git config recommendation implementation to establish the command and catalog boundaries.
+**Resume at:** Record the current Git config reference baseline and conduct the broad candidate survey, classifying options by effect, safety, scope, default status, and applicability.
 
-**Open obligations:** Establish implementation boundaries at UNDERSTAND; screen current Git configuration options and classify candidates at INVESTIGATE; settle the tip catalog and specification delta at DECIDE; implement and verify at their named states.
+**Open obligations:** Complete and record the config-option survey at INVESTIGATE; select and justify the catalog and specification delta at DECIDE; implement and verify at their named states.
 
 State must equal the final entry in State path. Append an accepted
 transition's destination before beginning work there. The path records
@@ -96,12 +96,20 @@ Survey Git configuration options and add a useful, read-only `gir tips` command.
 
 ### Relevant context
 
-`gir doctor` already recommends repo-local config settings. `gir init` installs gir files and activates hooks. `gir explain` serves pages from Markdown sections. Git config options include personal preferences, shared repo behavior, specialized server settings, and options that are already defaults.
+The CLI parses subcommands and dispatches them in `src/main.rs`. Command implementations live in `src/cmd/` and return an exit code or one runtime error. `gir doctor` stores local recommendations in a static tuple list, reports unset values, and fixes them with `git config --local`. It leaves nonempty existing values unchanged. `gir explain` reads topic text from Markdown sections, but a new top-level `gir tips` command does not need to become an explain topic. The README has a command table and describes doctor's scope.
+
+`gir doctor` and `gir tips` have distinct roles. Doctor checks the current repository and may set repo-local recommendations. Tips teaches optional personal settings and must not change config. The doctor spec enumerates recommended values. The CLI spec enumerates commands and help behavior.
+
+### UNDERSTAND exit claim
+
+-   The model is sufficient to avoid uninformed action: `ESTABLISHED`.
+-   Basis: The current CLI dispatcher, doctor config checks, explain topic loader, command module list, README command table, and relevant CLI, config, doctor, and explain specs were inspected. This establishes the existing command pattern, local config behavior, documentation locations, and required read-only boundary for tips.
 
 ### Assumptions
 
 -   The catalog uses global commands for optional personal settings. Source: accepted plan. Verification state: unverified. Existing doctor local recommendations can still override these values in a repository.
 -   The survey uses the current Git config reference available during implementation. Source: accepted plan. Verification state: unverified. Version-sensitive tips must disclose relevant limits.
+-   The installed Git reference is an appropriate baseline for this survey. Source: accepted plan and installed Git 2.56.0. Verification state: unverified until evidence is recorded in INVESTIGATE.
 
 ### Open questions
 
