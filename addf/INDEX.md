@@ -18,7 +18,7 @@ is available through its archived bundle, not through this index.
 ## Active Tasks
 
 - [sourcegit-commit-template](tasks/sourcegit-commit-template/TASK.md) — align
-  and generate the SourceGit type template (`VERIFY`).
+  and generate the SourceGit type template (`LEARN`).
 
 ## Ledger
 

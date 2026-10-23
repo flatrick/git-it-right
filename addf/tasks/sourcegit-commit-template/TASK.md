@@ -4,11 +4,11 @@
 
 **Contract version:** `2`
 
-**State:** `VERIFY`
+**State:** `LEARN`
 
-**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY`
+**State path:** `DEFINE -> UNDERSTAND -> DECIDE -> IMPLEMENT -> VERIFY -> LEARN`
 
-**Resume at:** commit the verification record, then transition to LEARN.
+**Resume at:** record technical and process learning, then prepare the terminal checkpoint.
 
 **Open obligations:** `NONE`.
 
